@@ -14,7 +14,6 @@ settings.json
 build
 dist
 Happypanda
-setup.py
 *.ini
 *.swp
 .DS_Store
