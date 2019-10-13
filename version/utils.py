@@ -943,20 +943,28 @@ def title_parser(title):
         if title.endswith(x):
             title = title[:-len(x)]
 
-    parsed_title = {'title':"", 'artist':"", 'language':""}
+    parsed_title = {'title':"", 'artist':"", 'language':"", 'group':""}
     try:
-        a = regex.findall('((?<=\[) *[^\]]+( +\S+)* *(?=\]))', title)
-        assert len(a) != 0
+        g = regex.findall('((?<=\[) *[^\]]+( +\S+)* *(?=\]))', title)
+        assert len(g) != 0
+        try:
+            group = g[0][0].strip()
+        except IndexError:
+            group = ''
+
+        a = regex.findall('((?<=\() *[^\)]+( +\S+)* *(?=\)))', group)
         try:
             artist = a[0][0].strip()
         except IndexError:
             artist = ''
+        
         parsed_title['artist'] = artist
+        parsed_title['group'] = group.replace(artist, '').replace('()','').strip()
 
         try:
-            assert a[1]
+            assert g[1]
             lang = app_constants.G_LANGUAGES + app_constants.G_CUSTOM_LANGUAGES
-            for x in a:
+            for x in g:
                 l = x[0].strip()
                 l = l.lower()
                 l = l.capitalize()
@@ -969,7 +977,7 @@ def title_parser(title):
             parsed_title['language'] = app_constants.G_DEF_LANGUAGE
 
         t = title
-        for x in a:
+        for x in g:
             t = t.replace(x[0], '')
 
         t = t.replace('[]', '')
