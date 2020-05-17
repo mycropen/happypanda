@@ -3,8 +3,8 @@
     `HappyPanda X <https://github.com/happypandax/server>`__ (bugs and such won't be fixed).
     Follow me on twitter to keep up to date with HPX:
     
-    .. image:: https://img.shields.io/twitter/follow/pewspew.svg?style=social&label=Follow
-        :target: https://twitter.com/pewspew
+    .. image:: https://img.shields.io/twitter/follow/twiddly_.svg?style=social&label=Follow
+        :target: https://twitter.com/twiddly_
 
 This is a cross platform manga/doujinshi manager with namespace & tag
 support.
@@ -31,13 +31,13 @@ Features
 
 Screenshots
 ===========
-.. image:: https://github.com/Pewpews/happypanda/raw/master/misc/screenshot1.png
+.. image:: https://github.com/Kramoule/happypanda/raw/master/misc/screenshot1.png
     :width: 100%
     :align: center
-.. image:: https://github.com/Pewpews/happypanda/raw/master/misc/screenshot2.png
+.. image:: https://github.com/Kramoule/happypanda/raw/master/misc/screenshot2.png
     :width: 100%
     :align: center
-.. image:: https://github.com/Pewpews/happypanda/raw/master/misc/screenshot3.png
+.. image:: https://github.com/Kramoule/happypanda/raw/master/misc/screenshot3.png
     :width: 100%
     :align: center
 
@@ -48,14 +48,14 @@ Windows
 ^^^^^^^
 
 #. Download the archive from
-   `releases <https://github.com/Pewpews/happypanda/releases>`__
+   `releases <https://github.com/Kramoule/happypanda/releases>`__
 #. Extract the archive to its own folder
 #. Find Happypanda.exe and double click on it!
 
 Mac and Linux
 ^^^^^^^^^^^^^
 
-Install from PYPI or see `INSTALL.md <https://github.com/Pewpews/happypanda/blob/master/INSTALL.md>`__
+Install from PYPI or see `INSTALL.md <https://github.com/Kramoule/happypanda/blob/master/INSTALL.md>`__
 
 PYPI
 ^^^^^^^^^^^^^

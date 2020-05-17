@@ -641,8 +641,9 @@ REGEXCHEAT =\
 ABOUT =\
 	"""
 <!DOCTYPE html><html><head></head><body>
-<p><strong>Creator</strong>: <a href="https://github.com/Pewpews">Pewpews</a></p>
-<p>Twitter: <a href="https://twitter.com/pewspew">@pewspew</a></p>
+<p><strong>Fork maintainer</strong>: <a href="https://github.com/Kramoule">Kramoule</a></p>
+<p><strong>Creator</strong>: <a href="https://github.com/twiddli">Twiddly</a></p>
+<p>Twitter: <a href="https://twitter.com/twiddly_">@twiddly_</a></p>
 <p>Chat: <a href="https://gitter.im/Pewpews/happypanda">Gitter chat</a></p>
 <p>Email: <code>happypandabugs@gmail.com</code></p>
 <p><strong>Current version</strong>: {}</p>
@@ -686,7 +687,7 @@ and a description of how you reproduced the error/bug.</p>
 <li>Navigate to where you installed Happypanda with a file explorer and find <code>happypanda.log</code>. Send it to me with a description of the bug.</li>
 <li>You have 3 options of contacting me:
 <ul>
-<li>Go to the github repo <a href="https://github.com/Pewpews/happypanda/issues">issue page</a> and create a new issue</li>
+<li>Go to the github repo <a href="https://github.com/Kramoule/happypanda/issues">issue page</a> and create a new issue</li>
 <li>Enter the gitter chat <a href="https://gitter.im/Pewpews/happypanda">here</a> and tell me about your issue</li>
 <li>If for some reason you don’t want anything to do with github, feel free to email me: <code>happypandabugs@gmail.com</code></li>
 </ul>

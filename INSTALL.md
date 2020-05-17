@@ -2,7 +2,7 @@ This guide will show you how to run from source.
 
 A better option is dowloading the latest version
 for your OS from
-https://github.com/Pewpews/happypanda/releases
+https://github.com/Kramoule/happypanda/releases
 
 If you have any questions, please find me here
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Pewpews/happypanda?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  I'll try to answer as soon as possible.
@@ -17,7 +17,7 @@ Download from here https://www.python.org/downloads/
 *Note: make sure to mark the 'Add to path' checkbox when available on windows*
 
 # Linux
-1. Go where you want happypanda to be downloaded (E.g. `cd ~`), and write `git clone https://github.com/Pewpews/happypanda.git`
+1. Go where you want happypanda to be downloaded (E.g. `cd ~`), and write `git clone https://github.com/Kramoule/happypanda.git`
   - If it fails with something like 'unrecognized command 'git'' then do: `sudo pacman -S git` (`apt-get install git` on Ubuntu), and try again
 2. Install these dependencies:
   - Qt5 (Install this first) >= 5.4
@@ -67,7 +67,7 @@ Note: Try renaming the 'main.py' file to 'main.pyw' and then just doubleclick on
      + `brew install PyQt5`
 3. To install other dependencies
      - Download HappyPanda
-        + Go to github.com/Pewpews/happypanda
+        + Go to github.com/Kramoule/happypanda
         + Press the "Download ZIP" button
         + UnZip happypanda-master.zip
   - In Terminal, navigate to the happypanda-master folder (E.g.: `cd /where/ever/you/put/the/folder/happypanda-master`)
