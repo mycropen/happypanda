@@ -4,7 +4,8 @@ beautifulsoup4
 scandir
 rarfile
 watchdog
-robobrowser
+Werkzeug==0.16.1
+robobrowser==0.5.3
 Send2Trash==1.4.2
 pillow
 python-dateutil
