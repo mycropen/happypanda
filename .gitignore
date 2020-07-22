@@ -247,4 +247,6 @@ FakesAssemblies/
 /.vs/config/applicationhost.config
 /data/happypanda.db
 /main.spec
-/target
+/Happypanda.egg-info/
+env/
+target/
