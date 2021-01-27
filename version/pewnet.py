@@ -1344,7 +1344,13 @@ class EHen(CommenHen):
                     new_gallery['title'] = {'def':gallery['title']}
 
                 new_gallery['type'] = gallery['category']
-                new_gallery['pub_date'] = datetime.fromtimestamp(int(gallery['posted']))
+
+                try:
+                    new_gallery['pub_date'] = datetime.fromtimestamp(int(gallery['posted']))
+                except (OSError, OverflowError):
+                    # If timestamp is invalid, publication date defaults to 01.01.1970
+                    new_gallery['pub_date'] = datetime.fromtimestamp(0)
+
                 tags = {'default':[]}
                 for t in gallery['tags']:
                     if ':' in t:
