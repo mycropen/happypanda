@@ -15,7 +15,7 @@
 import datetime
 import os
 import enum
-import scandir
+from os import scandir
 import threading
 import logging
 import queue
@@ -286,7 +286,7 @@ class GalleryDB(DBBase):
     def clear_thumb_dir():
         "Deletes everything in the thumbnail directory"
         if os.path.exists(db_constants.THUMBNAIL_PATH):
-            for thumbfile in scandir.scandir(db_constants.THUMBNAIL_PATH):
+            for thumbfile in scandir(db_constants.THUMBNAIL_PATH):
                 GalleryDB.clear_thumb(thumbfile.path)
 
     @staticmethod
@@ -1193,7 +1193,7 @@ class HashDB(DBBase):
             try:
                 if gallery.is_archive:
                     raise NotADirectoryError
-                imgs = sorted([x.path for x in scandir.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
+                imgs = sorted([x.path for x in scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
                 pages = {}
                 for n, i in enumerate(imgs):
                     pages[n] = i
@@ -1967,7 +1967,7 @@ class ChaptersContainer:
             chap.pages = len([x for x in _archive.dir_contents(chap.path) if x.lower().endswith(IMG_FILES)])
             _archive.close()
         else:
-            chap.pages = len([x for x in scandir.scandir(chap.path) if x.path.lower().endswith(IMG_FILES)])
+            chap.pages = len([x for x in scandir(chap.path) if x.path.lower().endswith(IMG_FILES)])
 
         execute(ChapterDB.update_chapter, True, self, [chap.number])
         return True
@@ -2076,7 +2076,7 @@ class AdminDB(QObject):
                         chap.pages = len(zip.dir_contents(chap.path))
                         zip.close()
                     else:
-                        chap.pages = len(list(scandir.scandir(gallery.path)))
+                        chap.pages = len(list(scandir(gallery.path)))
                     n_galleries.append(gallery)
                     galleries.remove(gallery)
                     break
@@ -2084,7 +2084,7 @@ class AdminDB(QObject):
         log_d("G: {} C:{}".format(len(n_galleries), data_count - 1))
         log_i("Database magic...")
         if os.path.exists(db_constants.THUMBNAIL_PATH):
-            for root, dirs, files in scandir.walk(db_constants.THUMBNAIL_PATH, topdown=False):
+            for root, dirs, files in os.walk(db_constants.THUMBNAIL_PATH, topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:

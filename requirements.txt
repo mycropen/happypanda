@@ -1,7 +1,6 @@
 pyqt5
 requests
 beautifulsoup4
-scandir
 rarfile
 watchdog
 Werkzeug==0.16.1

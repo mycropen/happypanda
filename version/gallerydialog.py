@@ -1,4 +1,5 @@
-import queue, os, threading, random, logging, time, scandir
+import queue, os, threading, random, logging, time
+from os import scandir
 from datetime import datetime
 
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QDesktopWidget, QGroupBox,

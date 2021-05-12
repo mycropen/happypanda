@@ -12,7 +12,8 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
-import sys, logging, logging.handlers, os, argparse, platform, scandir
+import sys, logging, logging.handlers, os, argparse, platform
+from os import scandir
 import traceback
 
 from PyQt5.QtWidgets import QApplication
@@ -209,7 +210,7 @@ def start(test=False):
             os.mkdir(app_constants.temp_dir)
         except FileExistsError:
             try:
-                for root, dirs, files in scandir.walk('temp', topdown=False):
+                for root, dirs, files in os.walk('temp', topdown=False):
                     for name in files:
                         os.remove(os.path.join(root, name))
                     for name in dirs:

@@ -1,4 +1,4 @@
-﻿#"""
+#"""
 #This file is part of Happypanda.
 #Happypanda is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ import logging
 import math
 import random
 import functools
-import scandir
+from os import scandir
 from datetime import datetime
 
 from PyQt5.QtCore import (Qt, QDate, QPoint, pyqtSignal, QThread,
@@ -1974,7 +1974,7 @@ class FileIcon:
                         file = os.path.join(folder, name)
                         break
             else:
-                for p in scandir.scandir(gallery.chapters[0].path):
+                for p in scandir(gallery.chapters[0].path):
                     if p.name.lower().endswith(tuple(IMG_FILES)):
                         file = p.path
                         break
@@ -2290,7 +2290,7 @@ class ChapterAddWidget(QWidget):
                 chap.title = utils.title_parser(os.path.split(p)[1])['title']
                 chap.path = p
                 if os.path.isdir(p):
-                    chap.pages = len(list(scandir.scandir(p)))
+                    chap.pages = len(list(scandir(p)))
                 elif p.endswith(utils.ARCHIVE_FILES):
                     chap.in_archive = 1
                     arch = utils.ArchiveFile(p)

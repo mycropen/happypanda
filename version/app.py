@@ -18,7 +18,7 @@ import os
 import threading
 import re
 import requests
-import scandir
+from os import scandir
 import random
 import traceback
 from pkg_resources import parse_version
@@ -959,7 +959,7 @@ class AppWindow(QMainWindow):
                         paths = []
                         for p in app_constants.MONITOR_PATHS:
                             if os.path.exists(p):
-                                dir_content = scandir.scandir(p)
+                                dir_content = scandir(p)
                                 for d in dir_content:
                                     paths.append(d.path)
                             else:
@@ -1083,7 +1083,7 @@ class AppWindow(QMainWindow):
 
         # temp dir
         try:
-            for root, dirs, files in scandir.walk('temp', topdown=False):
+            for root, dirs, files in os.walk('temp', topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:

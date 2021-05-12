@@ -12,7 +12,8 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
-import os, time, logging, uuid, random, queue, scandir
+import os, time, logging, uuid, random, queue
+from os import scandir
 import re as regex
 
 from PyQt5.QtCore import QObject, pyqtSignal # need this for interaction with main thread
@@ -94,7 +95,7 @@ class Fetch(QObject):
             images_paths = []
             metafile = utils.GMetafile()
             try:
-                con = scandir.scandir(temp_p) #all of content in the gallery folder
+                con = scandir(str(temp_p)) #all of content in the gallery folder
                 log_i('Gallery source is a directory')
                 chapters = sorted([sub.path for sub in con if sub.is_dir() or sub.name.endswith(utils.ARCHIVE_FILES)])\
                     if do_chapters else [] #subfolders
@@ -106,7 +107,7 @@ class Fetch(QObject):
                         chap = new_gallery.chapters.create_chapter()
                         chap.title = utils.title_parser(ch)['title']
                         chap.path = os.path.join(path, ch)
-                        chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.lower().endswith(utils.IMG_FILES)])
+                        chap.pages = len([x for x in scandir(chap.path) if x.name.lower().endswith(utils.IMG_FILES)])
                         metafile.update(utils.GMetafile(chap.path))
 
                 else: #else assume that all images are in gallery folder
@@ -114,7 +115,7 @@ class Fetch(QObject):
                     chap.title = utils.title_parser(os.path.split(path)[1])['title']
                     chap.path = path
                     metafile.update(utils.GMetafile(chap.path))
-                    chap.pages = len(list(scandir.scandir(path)))
+                    chap.pages = len(list(scandir(path)))
                 
                 parsed = utils.title_parser(folder_name)
             except NotADirectoryError:
@@ -206,7 +207,7 @@ class Fetch(QObject):
         if s_path:
             self.series_path = s_path
         try:
-            gallery_l = sorted([p.name for p in scandir.scandir(self.series_path)]) #list of folders in the "Gallery" folder
+            gallery_l = sorted([p.name for p in scandir(self.series_path)]) #list of folders in the "Gallery" folder
             mixed = False
         except TypeError:
             gallery_l = self.series_path
@@ -244,7 +245,7 @@ class Fetch(QObject):
                 else:
                     try:
                         if os.path.isdir(path):
-                            if not list(scandir.scandir(path)):
+                            if not list(scandir(path)):
                                 raise ValueError
                         elif not path.endswith(utils.ARCHIVE_FILES):
                             raise NotADirectoryError
