@@ -859,7 +859,7 @@ class AppWindow(QMainWindow):
 
     def gallery_populate(self, path, validate=False):
         "Scans the given path for gallery to add into the DB"
-        if len(path) is not 0:
+        if len(path) != 0:
             data_thread = QThread(self)
             data_thread.setObjectName('General gallery populate')
             self.addition_tab.click()

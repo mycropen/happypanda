@@ -855,7 +855,7 @@ def tag_to_dict(string, ns_capitalize=True):
 
         if x == ',': # if we meet a comma
             # we trim our buffer if we are at top level
-            if level is 0:
+            if level == 0:
                 # add to list
                 stripped_set.add(buffer.strip())
                 buffer = ""

@@ -740,7 +740,7 @@ class GridDelegate(QStyledItemDelegate):
         self.title_font.setFamily(self.font_name)
         self.artist_font = QFont()
         self.artist_font.setFamily(self.font_name)
-        if self.font_size is not 0:
+        if self.font_size != 0:
             self.title_font.setPixelSize(self.font_size)
             self.artist_font.setPixelSize(self.font_size)
         self.title_font_m = QFontMetrics(self.title_font)

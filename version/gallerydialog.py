@@ -414,11 +414,11 @@ class GalleryDialog(QWidget):
 
     def check(self):
         if not self._multiple_galleries:
-            if len(self.title_edit.text()) is 0:
+            if len(self.title_edit.text()) == 0:
                 self.title_edit.setFocus()
                 self.title_edit.setStyleSheet("border-style:outset;border-width:2px;border-color:red;")
                 return False
-            elif len(self.author_edit.text()) is 0:
+            elif len(self.author_edit.text()) == 0:
                 self.author_edit.setText("Unknown")
 
             if len(self.path_lbl.text()) == 0 or self.path_lbl.text() == 'No path specified':

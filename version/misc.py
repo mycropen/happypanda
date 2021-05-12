@@ -228,7 +228,8 @@ class SortMenu(QMenu):
         super().__init__(parent)
         self.parent_widget = app_inst
         self.toolbutton = toolbutton
-        self.sort_actions = QActionGroup(self, exclusive=True)
+        self.sort_actions = QActionGroup(self)
+        self.sort_actions.setExclusive(True)
         asc_desc_act = QAction("Asc/Desc", self)
         asc_desc_act.triggered.connect(self.asc_desc)
         s_title = self.sort_actions.addAction(QAction("Title", self.sort_actions, checkable=True))
@@ -1609,6 +1610,8 @@ class NotificationOverlay(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._main_layout = QHBoxLayout(self)
+        self._main_layout.setSpacing(0)
+        self._main_layout.setContentsMargins(0,0,0,0)
         self._default_height = 20
         self._dynamic_height = 0
         self._lbl = QLabel()
