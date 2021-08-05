@@ -90,7 +90,7 @@ class GMetafile:
     def _eze(self, fp):
         if not fp.name.endswith('.json'):
             return
-        j = json.load(fp, encoding='utf-8')
+        j = json.load(fp)
         eze = ['gallery_info', 'image_api_key', 'image_info']
         # eze
         if all(x in j for x in eze):

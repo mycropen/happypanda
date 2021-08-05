@@ -333,7 +333,14 @@ class SortFilterModel(QSortFilterProxyModel):
             g = idx.data(GalleryModel.GALLERY_ROLE)
             if g != None:
                 g_list.append(g)
-        data.setData("list/gallery", QByteArray(pickle.dumps(g_list)))
+        try:
+            data.setData("list/gallery", QByteArray(pickle.dumps(g_list)))
+        except TypeError as e:
+            # pickle_dumps raise a "cannot pickle '_thread.RLock' object" error
+            # Not critical but I can't pinpoint the problem for now
+            # TODO
+
+            log_d(f"MimeData: {e}")
         return data
 
     def flags(self, index):

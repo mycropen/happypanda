@@ -488,6 +488,7 @@ class SideBarWidget(QFrame):
         self.parent_widget = parent
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.MinimumExpanding)
         self._widget_layout = QHBoxLayout(self)
+        self._widget_layout.setContentsMargins(10,10,0,10)
 
         # widget stuff
         self._d_widget = QWidget(self)
