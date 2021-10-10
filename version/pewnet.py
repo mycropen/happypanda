@@ -1160,6 +1160,7 @@ class EHen(CommenHen):
             g.title = title_artist_dict['title']
             if title_artist_dict['artist']:
                 g.artist = title_artist_dict['artist']
+            g.circle = title_artist_dict['group']
             g.language = title_artist_dict['language'].capitalize()
             if 'Artist' in data['tags']:
                 g.artist = data['tags']['Artist'][0].capitalize()
@@ -1179,6 +1180,8 @@ class EHen(CommenHen):
                 g.artist = title_artist_dict['artist']
                 if 'Artist' in data['tags']:
                     g.artist = data['tags']['Artist'][0].capitalize()
+            if not g.circle:
+                g.circle = title_artist_dict['group']
             if not g.language:
                 g.language = title_artist_dict['language'].capitalize()
                 if lang:

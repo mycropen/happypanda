@@ -151,6 +151,7 @@ class GalleryDialog(QWidget):
 
         self.title_edit = add_check(QLineEdit())
         self.author_edit = add_check(QLineEdit())
+        self.circle_edit = add_check(QLineEdit())
         author_completer = misc.GCompleter(self, False, True, False)
         author_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.author_edit.setCompleter(author_completer)
@@ -239,6 +240,7 @@ class GalleryDialog(QWidget):
 
         gallery_layout.addRow("Title:", checkbox_layout(self.title_edit))
         gallery_layout.addRow("Author:", checkbox_layout(self.author_edit))
+        gallery_layout.addRow("Circle:", checkbox_layout(self.circle_edit))
         gallery_layout.addRow("Description:", checkbox_layout(self.descr_edit))
         gallery_layout.addRow("Language:", lang_l)
         gallery_layout.addRow("Tags:", tags_l)
@@ -274,6 +276,7 @@ class GalleryDialog(QWidget):
 
             self.title_edit.setText(gallery.title)
             self.author_edit.setText(gallery.artist)
+            self.circle_edit.setText(gallery.circle)
             self.descr_edit.setText(gallery.info)
             self.rating_box.setValue(gallery.rating)
 
@@ -306,6 +309,9 @@ class GalleryDialog(QWidget):
             if all(map(lambda x: x.artist == g.artist, gallery)):
                 self.author_edit.setText(g.artist)
                 self.author_edit.g_check.setChecked(True)
+            if all(map(lambda x: x.circle == g.circle, gallery)):
+                self.circle_edit.setText(g.circle)
+                self.circle_edit.g_check.setChecked(True)
             if all(map(lambda x: x.info == g.info, gallery)):
                 self.descr_edit.setText(g.info)
                 self.descr_edit.g_check.setChecked(True)
@@ -387,6 +393,7 @@ class GalleryDialog(QWidget):
         parsed = utils.title_parser(tail)
         self.title_edit.setText(parsed['title'])
         self.author_edit.setText(parsed['artist'])
+        self.circle_edit.setText(parsed['group'])
         self.path_lbl.setText(name)
         if not parsed['language']:
             parsed['language'] = app_constants.G_DEF_LANGUAGE
@@ -491,6 +498,7 @@ class GalleryDialog(QWidget):
         self.link_lbl.setText(metadata.link)
         self.title_edit.setText(metadata.title)
         self.author_edit.setText(metadata.artist)
+        self.circle_edit.setText(metadata.circle)
         tags = ""
         lang = ['English', 'Japanese']
         self._find_combobox_match(self.lang_box, metadata.language, 2)
@@ -510,6 +518,9 @@ class GalleryDialog(QWidget):
             if is_checked(self.author_edit):
                 new_gallery.artist = self.author_edit.text()
                 log_d('Adding gallery artist')
+            if is_checked(self.circle_edit):
+                new_gallery.circle = self.circle_edit.text()
+                log_d('Adding gallery circle')
             if not self._multiple_galleries:
                 new_gallery.path = self.path_lbl.text()
                 log_d('Adding gallery path')

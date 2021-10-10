@@ -129,6 +129,7 @@ def chapter_map(row, chapter):
 def gallery_map(row, gallery, chapters=True, tags=True, hashes=True):
     gallery.title = row['title']
     gallery.artist = row['artist']
+    gallery.circle = row['circle']
     gallery.profile = bytes.decode(row['profile'])
     gallery.path = bytes.decode(row['series_path'])
     gallery.is_archive = row['is_archive']
@@ -202,14 +203,15 @@ def default_exec(object):
             return None
         else:
             return obj
-    executing = ["""INSERT INTO series(title, artist, profile, series_path, is_archive, path_in_archive,
+    executing = ["""INSERT INTO series(title, artist, circle, profile, series_path, is_archive, path_in_archive,
                     info, type, fav, language, rating, status, pub_date, date_added, last_read, link,
                     times_read, db_v, exed, view)
-                VALUES(:title, :artist, :profile, :series_path, :is_archive, :path_in_archive, :info, :type, :fav, :language,
+                VALUES(:title, :artist, :circle, :profile, :series_path, :is_archive, :path_in_archive, :info, :type, :fav, :language,
                     :rating, :status, :pub_date, :date_added, :last_read, :link, :times_read, :db_v, :exed, :view)""",
                 {
                 'title':check(object.title),
                 'artist':check(object.artist),
+                'circle':check(object.circle),
                 'profile':str.encode(object.profile),
                 'series_path':str.encode(object.path),
                 'is_archive':check(object.is_archive),
@@ -299,6 +301,7 @@ class GalleryDB(DBBase):
             GalleryDB.modify_gallery(gallery.id,
                 title=gallery.title,
                 artist=gallery.artist,
+                circle=gallery.circle,
                 info=gallery.info,
                 type=gallery.type,
                 fav=gallery.fav,
@@ -323,7 +326,7 @@ class GalleryDB(DBBase):
         return True
 
     @classmethod
-    def modify_gallery(cls, series_id, title=None, profile=None, artist=None, info=None, type=None, fav=None,
+    def modify_gallery(cls, series_id, title=None, profile=None, artist=None, circle=None, info=None, type=None, fav=None,
                    tags=None, language=None, rating=None, status=None, pub_date=None, link=None,
                    times_read=None, last_read=None, series_path=None, chapters=None, _db_v=None,
                    hashes=None, exed=None, is_archive=None, path_in_archive=None, view=None, date_added=None):
@@ -340,6 +343,9 @@ class GalleryDB(DBBase):
         if artist != None:
             assert isinstance(artist, str)
             executing.append(["UPDATE series SET artist=? WHERE series_id=?", (artist, series_id)])
+        if circle != None:
+            assert isinstance(circle, str)
+            executing.append(["UPDATE series SET circle=? WHERE series_id=?", (circle, series_id)])
         if info != None:
             assert isinstance(info, str)
             executing.append(["UPDATE series SET info=? WHERE series_id=?", (info, series_id)])
@@ -1460,6 +1466,7 @@ class Gallery:
     profile <- path to thumbnail
     path <- path to gallery
     artist <- str
+    circle <- str
     chapters <- {<number>:<path>}
     chapter_size <- int of number of chapters
     info <- str
@@ -1489,6 +1496,7 @@ class Gallery:
         self.path_in_archive = ""
         self.is_archive = 0
         self.artist = ""
+        self.circle = ""
         self._chapters = ChaptersContainer(self)
         self.info = ""
         self.fav = 0
@@ -1580,7 +1588,7 @@ class Gallery:
         chp_cont.set_parent(self)
         self._chapters = chp_cont
 
-    def merge(galleries):
+    def merge(self, galleries):
         "Merge galleries into this galleries, adding them as chapters"
         pass
 
@@ -1672,6 +1680,8 @@ class Gallery:
             term = self.status
         elif ns == 'Artist':
             term = self.artist
+        elif ns in ['Circle', 'Group']:
+            term = self.circle
         elif ns == 'Url':
             term = self.link
         elif ns in ['Descr', 'Description']:
@@ -1708,7 +1718,7 @@ class Gallery:
             # check in title/artist/language
             found = False
             if not ':' in key:
-                for g_attr in [self.title, self.artist, self.language]:
+                for g_attr in [self.title, self.artist, self.circle, self.language]:
                     if not g_attr:
                         continue
                     if app_constants.Search.Regex in args:
@@ -1739,6 +1749,9 @@ class Gallery:
                             return is_exclude
                     elif ns == 'Artist' and tag in key_word:
                         if not self.artist:
+                            return is_exclude
+                    elif ns == 'Circle' and tag in key_word:
+                        if not self.circle:
                             return is_exclude
                     elif ns == 'Status' and tag in key_word:
                         if not self.status or self.status == 'Unknown':

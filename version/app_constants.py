@@ -96,7 +96,7 @@ THUMB_SMALL = (140, 93)
 COLUMNS = tuple(range(12))
 TITLE = 0
 ARTIST = 1
-GROUP = 2
+CIRCLE = 2
 DESCR = 3
 TAGS = 4
 TYPE = 5
@@ -318,6 +318,7 @@ class Search(enum.Enum):
 GRID_TOOLTIP = get(True, 'Visual', 'grid tooltip', bool)
 TOOLTIP_TITLE = get(False, 'Visual', 'tooltip title', bool)
 TOOLTIP_AUTHOR = get(False, 'Visual', 'tooltip author', bool)
+TOOLTIP_CIRCLE = get(False, 'Visual', 'tooltip circle', bool)
 TOOLTIP_CHAPTERS = get(True, 'Visual', 'tooltip chapters', bool)
 TOOLTIP_STATUS = get(True, 'Visual', 'tooltip status', bool)
 TOOLTIP_TYPE = get(True, 'Visual', 'tooltip type', bool)
