@@ -46,6 +46,7 @@ def series_sql(cols=False):
         'series_id INTEGER PRIMARY KEY',
         'title TEXT',
         'artist TEXT',
+        'circle TEXT',
         'profile BLOB',
         'series_path BLOB',
         'is_archive INTEGER',
