@@ -1,3 +1,11 @@
+*Happypanda v1.2.1*
+- Changes
+   - Publication locations like (C86), (COMIC1☆10), etc. will be stripped from the beginning of new gallery titles.
+   - Anything in curly braces like {5 a.m.}, {Hennojin}, etc. will be stripped from new gallery titles
+   - Starts maximized by default.
+- Fixes
+
+
 *Happypanda v1.2*
 - Changes
   - HP will now check for updates in this fork (Kramoule's)

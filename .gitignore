@@ -248,3 +248,10 @@ FakesAssemblies/
 /data/happypanda.db
 /main.spec
 /target
+
+
+# my own
+version/Happypanda.spec
+version/happypanda.sublime-project
+version/happypanda.sublime-workspace
+version/res/
