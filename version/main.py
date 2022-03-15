@@ -190,7 +190,7 @@ def start(test=False):
         d_style = app_constants.default_stylesheet_path
         u_style =  app_constants.user_stylesheet_path
 
-        if len(u_style) is not 0:
+        if len(u_style) != 0:
             try:
                 style_file = QFile(u_style)
                 log_i('Select userstyle: OK')
@@ -230,8 +230,7 @@ def start(test=False):
         msg_box = QMessageBox()
         msg_box.setWindowIcon(QIcon(app_constants.APP_ICO_PATH))
         msg_box.setText('Incompatible database!')
-        msg_box.setInformativeText("Do you want to upgrade to newest version?" +
-                             " It shouldn't take more than a second. Don't start a new instance!")
+        msg_box.setInformativeText("Do you want to upgrade to newest version? It shouldn't take more than a second. Don't start a new instance!")
         msg_box.setIcon(QMessageBox.Critical)
         msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg_box.setDefaultButton(QMessageBox.Yes)
