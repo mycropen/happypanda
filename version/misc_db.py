@@ -308,7 +308,7 @@ class GalleryListEdit(misc.BasePopup):
         self.filter_edit.setFixedHeight(100)
         what_is_filter = misc.ClickedLabel("What is Filter/Enforce? (Hover)")
         what_is_filter.setToolTip(app_constants.WHAT_IS_FILTER)
-        what_is_filter.setToolTipDuration(9999999999)
+        what_is_filter.setToolTipDuration(999999999)
         self.enforce = QCheckBox(self)
         self.regex = QCheckBox(self)
         self.case = QCheckBox(self)

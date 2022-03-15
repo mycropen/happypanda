@@ -926,14 +926,18 @@ import re as regex
 def title_parser(title):
     "Receives a title to parse. Returns dict with 'title', 'artist' and language"
     log_d("Parsing title: {}".format(title))
+
+    #If title is not absolute, then it's not a pathname and we allow a "/" inside it
+    if(os.path.isabs(title)):
+        title = os.path.basename(title)
     title = " ".join(title.split())
-    if '/' in title:
-        try:
-            title = os.path.split(title)[1]
-            if not title:
-                title = title
-        except IndexError:
-            pass
+    # if '/' in title:
+    #     try:
+    #         title = os.path.split(title)[1]
+    #         if not title:
+    #             title = title
+    #     except IndexError:
+    #         pass
 
     for x in ARCHIVE_FILES:
         if title.endswith(x):
@@ -1265,14 +1269,14 @@ def make_chapters(gallery_object):
                 chap.title = title_parser(ch)['title']
                 chap.path = os.path.join(path, ch)
                 metafile.update(GMetafile(chap.path))
-                chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.endswith(IMG_FILES)])
+                chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.lower().endswith(IMG_FILES)])
 
         else: #else assume that all images are in gallery folder
             chap = chap_container.create_chapter()
             chap.title = title_parser(os.path.split(path)[1])['title']
             chap.path = path
             metafile.update(GMetafile(path))
-            chap.pages = len([x for x in scandir.scandir(path) if x.name.endswith(IMG_FILES)])
+            chap.pages = len([x for x in scandir.scandir(path) if x.name.lower().endswith(IMG_FILES)])
 
     except NotADirectoryError:
         if path.endswith(ARCHIVE_FILES):

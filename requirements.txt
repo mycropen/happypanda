@@ -1,11 +1,11 @@
-pyqt5
+pyqt5==5.10
 requests
 beautifulsoup4
 scandir
 rarfile
 watchdog
 robobrowser
-Send2Trash
+Send2Trash==1.4.2
 pillow
 python-dateutil
 QtAwesome==0.3.3

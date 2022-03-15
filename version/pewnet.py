@@ -1492,11 +1492,11 @@ class EHen(CommenHen):
                     if type == 'div':
                         visible_galleries = soup.find_all('div', attrs={'class':'id1'})
                     elif type == 'table':
-                        visible_galleries = soup.find_all('div', attrs={'class':'it5'})
+                        visible_galleries = soup.find_all('td', attrs={'class':'glname'})
 
                     log_i('Found {} visible galleries'.format(len(visible_galleries)))
                     for gallery in visible_galleries:
-                        title = gallery.text
+                        title = gallery.a.div.text
                         g_url = gallery.a.attrs['href']
                         found_galleries[h].append((title,g_url))
             except AttributeError:

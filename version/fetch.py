@@ -106,7 +106,7 @@ class Fetch(QObject):
                         chap = new_gallery.chapters.create_chapter()
                         chap.title = utils.title_parser(ch)['title']
                         chap.path = os.path.join(path, ch)
-                        chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.endswith(utils.IMG_FILES)])
+                        chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.lower().endswith(utils.IMG_FILES)])
                         metafile.update(utils.GMetafile(chap.path))
 
                 else: #else assume that all images are in gallery folder
@@ -150,7 +150,7 @@ class Fetch(QObject):
                                     chap.path = g
                                     metafile.update(utils.GMetafile(g, temp_p))
                                     arch = utils.ArchiveFile(temp_p)
-                                    chap.pages = len([x for x in arch.dir_contents(g) if x.endswith(utils.IMG_FILES)])
+                                    chap.pages = len([x for x in arch.dir_contents(g) if x.lower().endswith(utils.IMG_FILES)])
                                     arch.close()
                             else:
                                 chap = new_gallery.chapters.create_chapter()

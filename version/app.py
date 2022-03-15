@@ -21,6 +21,7 @@ import requests
 import scandir
 import random
 import traceback
+from pkg_resources import parse_version
 
 from PyQt5.QtCore import (Qt, QSize, pyqtSignal, QThread, QEvent, QTimer,
                           QObject, QPoint, QPropertyAnimation)
@@ -170,12 +171,16 @@ class AppWindow(QMainWindow):
                 settings.set(app_constants.vs, 'Application', 'version')
 
             if app_constants.UPDATE_VERSION != app_constants.vs:
+                self.notif_bubble.update_text("Happypanda has been updated!",
+                    "Don't forget to check out what's new in this version <a href='https://github.com/Kramoule/happypanda/blob/master/CHANGELOG.md'>by clicking here!</a>")
+
+            if parse_version(app_constants.UPDATE_VERSION) <= parse_version("1.1.1"):
                 pop = misc.BasePopup(self, blur=False)
                 ml = QVBoxLayout(pop.main_widget)
-                ml.addWidget(QLabel("\nGoodbye Happypanda!\n\n\nHello, this is the last release of 'old' Happypanda.\n"+
-                    "This means that I (personally) won't be adding any new features or fix bugs.\n\n"+
-                    "I have started a new project where I (with the help of others)\n try to create a better Happypanda from scratch.\n\n"+
-                    "Please follow me on twitter (@pewspew) to keep yourself updated!\n"))
+                ml.addWidget(QLabel("\nHello everyone, this is a fork to the much beloved Happypanda.\n"+
+                    "This version is only here to fix broken things.\n\n"+
+                    "If you want new shiny features, please check out HappyPanda X, the newest application by Twiddly.\n"+
+                    "Go to https://happypandax.github.io to keep yourself updated!\n"))
                 ml.addLayout(pop.buttons_layout)
                 pop.add_buttons("close")[0].clicked.connect(pop.close)
                 pop.adjustSize()
@@ -289,7 +294,7 @@ class AppWindow(QMainWindow):
                 log_d('Checking Update')
                 time.sleep(1.5)
                 try:
-                    r = requests.get("https://raw.githubusercontent.com/Pewpews/happypanda/master/VS.txt")
+                    r = requests.get("https://raw.githubusercontent.com/Kramoule/happypanda/master/VS.txt")
                     a = r.text
                     vs = a.strip()
                     self.UPDATE_CHECK.emit(vs)
@@ -299,11 +304,11 @@ class AppWindow(QMainWindow):
 
         def check_update(vs):
             log_i('Received version: {}\nCurrent version: {}'.format(vs, app_constants.vs))
-            if vs != app_constants.vs:
+            if parse_version(vs) > parse_version(app_constants.vs):
                 if len(vs) < 10:
                     self.notification_bar.begin_show()
                     self.notification_bar.add_text("Version {} of Happypanda is".format(vs) + " available. Click here to update!", False)
-                    self.notification_bar.clicked.connect(lambda: utils.open_web_link('https://github.com/Pewpews/happypanda/releases'))
+                    self.notification_bar.clicked.connect(lambda: utils.open_web_link('https://github.com/Kramoule/happypanda/releases'))
                     self.notification_bar.set_clickable(True)
                 else:
                     self.notification_bar.add_text("An error occurred while checking for new version")

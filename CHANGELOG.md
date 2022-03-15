@@ -1,3 +1,17 @@
+*Happypanda v1.2*
+- Changes
+  - HP will now check for updates in this fork (Kramoule's)
+- Fixes
+   - Fixed some crashes that happened when the current sort was set on *Author*
+   - Fixed pages numbering being 0 when image files have extension name in uppercase
+   - Titles that contain a slash should now be correctly parsed
+   - Export/Import of metadata fixed
+
+*Happypanda v1.1.1*
+- Fixes
+   - Fixed Metadata fetcher with the new design of E-h/Exh
+   - Small bug fixes
+
 *Happypanda v1.1*
 - Fixes
    - Fixed HP settings unusable without internet connection

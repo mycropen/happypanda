@@ -271,7 +271,7 @@ class SortMenu(QMenu):
         for act in self.sort_actions.actions():
             if act.text() == 'Title':
                 check_key(act, 'title')
-            elif act.text() == 'Artist':
+            elif act.text() == 'Author':
                 check_key(act, 'artist')
             elif act.text() == 'Date Added':
                 check_key(act, 'date_added')
