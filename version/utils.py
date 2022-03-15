@@ -855,7 +855,7 @@ def tag_to_dict(string, ns_capitalize=True):
 
         if x == ',': # if we meet a comma
             # we trim our buffer if we are at top level
-            if level is 0:
+            if level == 0:
                 # add to list
                 stripped_set.add(buffer.strip())
                 buffer = ""
@@ -922,7 +922,6 @@ def tag_to_dict(string, ns_capitalize=True):
 
     return namespace_tags
 
-import re as regex
 def title_parser(title):
     "Receives a title to parse. Returns dict with 'title', 'artist' and language"
     log_d("Parsing title: {}".format(title))
@@ -945,7 +944,7 @@ def title_parser(title):
 
     parsed_title = {'title':"", 'artist':"", 'language':""}
     try:
-        a = regex.findall('((?<=\[) *[^\]]+( +\S+)* *(?=\]))', title)
+        a = re.findall('((?<=\[) *[^\]]+( +\S+)* *(?=\]))', title)
         assert len(a) != 0
         try:
             artist = a[0][0].strip()
@@ -973,8 +972,16 @@ def title_parser(title):
             t = t.replace(x[0], '')
 
         t = t.replace('[]', '')
-        final_title = t.strip()
-        parsed_title['title'] = final_title
+
+        # remove things like (C86), (COMIC1☆10), etc. from beginning of title
+        nt = re.sub(r'^(\([^\)]+\) *)+', '', t.strip()).strip()
+        if len(nt) > 0: t = nt
+        
+        # remove anything in curly braces like {5 a.m.}, {Hennojin}, etc.
+        nt = re.sub(r'{[^}]+}', '', t).strip()
+        if len(nt) > 0: t = nt
+
+        parsed_title['title'] = t
     except AssertionError:
         parsed_title['title'] = title
 
@@ -1048,12 +1055,12 @@ def regex_search(a, b, override_case=False, args=[]):
     if a and b:
         try:
             if not app_constants.Search.Case in args or override_case:
-                if regex.search(a, b, regex.IGNORECASE):
+                if re.search(a, b, re.IGNORECASE):
                     return True
             else:
-                if regex.search(a, b):
+                if re.search(a, b):
                     return True
-        except regex.error:
+        except re.error:
             pass
     return False
 
