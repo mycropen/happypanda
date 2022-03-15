@@ -268,7 +268,7 @@ class AppWindow(QMainWindow):
         self.setMinimumHeight(400)
         misc.centerWidget(self)
         self.init_spinners()
-        self.show()
+        self.showMaximized()
         log_d('Show window: OK')
 
         self.notification_bar = misc.NotificationOverlay(self)
