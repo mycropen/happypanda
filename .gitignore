@@ -250,8 +250,9 @@ FakesAssemblies/
 /target
 
 
-# my own
+# build and project files
 version/Happypanda.spec
 version/happypanda.sublime-project
 version/happypanda.sublime-workspace
 version/res/
+_db

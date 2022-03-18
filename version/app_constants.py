@@ -23,7 +23,7 @@ except ImportError:
     from .database import db_constants
 
 # Version number
-vs  = '1.2'
+vs  = '1.2.2'
 DEBUG = False
 
 OS_NAME = ''
@@ -271,6 +271,9 @@ DISPLAY_GALLERY_RIBBON = get(True, 'Visual', 'display gallery ribbon', bool)
 GALLERY_FONT = (get('Segoe UI', 'Visual', 'gallery font family', str),
 				get(11, 'Visual', 'gallery font size', int))
 GALLERY_FONT_ELIDE = get(True, 'Visual', 'gallery font elide', bool)
+GALLERY_TRIM_PARENTHESES = get(True, 'Application', 'trim starting parentheses', bool)
+GALLERY_TRIM_CURLY = get(True, 'Application', 'remove curly braces', bool)
+GALLERY_TITLE_SEP = get('both', 'Application', 'keep side of title with vertical bar', str)
 
 G_DEF_LANGUAGE = get('English', 'General', 'gallery default language', str)
 G_CUSTOM_LANGUAGES = get([], 'General', 'gallery custom languages', list)
@@ -279,6 +282,7 @@ G_DEF_TYPE = get('Doujinshi', 'General', 'gallery default type', str)
 G_LANGUAGES = ["English", "Japanese", "Chinese", "Other"]
 G_STATUS = ["Ongoing", "Completed", "Unknown"]
 G_TYPES = ["Manga", "Doujinshi", "Artist CG Sets", "Game CG Sets", "Western", "Image Sets", "Non-H", "Cosplay", "Other"]
+G_TITLE_SIDES = ['both', 'left', 'right']
 
 @enum.unique
 class GalleryState(enum.Enum):

@@ -1,10 +1,14 @@
+*Happypanda v1.2.2*
+- Changes
+   - Added option for removing starting parentheses in new gallery titles
+   - Added option for removing curly braces in new gallery titles
+   - Added option for keeping only part of a new gallery title that's split with a '|'
+
 *Happypanda v1.2.1*
 - Changes
    - Publication locations like (C86), (COMIC1☆10), etc. will be stripped from the beginning of new gallery titles.
    - Anything in curly braces like {5 a.m.}, {Hennojin}, etc. will be stripped from new gallery titles
    - Starts maximized by default.
-- Fixes
-
 
 *Happypanda v1.2*
 - Changes

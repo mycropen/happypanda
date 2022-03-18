@@ -152,6 +152,14 @@ class SettingsDialog(QWidget):
         self.rename_g_source_group.setChecked(app_constants.RENAME_GALLERY_SOURCE)
         self.path_to_unrar.setText(app_constants.unrar_tool_path)
         self.keep_added_gallery.setChecked(not app_constants.KEEP_ADDED_GALLERIES)
+
+        # App / Gallery / New Gallery Fixes
+        self.new_gallery_trim_starting_paren_checkbox.setChecked(app_constants.GALLERY_TRIM_PARENTHESES)
+        self.new_gallery_trim_curly.setChecked(app_constants.GALLERY_TRIM_CURLY)
+        keep_side = app_constants.GALLERY_TITLE_SEP
+        if keep_side in app_constants.G_TITLE_SIDES:
+            self.new_gallery_keep_title.setCurrentIndex(app_constants.G_TITLE_SIDES.index(keep_side))
+
         # App / General / External Viewer
         self.external_viewer_path.setText(app_constants.EXTERNAL_VIEWER_PATH)
 
@@ -326,7 +334,14 @@ class SettingsDialog(QWidget):
             set(True, 'Application', 'use external viewer')
             app_constants._REFRESH_EXTERNAL_VIEWER = True
         app_constants.EXTERNAL_VIEWER_PATH = self.external_viewer_path.text()
-        set(app_constants.EXTERNAL_VIEWER_PATH,'Application', 'external viewer path')
+        set(app_constants.EXTERNAL_VIEWER_PATH, 'Application', 'external viewer path')
+        # App / Gallery / New Gallery Fixes
+        app_constants.GALLERY_TRIM_PARENTHESES = self.new_gallery_trim_starting_paren_checkbox.isChecked()
+        set(app_constants.GALLERY_TRIM_PARENTHESES, 'Application', 'trim starting parentheses')
+        app_constants.GALLERY_TRIM_CURLY = self.new_gallery_trim_curly.isChecked()
+        set(app_constants.GALLERY_TRIM_CURLY, 'Application', 'remove curly braces')
+        app_constants.GALLERY_TITLE_SEP = app_constants.G_TITLE_SIDES[self.new_gallery_keep_title.currentIndex()]
+        set(app_constants.GALLERY_TITLE_SEP, 'Application', 'keep side of title with vertical bar')
         # App / Monitor / misc
         app_constants.ENABLE_MONITOR = self.enable_monitor.isChecked()
         set(app_constants.ENABLE_MONITOR, 'Application', 'enable monitor')
@@ -672,6 +687,7 @@ class SettingsDialog(QWidget):
         self.move_imported_def_path = PathLineEdit()
         move_imported_gs_l.addRow('Directory:', self.move_imported_def_path)
         app_gallery_l.addRow(self.move_imported_gs)
+
         self.rename_g_source_group, rename_g_source_l = groupbox('Rename gallery source (Coming soon)',
                                                       QFormLayout, app_gallery_page)
         self.rename_g_source_group.setCheckable(True)
@@ -688,6 +704,19 @@ class SettingsDialog(QWidget):
         rename_g_source_flow_l.addWidget(self.rename_artist)
         rename_g_source_flow_l.addWidget(self.rename_title)
         rename_g_source_flow_l.addWidget(self.rename_lang)
+
+        new_gallery_fixes, new_gallery_fixes_l = groupbox('New Gallery Fixes', QFormLayout, app_gallery_page)
+        app_gallery_l.addRow(new_gallery_fixes)
+        self.new_gallery_trim_starting_paren_checkbox = QCheckBox('Remove starting parentheses like (C98), (COMIC1☆7), etc. from new galleries', new_gallery_fixes)
+        new_gallery_fixes_l.addRow(self.new_gallery_trim_starting_paren_checkbox)
+        self.new_gallery_trim_curly = QCheckBox('Remove anything in {curly braces}', new_gallery_fixes)
+        new_gallery_fixes_l.addRow(self.new_gallery_trim_curly)
+        self.new_gallery_keep_title = QComboBox()
+        self.new_gallery_keep_title.addItem('Keep everything', 0)
+        self.new_gallery_keep_title.addItem('Keep part before', 1)
+        self.new_gallery_keep_title.addItem('Keep part after', 2)
+        new_gallery_fixes_l.addRow('For titles split with \'|\':', self.new_gallery_keep_title)
+
         random_gallery_opener, random_g_opener_l = groupbox('Random Gallery Opener', QFormLayout, app_gallery_page)
         app_gallery_l.addRow(random_gallery_opener)
         self.open_random_g_chapters = QCheckBox("Open random gallery chapters")

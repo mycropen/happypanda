@@ -973,12 +973,27 @@ def title_parser(title):
 
         t = t.replace('[]', '')
 
+        # some galleries have titles like '(C92) romaji title | translated title (franchise)'
+        if app_constants.GALLERY_TITLE_SEP != 'both':
+            if '｜' in t or '|' in t:
+                p = re.search(r'(([^|｜\(\)\[\]]+\s*)+)\s*[|｜]\s*(([^|｜\(\)\[\]]+\s*)+)', t)
+                if app_constants.GALLERY_TITLE_SEP == 'left':
+                    t = ' '.join([t[:p.span()[0]], p[1], t[p.span()[1]:]])
+                elif app_constants.GALLERY_TITLE_SEP == 'right':
+                    t = ' '.join([t[:p.span()[0]], p[3], t[p.span()[1]:]])
+
         # remove things like (C86), (COMIC1☆10), etc. from beginning of title
-        nt = re.sub(r'^(\([^\)]+\) *)+', '', t.strip()).strip()
-        if len(nt) > 0: t = nt
+        if app_constants.GALLERY_TRIM_PARENTHESES:
+            nt = re.sub(r'^(\([^\)]+\) *)+', '', t)
+            if len(nt) > 0: t = nt
         
         # remove anything in curly braces like {5 a.m.}, {Hennojin}, etc.
-        nt = re.sub(r'{[^}]+}', '', t).strip()
+        if app_constants.GALLERY_TRIM_CURLY:
+            nt = re.sub(r'{[^}]+}', '', t)
+            if len(nt) > 0: t = nt
+
+        # replace multi-spaces with singles
+        nt = re.sub(r' +', ' ', t).strip()
         if len(nt) > 0: t = nt
 
         parsed_title['title'] = t
