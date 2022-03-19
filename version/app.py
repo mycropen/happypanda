@@ -269,6 +269,7 @@ class AppWindow(QMainWindow):
         misc.centerWidget(self)
         self.init_spinners()
         self.showMaximized()
+        self.sidebar_list.arrow_handle.click()
         log_d('Show window: OK')
 
         self.notification_bar = misc.NotificationOverlay(self)
@@ -859,7 +860,7 @@ class AppWindow(QMainWindow):
 
     def gallery_populate(self, path, validate=False):
         "Scans the given path for gallery to add into the DB"
-        if len(path) is not 0:
+        if len(path) != 0:
             data_thread = QThread(self)
             data_thread.setObjectName('General gallery populate')
             self.addition_tab.click()
