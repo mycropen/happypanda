@@ -1,3 +1,7 @@
+*Happypanda v1.2.3*
+- Fixes
+	- Sidebar doesn't open and close itself anymore when unminimizing the window.
+
 *Happypanda v1.2.2*
 - Changes
    - Added option for removing starting parentheses in new gallery titles
