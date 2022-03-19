@@ -599,7 +599,6 @@ class SideBarWidget(QFrame):
 
     def slide(self, state):
         self.slide_animation.setEndValue(QSize(self.arrow_handle.width() * 2, self.height()))
-
         if state:
             self.slide_animation.setDirection(self.slide_animation.Forward)
             self.slide_animation.start()
@@ -609,8 +608,9 @@ class SideBarWidget(QFrame):
 
     def showEvent(self, event):
         super().showEvent(event)
-        if not app_constants.SHOW_SIDEBAR_WIDGET:
-            self.arrow_handle.click()
+        # this makes the sidebar appear after unminimizing the window
+        # if not app_constants.SHOW_SIDEBAR_WIDGET:
+        #     self.arrow_handle.click()
 
     def _init_size(self, event=None):
         h = self.parent_widget.height()
