@@ -1258,6 +1258,15 @@ class MangaView(QListView):
             CommonView.remove_selected(self, True)
         elif event.key() == Qt.Key_Delete:
             CommonView.remove_selected(self)
+        elif event.key() == Qt.Key_F2:
+            if isinstance(self, QListView):
+                selection = self.selectedIndexes()
+                valid_event = bool(len(selection) == 1)
+            elif isinstance(self, QTableView):
+                selection = self.selectionModel().selectedRows()
+                valid_event = bool(len(selection) == 1)
+            if valid_event:
+                CommonView.spawn_dialog(self.parent_widget, selection[0].data(Qt.UserRole + 1))
         return super().keyPressEvent(event)
 
     def favorite(self, index):
@@ -1388,6 +1397,15 @@ class MangaTableView(QTableView):
             CommonView.remove_selected(self, True)
         elif event.key() == Qt.Key_Delete:
             CommonView.remove_selected(self)
+        elif event.key() == Qt.Key_F2:
+            if isinstance(view_cls, QListView):
+                selection = view_cls.selectedIndexes()
+                valid_event = bool(len(selection) == 1)
+            elif isinstance(view_cls, QTableView):
+                selection = view_cls.selectionModel().selectedRows()
+                valid_event = bool(len(selection) == 1)
+            if valid_event:
+                CommonView.spawn_dialog(self.parent_widget, selection[0].data(Qt.UserRole + 1))
         return super().keyPressEvent(event)
 
     def contextMenuEvent(self, event):

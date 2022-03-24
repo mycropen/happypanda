@@ -113,18 +113,18 @@ class GalleryDialog(QWidget):
             def basic_web(name):
                 return QLabel(name), QLineEdit(), QPushButton("Get metadata"), QProgressBar()
 
-            url_lbl, self.url_edit, url_btn, url_prog = basic_web("URL:")
-            url_btn.clicked.connect(lambda: self.web_metadata(self.url_edit.text(), url_btn,
-                                                url_prog))
-            url_prog.setTextVisible(False)
-            url_prog.setMinimum(0)
-            url_prog.setMaximum(0)
+            url_lbl, self.url_edit, self.url_btn, self.url_prog = basic_web("URL:")
+            self.url_btn.clicked.connect(lambda: self.web_metadata(self.url_edit.text(), self.url_btn,
+                                                self.url_prog))
+            self.url_prog.setTextVisible(False)
+            self.url_prog.setMinimum(0)
+            self.url_prog.setMaximum(0)
             web_layout.addWidget(url_lbl, 0, Qt.AlignLeft)
             web_layout.addWidget(self.url_edit, 0)
-            web_layout.addWidget(url_btn, 0, Qt.AlignRight)
-            web_layout.addWidget(url_prog, 0, Qt.AlignRight)
+            web_layout.addWidget(self.url_btn, 0, Qt.AlignRight)
+            web_layout.addWidget(self.url_prog, 0, Qt.AlignRight)
             self.url_edit.setPlaceholderText("Insert supported gallery URLs or just press the button!")
-            url_prog.hide()
+            self.url_prog.hide()
 
         f_gallery = QGroupBox("Gallery Info")
         f_gallery.setCheckable(False)
@@ -414,11 +414,11 @@ class GalleryDialog(QWidget):
 
     def check(self):
         if not self._multiple_galleries:
-            if len(self.title_edit.text()) is 0:
+            if len(self.title_edit.text()) == 0:
                 self.title_edit.setFocus()
                 self.title_edit.setStyleSheet("border-style:outset;border-width:2px;border-color:red;")
                 return False
-            elif len(self.author_edit.text()) is 0:
+            elif len(self.author_edit.text()) == 0:
                 self.author_edit.setText("Unknown")
 
             if len(self.path_lbl.text()) == 0 or self.path_lbl.text() == 'No path specified':
@@ -565,7 +565,6 @@ class GalleryDialog(QWidget):
                     self.parent_widget.default_manga_view.replace_gallery([new_gallery], False)
             return new_gallery
 
-
     def link_set(self):
         t = self.link_edit.text()
         self.link_edit.hide()
@@ -613,4 +612,17 @@ class GalleryDialog(QWidget):
     def reject_edit(self):
         self.delayed_close()
 
-
+    def keyPressEvent(self, event):
+        # Return:
+        #   When url_edit is in focus: click url_btn
+        #   else when anything but descr_edit or tags_edit is in focus: accept_edit
+        # Escape:
+        #   reject_edit
+        if event.key() == Qt.Key_Return:
+            if self.url_edit.hasFocus():
+                self.web_metadata(self.url_edit.text(), self.url_btn, self.url_prog)
+            elif not self.descr_edit.hasFocus() and not self.tags_edit.hasFocus():
+                self.accept_edit()
+        elif event.key() == Qt.Key_Escape:
+            self.reject_edit()
+        return super().keyPressEvent(event)

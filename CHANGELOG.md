@@ -1,4 +1,12 @@
 *Happypanda v1.2.3*
+- Changes
+	- New keyboard shortcuts:
+		- F2 with one gallery item selected: Open edit dialog
+		- In edit dialog: Return while editing url: fetch metadata
+		- In edit dialog: Return anywhere else: Same as 'Done' button
+		- In edit dialog: Escape: Same as 'Cancel' button
+
+*Happypanda v1.2.3*
 - Fixes
 	- Sidebar doesn't open and close itself anymore when unminimizing the window.
 
