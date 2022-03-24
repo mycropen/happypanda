@@ -50,8 +50,8 @@ class GalleryDialog(QWidget):
         m_l.addLayout(final_buttons)
         self.done = QPushButton("Done")
         self.done.setDefault(True)
-        cancel = QPushButton("Cancel")
-        final_buttons.addWidget(cancel)
+        self.cancel = QPushButton("Cancel")
+        final_buttons.addWidget(self.cancel)
         final_buttons.addWidget(self.done)
         self._multiple_galleries = False
         self._edit_galleries = []
@@ -61,7 +61,7 @@ class GalleryDialog(QWidget):
             self.newUI()
             self.commonUI()
             self.done.clicked.connect(self.accept)
-            cancel.clicked.connect(self.reject)
+            self.cancel.clicked.connect(self.reject)
 
         if arg:
             if isinstance(arg, (list, gallerydb.Gallery)):
@@ -75,7 +75,7 @@ class GalleryDialog(QWidget):
                 self.commonUI()
                 self.setGallery(arg)
                 self.done.clicked.connect(self.accept_edit)
-                cancel.clicked.connect(self.reject_edit)
+                self.cancel.clicked.connect(self.reject_edit)
             elif isinstance(arg, str):
                 new_gallery()
                 self.choose_dir(arg)
@@ -618,11 +618,11 @@ class GalleryDialog(QWidget):
         #   else when anything but descr_edit or tags_edit is in focus: accept_edit
         # Escape:
         #   reject_edit
-        if event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             if self.url_edit.hasFocus():
                 self.web_metadata(self.url_edit.text(), self.url_btn, self.url_prog)
             elif not self.descr_edit.hasFocus() and not self.tags_edit.hasFocus():
-                self.accept_edit()
+                self.done.click()
         elif event.key() == Qt.Key_Escape:
-            self.reject_edit()
+            self.cancel.click()
         return super().keyPressEvent(event)
