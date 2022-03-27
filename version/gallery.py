@@ -1249,7 +1249,7 @@ class MangaView(QListView):
         return super().mouseMoveEvent(event)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             s_idx = self.selectedIndexes()
             if s_idx:
                 for idx in s_idx:
@@ -1388,7 +1388,7 @@ class MangaTableView(QTableView):
     #	return super().viewportEvent(event)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return:
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             s_idx = self.selectionModel().selectedRows()
             if s_idx:
                 for idx in s_idx:
