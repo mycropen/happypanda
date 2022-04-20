@@ -252,6 +252,7 @@ FakesAssemblies/
 
 # build and project files
 version/Happypanda.spec
+version/build.bat
 version/happypanda.sublime-project
 version/happypanda.sublime-workspace
 version/res/

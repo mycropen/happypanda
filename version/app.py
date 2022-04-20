@@ -927,7 +927,7 @@ class AppWindow(QMainWindow):
             self.g_populate_inst.LOCAL_EMITTER.connect(add_to_model)
             self.g_populate_inst.FINISHED.connect(finished)
             self.g_populate_inst.FINISHED.connect(self.g_populate_inst.deleteLater)
-            self.g_populate_inst.SKIPPED.connect(skipped_gs)
+            # self.g_populate_inst.SKIPPED.connect(skipped_gs)
             data_thread.finished.connect(data_thread.deleteLater)
             data_thread.started.connect(self.g_populate_inst.local)
             data_thread.start()
