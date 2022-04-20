@@ -1,3 +1,5 @@
+I only forked this to fix some bugs and change things that annoyed me. Please don't expect me to take over development.
+===========
 
 Work on this program has been halted in favor of its successor `HappyPanda X <https://github.com/happypandax/server>`__ (bugs and such won't be fixed).
 ===========
