@@ -172,7 +172,7 @@ class AppWindow(QMainWindow):
 
             if app_constants.UPDATE_VERSION != app_constants.vs:
                 self.notif_bubble.update_text("Happypanda has been updated!",
-                    "Don't forget to check out what's new in this version <a href='https://github.com/Kramoule/happypanda/blob/master/CHANGELOG.md'>by clicking here!</a>")
+                    "Don't forget to check out what's new in this version <a href='https://github.com/mycropen/happypanda/blob/master/CHANGELOG.md'>by clicking here!</a>")
 
             if parse_version(app_constants.UPDATE_VERSION) <= parse_version("1.1.1"):
                 pop = misc.BasePopup(self, blur=False)
@@ -295,7 +295,7 @@ class AppWindow(QMainWindow):
                 log_d('Checking Update')
                 time.sleep(1.5)
                 try:
-                    r = requests.get("https://raw.githubusercontent.com/Kramoule/happypanda/master/VS.txt")
+                    r = requests.get("https://raw.githubusercontent.com/mycropen/happypanda/master/VS.txt")
                     a = r.text
                     vs = a.strip()
                     self.UPDATE_CHECK.emit(vs)
@@ -309,7 +309,7 @@ class AppWindow(QMainWindow):
                 if len(vs) < 10:
                     self.notification_bar.begin_show()
                     self.notification_bar.add_text("Version {} of Happypanda is".format(vs) + " available. Click here to update!", False)
-                    self.notification_bar.clicked.connect(lambda: utils.open_web_link('https://github.com/Kramoule/happypanda/releases'))
+                    self.notification_bar.clicked.connect(lambda: utils.open_web_link('https://github.com/mycropen/happypanda/releases'))
                     self.notification_bar.set_clickable(True)
                 else:
                     self.notification_bar.add_text("An error occurred while checking for new version")

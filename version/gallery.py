@@ -12,7 +12,6 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
-import threading
 import logging
 import os
 import math
@@ -1148,7 +1147,7 @@ class MangaView(QListView):
         self.setDragEnabled(True)
         self.viewport().setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(self.DragDrop)
+        self.setDragDropMode(self.NoDragDrop)
         self.sort_model = filter_model if filter_model else SortFilterModel(self)
         self.manga_delegate = GridDelegate(parent, self)
         self.setItemDelegate(self.manga_delegate)
@@ -1261,12 +1260,16 @@ class MangaView(QListView):
         elif event.key() == Qt.Key_F2:
             if isinstance(self, QListView):
                 selection = self.selectedIndexes()
-                valid_event = bool(len(selection) == 1)
             elif isinstance(self, QTableView):
                 selection = self.selectionModel().selectedRows()
-                valid_event = bool(len(selection) == 1)
-            if valid_event:
-                CommonView.spawn_dialog(self.parent_widget, selection[0].data(Qt.UserRole + 1))
+            # Shift+F2: open combined edit dialog of selected items
+            if event.modifiers() == Qt.ShiftModifier and len(selection) > 1:
+                galleries = [sel_item.data(Qt.UserRole+1) for sel_item in selection]
+                CommonView.spawn_dialog(self.parent_widget, galleries)
+            # F2: open individual edit dialogs for each selected item
+            else:
+                for sel_item in selection:
+                    CommonView.spawn_dialog(self.parent_widget, sel_item.data(Qt.UserRole + 1))
         return super().keyPressEvent(event)
 
     def favorite(self, index):
@@ -1351,7 +1354,7 @@ class MangaTableView(QTableView):
         self.setDragEnabled(True)
         self.viewport().setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(self.DragDrop)
+        self.setDragDropMode(self.NoDragDrop)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.ExtendedSelection)
@@ -1398,14 +1401,18 @@ class MangaTableView(QTableView):
         elif event.key() == Qt.Key_Delete:
             CommonView.remove_selected(self)
         elif event.key() == Qt.Key_F2:
-            if isinstance(view_cls, QListView):
-                selection = view_cls.selectedIndexes()
-                valid_event = bool(len(selection) == 1)
-            elif isinstance(view_cls, QTableView):
-                selection = view_cls.selectionModel().selectedRows()
-                valid_event = bool(len(selection) == 1)
-            if valid_event:
-                CommonView.spawn_dialog(self.parent_widget, selection[0].data(Qt.UserRole + 1))
+            if isinstance(self, QListView):
+                selection = self.selectedIndexes()
+            elif isinstance(self, QTableView):
+                selection = self.selectionModel().selectedRows()
+            # Shift+F2: open combined edit dialog of selected items
+            if event.modifiers() == Qt.ShiftModifier and len(selection) > 1:
+                galleries = [sel_item.data(Qt.UserRole+1) for sel_item in selection]
+                CommonView.spawn_dialog(self.parent_widget, galleries)
+            # F2: open individual edit dialogs for each selected item
+            else:
+                for sel_item in selection:
+                    CommonView.spawn_dialog(self.parent_widget, sel_item.data(Qt.UserRole + 1))
         return super().keyPressEvent(event)
 
     def contextMenuEvent(self, event):

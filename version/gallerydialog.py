@@ -155,6 +155,7 @@ class GalleryDialog(QWidget):
         self.author_edit.setCompleter(author_completer)
         self.descr_edit = add_check(QTextEdit())
         self.descr_edit.setAcceptRichText(True)
+        self.descr_edit.setTabChangesFocus(True)
         self.lang_box = add_check(QComboBox())
         self.lang_box.addItems(app_constants.G_LANGUAGES)
         self.lang_box.addItems(app_constants.G_CUSTOM_LANGUAGES)
@@ -174,6 +175,7 @@ class GalleryDialog(QWidget):
         tags_l.addWidget(tag_info)
         self.tags_edit = add_check(misc.CompleterTextEdit())
         self.tags_edit.setCompleter(misc.GCompleter(self, False, False))
+        self.tags_edit.setTabChangesFocus(True)
         self.tags_append = QCheckBox("Append tags", self)
         self.tags_append.setChecked(False)
         if not self._multiple_galleries:
@@ -247,6 +249,23 @@ class GalleryDialog(QWidget):
         gallery_layout.addRow("Path:", self.path_lbl)
         gallery_layout.addRow("URL:", link_layout)
 
+        if not self._multiple_galleries: QWidget.setTabOrder(self.url_edit, self.title_edit)
+        QWidget.setTabOrder(self.title_edit, self.author_edit)
+        QWidget.setTabOrder(self.author_edit, self.descr_edit)
+        QWidget.setTabOrder(self.descr_edit, self.lang_box)
+        QWidget.setTabOrder(self.lang_box, self.rating_box)
+        QWidget.setTabOrder(self.rating_box, self.tags_edit)
+        QWidget.setTabOrder(self.tags_edit, self.type_box)
+        QWidget.setTabOrder(self.type_box, self.status_box)
+        if not self._multiple_galleries: self.url_btn.setFocusPolicy(Qt.ClickFocus)
+        self.link_edit.setFocusPolicy(Qt.ClickFocus)
+        self.link_btn.setFocusPolicy(Qt.ClickFocus)
+        self.link_btn2.setFocusPolicy(Qt.ClickFocus)
+        self.done.setFocusPolicy(Qt.ClickFocus)
+        self.cancel.setFocusPolicy(Qt.ClickFocus)
+        self.pub_edit.setFocusPolicy(Qt.ClickFocus)
+        self.path_lbl.setFocusPolicy(Qt.ClickFocus)
+        
         self.title_edit.setFocus()
 
     def resizeEvent(self, event):
@@ -484,6 +503,7 @@ class GalleryDialog(QWidget):
         self._fetch_inst.GALLERY_EMITTER.connect(self.set_web_metadata)
         self._fetch_inst.FINISHED.connect(status)
         self._fetch_thread.start()
+        log_i('fetch thread started')
             
     def set_web_metadata(self, metadata):
         assert isinstance(metadata, gallerydb.Gallery)

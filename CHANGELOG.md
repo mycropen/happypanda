@@ -1,4 +1,17 @@
-*Happypanda v1.2.3*
+*Happypanda v1.2.5*
+- Changes
+	- Keys and shortcuts
+		- F2 with multiple gallery items selected: Open individual edit dialogs
+		- Shift+F2 with multiple gallery items selected: Open combined edit dialog
+		- In edit dialog: Pressing Tab once when editing url brings the name edit into focus. Before it needed 3 Tab presses.
+		- In edit dialog: Tab now changes focus when editing the description and tags.
+	- New option "Use global metadata fetch lock" in Web/Metadata or "global ehen metadata fetch lock" in settings.ini.
+		- Default is True to keep previous behavior (only one edit dialog can fetch metadata at a time). Set it to False to allow multiple gallery edit dialogs to queue metadata fetches from their urls. This caused issues in the past, so change it back if it does for you.
+
+- Fixes
+	- Trying to drag a gallery caused a 'critical error'. Drag & drop for galleries has been disabled since that feature was never finished anyway.
+
+*Happypanda v1.2.4*
 - Changes
 	- New keyboard shortcuts:
 		- F2 with one gallery item selected: Open edit dialog

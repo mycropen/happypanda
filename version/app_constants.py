@@ -23,7 +23,7 @@ except ImportError:
     from .database import db_constants
 
 # Version number
-vs  = '1.2.4'
+vs  = '1.2.5'
 DEBUG = False
 
 OS_NAME = ''
@@ -243,6 +243,7 @@ DOWNLOAD_DIRECTORY = get('downloads', 'Web', 'download directory', str)
 TORRENT_CLIENT = get('', 'Web', 'torrent client', str)
 HEN_LIST = get(['chaikahen'], 'Web', 'hen list', list)
 DOWNLOAD_GALLERY_TO_LIB = get(False, 'Web', 'download galleries to library', bool)
+USE_GLOBAL_EHEN_LOCK = get(True, 'Web', 'global ehen metadata fetch lock', bool)
 
 # External Viewer
 EXTERNAL_VIEWER_SUPPORT = {'honeyview':['Honeyview.exe']}

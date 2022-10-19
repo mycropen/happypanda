@@ -200,6 +200,7 @@ class SettingsDialog(QWidget):
         self.continue_a_metadata_fetcher.setChecked(app_constants.CONTINUE_AUTO_METADATA_FETCHER)
         self.use_jpn_title.setChecked(app_constants.USE_JPN_TITLE)
         self.use_gallery_link.setChecked(app_constants.USE_GALLERY_LINK)
+        self.use_global_ehen_lock.setChecked(app_constants.USE_GLOBAL_EHEN_LOCK)
         self.fallback_chaika.setChecked(True) if 'chaikahen' in app_constants.HEN_LIST else None
 
         # Web / Download
@@ -418,6 +419,9 @@ class SettingsDialog(QWidget):
 
         app_constants.USE_GALLERY_LINK = self.use_gallery_link.isChecked()
         set(app_constants.USE_GALLERY_LINK, 'Web', 'use gallery link')
+
+        app_constants.USE_GLOBAL_EHEN_LOCK = self.use_global_ehen_lock.isChecked()
+        set(app_constants.USE_GLOBAL_EHEN_LOCK, 'Web', 'global ehen metadata fetch lock')
         # fallback sources
         henlist = []
         if self.fallback_chaika.isChecked():
@@ -897,6 +901,8 @@ class SettingsDialog(QWidget):
         web_metadata_m_l.addRow(self.include_expunged)
         self.continue_a_metadata_fetcher = QCheckBox('Skip galleries that has already been processed in auto metadata fetcher')
         web_metadata_m_l.addRow(self.continue_a_metadata_fetcher)
+        self.use_global_ehen_lock = QCheckBox('Use global metadata fetch lock')
+        web_metadata_m_l.addRow(self.use_global_ehen_lock)
         self.use_jpn_title = QCheckBox('Apply japanese title instead of english title')
         self.use_jpn_title.setToolTip('Applies the japanese title instead of the english')
         web_metadata_m_l.addRow(self.use_jpn_title)

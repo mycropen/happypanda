@@ -370,27 +370,27 @@ class Fetch(QObject):
 
             self.AUTO_METADATA_PROGRESS.emit("({}/{}) Generating gallery hash: {}".format(x, len(galleries), gallery.title))
             log_i("Generating gallery hash: {}".format(gallery.title.encode(errors='ignore')))
-            hash = None
+            g_hash = None
             try:
                 if not gallery.hashes:
                     color_img = kwargs['color'] if 'color' in kwargs else False # used for similarity search on EH
                     hash_dict = execute(HashDB.gen_gallery_hash, False, gallery, 0, 'mid', color_img)
                     if color_img and 'color' in hash_dict:
                         custom_args['color'] = hash_dict['color'] # will be path to filename
-                        hash = hash_dict['color']
+                        g_hash = hash_dict['color']
                     elif hash_dict:
-                        hash = hash_dict['mid']
+                        g_hash = hash_dict['mid']
                 else:
-                    hash = gallery.hashes[random.randint(0, len(gallery.hashes)-1)]
+                    g_hash = gallery.hashes[random.randint(0, len(gallery.hashes)-1)]
             except app_constants.CreateArchiveFail:
                 pass
-            if not hash:
+            if not g_hash:
                 self.error_galleries.append((gallery, "Could not generate hash"))
                 log_e("Could not generate hash for gallery: {}".format(gallery.title.encode(errors='ignore')))
                 if x == len(galleries):
                     self.fetch_metadata(hen=hen)
                 continue
-            gallery.hash = hash
+            gallery.hash = g_hash
 
             # dict -> hash:[list of title,url tuples] or None
             self.AUTO_METADATA_PROGRESS.emit("({}/{}) Searching url for gallery: {}".format(x, len(galleries), gallery.title))
@@ -495,7 +495,8 @@ class Fetch(QObject):
         self._hen_list = pewnet.hen_list_init()
         if self.galleries and not app_constants.GLOBAL_EHEN_LOCK:
             log_i('Auto metadata fetcher is now running')
-            app_constants.GLOBAL_EHEN_LOCK = True
+            if app_constants.USE_GLOBAL_EHEN_LOCK:
+                app_constants.GLOBAL_EHEN_LOCK = True
 
             def fetch_cancelled(rsn=''):
                 if rsn:
