@@ -185,6 +185,7 @@ class SortFilterModel(QSortFilterProxyModel):
         self.setSortLocaleAware(True)
         self.setSortCaseSensitivity(Qt.CaseInsensitive)
         self.enable_drag = False
+        self.for_inbox = False
 
     def navigate_history(self, direction=PREV):
         new_term = ''
@@ -236,8 +237,9 @@ class SortFilterModel(QSortFilterProxyModel):
         Receives a search term and initiates a search
         args should be a list of Search enums
         """
-        if not args:
-            args = self.current_args
+        if self.for_inbox and not app_constants.SEARCHABLE_INBOX: return
+        if not args: args = self.current_args
+
         history = kwargs.pop('history', True)
         if history:
             if self._prev_term != term:
@@ -263,6 +265,9 @@ class SortFilterModel(QSortFilterProxyModel):
         self._DO_SEARCH.emit(term, args)
 
     def filterAcceptsRow(self, source_row, parent_index):
+        if self.for_inbox and not app_constants.SEARCHABLE_INBOX:
+            return True
+
         if self.sourceModel():
             index = self.sourceModel().index(source_row, 0, parent_index)
             if index.isValid():
@@ -271,7 +276,9 @@ class SortFilterModel(QSortFilterProxyModel):
                     try:
                         return self.gallery_search.result[gallery.id]
                     except KeyError:
-                        pass
+                        # pass
+                        # this might fix the missing gallery in inbox issue after dropping multiple items
+                        return (self.current_view == self.CAT_VIEW)
                 else:
                     return True
         return False
@@ -648,7 +655,6 @@ class GalleryModel(QAbstractTableModel):
             elif section == self._PUB_DATE:
                 return 'Published'
         return section + 1
-
 
     def insertRows(self, position, rows, index=QModelIndex()):
         self._data_count += rows
@@ -1213,7 +1219,6 @@ class MangaView(QListView):
         # update view if not scrolling
         if new_value < 400 and self._old_scroll_value > 400:
             self.update()
-
 
     def get_visible_indexes(self, column=0):
         "find all galleries in viewport"

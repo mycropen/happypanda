@@ -312,6 +312,7 @@ SEARCH_ON_ENTER = get(False, 'Application', 'search on enter', bool)
 GALLERY_SEARCH_STRICT = get(False, 'Application', 'gallery search strict', bool)
 GALLERY_SEARCH_CASE = get(False, 'Application', 'gallery search case', bool)
 DUAL_SEARCH = get(False, 'Application', 'dual gallery search', bool)
+SEARCHABLE_INBOX = get(True, 'Application', 'searchable inbox', bool)
 
 @enum.unique
 class Search(enum.Enum):

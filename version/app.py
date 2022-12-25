@@ -541,6 +541,7 @@ class AppWindow(QMainWindow):
 
         self.addition_tab = self.tab_manager.addTab("Inbox", app_constants.ViewType.Addition, icon=app_constants.INBOX_ICON)
         self.addition_tab.clicked.connect(lambda: restore_search_term(self.addition_tab.view))
+        self.addition_tab.view.get_current_view().sort_model.for_inbox = True
 
         gallery_k = QKeySequence('Alt+G')
         new_gallery_k = QKeySequence('Ctrl+N')
@@ -888,8 +889,9 @@ class AppWindow(QMainWindow):
 
             def finished(status):
                 fetch_spinner.hide()
+                ## attempts to fix the missing gallery in inbox issue after dropping multiple items at once
                 # self.addition_tab.view.get_current_view().update()
-                self.current_manga_view.get_current_view().sort_model.refresh()
+                # self.current_manga_view.get_current_view().sort_model.refresh()
                 if not status:
                     log_e('Populating DB from gallery folder: Nothing was added!')
                     self.notif_bubble.update_text("Gallery Populate",
