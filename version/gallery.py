@@ -1399,7 +1399,7 @@ class MangaTableView(QTableView):
     #	return super().viewportEvent(event)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
             s_idx = self.selectionModel().selectedRows()
             if s_idx:
                 for idx in s_idx:

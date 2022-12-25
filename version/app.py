@@ -888,6 +888,8 @@ class AppWindow(QMainWindow):
 
             def finished(status):
                 fetch_spinner.hide()
+                # self.addition_tab.view.get_current_view().update()
+                self.current_manga_view.get_current_view().sort_model.refresh()
                 if not status:
                     log_e('Populating DB from gallery folder: Nothing was added!')
                     self.notif_bubble.update_text("Gallery Populate",
