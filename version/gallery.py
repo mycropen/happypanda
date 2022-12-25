@@ -1250,15 +1250,19 @@ class MangaView(QListView):
         return super().mouseMoveEvent(event)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
             s_idx = self.selectedIndexes()
             if s_idx:
                 for idx in s_idx:
                     self.doubleClicked.emit(idx)
         elif event.modifiers() == Qt.ShiftModifier and event.key() == Qt.Key_Delete:
             CommonView.remove_selected(self, True)
+            if self.gallery_window.isVisible():
+                self.gallery_window.hide_animation.start()
         elif event.key() == Qt.Key_Delete:
             CommonView.remove_selected(self)
+            if self.gallery_window.isVisible():
+                self.gallery_window.hide_animation.start()
         elif event.key() == Qt.Key_F2:
             if isinstance(self, QListView):
                 selection = self.selectedIndexes()
@@ -1272,6 +1276,8 @@ class MangaView(QListView):
             else:
                 for sel_item in selection:
                     CommonView.spawn_dialog(self.parent_widget, sel_item.data(Qt.UserRole + 1))
+        elif event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left, Qt.Key_PageUp, Qt.Key_PageDown) and self.gallery_window.isVisible():
+            self.gallery_window.hide_animation.start()
         return super().keyPressEvent(event)
 
     def favorite(self, index):
