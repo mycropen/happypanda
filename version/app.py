@@ -485,7 +485,13 @@ class AppWindow(QMainWindow):
             args.append(app_constants.Search.Case)
         if app_constants.GALLERY_SEARCH_STRICT:
             args.append(app_constants.Search.Strict)
-        self.current_manga_view.get_current_view().sort_model.init_search(srch_string, args)
+
+        if app_constants.DUAL_SEARCH:
+            self.tab_manager.library_btn.view.get_current_view().sort_model.init_search(srch_string, args)
+            self.addition_tab.view.get_current_view().sort_model.init_search(srch_string, args)
+        else:
+            self.current_manga_view.get_current_view().sort_model.init_search(srch_string, args)
+
         old_cursor_pos = self._search_cursor_pos[0]
         self.search_bar.end(False)
         if self.search_bar.cursorPosition() != old_cursor_pos + 1:
@@ -522,12 +528,19 @@ class AppWindow(QMainWindow):
             else:
                 self.default_manga_view.get_current_view().sort_model.catalog_view()
 
+        def restore_search_term(new_view):
+            if not app_constants.DUAL_SEARCH:
+                self.search_bar.setText(new_view.get_current_view().sort_model.current_term)
+
         self.tab_manager = misc_db.ToolbarTabManager(self.toolbar, self)
         self.tab_manager.favorite_btn.clicked.connect(lambda: switch_view(True))
+        self.tab_manager.favorite_btn.clicked.connect(lambda: restore_search_term(self.tab_manager.favorite_btn.view))
         self.tab_manager.library_btn.click()
         self.tab_manager.library_btn.clicked.connect(lambda: switch_view(False))
+        self.tab_manager.library_btn.clicked.connect(lambda: restore_search_term(self.tab_manager.library_btn.view))
 
         self.addition_tab = self.tab_manager.addTab("Inbox", app_constants.ViewType.Addition, icon=app_constants.INBOX_ICON)
+        self.addition_tab.clicked.connect(lambda: restore_search_term(self.addition_tab.view))
 
         gallery_k = QKeySequence('Alt+G')
         new_gallery_k = QKeySequence('Ctrl+N')

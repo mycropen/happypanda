@@ -311,6 +311,7 @@ GALLERY_SEARCH_REGEX = get(False, 'Application', 'allow search regex', bool)
 SEARCH_ON_ENTER = get(False, 'Application', 'search on enter', bool)
 GALLERY_SEARCH_STRICT = get(False, 'Application', 'gallery search strict', bool)
 GALLERY_SEARCH_CASE = get(False, 'Application', 'gallery search case', bool)
+DUAL_SEARCH = get(False, 'Application', 'dual gallery search', bool)
 
 @enum.unique
 class Search(enum.Enum):

@@ -321,10 +321,9 @@ class SettingsDialog(QWidget):
         # App / General / Search
         app_constants.SEARCH_AUTOCOMPLETE = self.search_autocomplete.isChecked()
         set(app_constants.SEARCH_AUTOCOMPLETE, 'Application', 'search autocomplete')
-        if self.search_on_enter.isChecked():
-            app_constants.SEARCH_ON_ENTER = True
-        else:
-            app_constants.SEARCH_ON_ENTER = False
+        app_constants.DUAL_SEARCH = self.dual_search.isChecked()
+        set(app_constants.DUAL_SEARCH, 'Application', 'dual gallery search')
+        app_constants.SEARCH_ON_ENTER = self.search_on_enter.isChecked()
         set(app_constants.SEARCH_ON_ENTER, 'Application', 'search on enter')
         # App / General / External Viewer
         if not self.external_viewer_path.text():
@@ -623,6 +622,10 @@ class SettingsDialog(QWidget):
         self.search_autocomplete.setChecked(app_constants.SEARCH_AUTOCOMPLETE)
         self.search_autocomplete.setToolTip('Turn autocomplete on/off')
         app_search_layout.addRow('Autocomplete', self.search_autocomplete)
+        self.dual_search = QCheckBox('*')
+        self.dual_search.setChecked(app_constants.DUAL_SEARCH)
+        self.dual_search.setToolTip('Search both Library and Inbox at the same time')
+        app_search_layout.addRow('Dual search', self.dual_search)
         # App / General / Search / search behaviour
         self.search_every_keystroke = QRadioButton('Search on every keystroke *', app_search)
         app_search_layout.addRow(self.search_every_keystroke)
