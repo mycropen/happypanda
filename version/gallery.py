@@ -837,37 +837,39 @@ class GridDelegate(QStyledItemDelegate):
                 txt_layout.draw(painter, QPointF(x, y + h // 4),
                       clip=clipping)
 
-            loaded_image = gallery.get_profile(app_constants.ProfileType.Default)
+            def draw_image(gallery, loaded_image, *args, **kwargs):
+                self.view.update()
+
+            loaded_image = gallery.get_profile(app_constants.ProfileType.Default, on_method=draw_image)
             if loaded_image and self._paint_level > 0 and self.view.scroll_speed < 600:
                 # if we can't find a cached image
                 pix_cache = QPixmapCache.find(self.key(loaded_image.cacheKey()))
                 if isinstance(pix_cache, QPixmap):
-                    self.image = pix_cache
-                    img_x = center_img(self.image.width())
-                    if self.image.width() > w or self.image.height() > h:
+                    image = pix_cache
+                    img_x = center_img(image.width())
+                    if image.width() > w or image.height() > h:
                         img_too_big(img_x)
                     else:
-                        if self.image.height() < self.image.width(): #to keep aspect ratio
+                        if image.height() < image.width(): #to keep aspect ratio
                             painter.drawPixmap(QPoint(img_x,y),
-                                    self.image)
+                                    image)
                         else:
                             painter.drawPixmap(QPoint(img_x,y),
-                                    self.image)
+                                    image)
                 else:
-                    self.image = QPixmap.fromImage(loaded_image)
-                    img_x = center_img(self.image.width())
-                    QPixmapCache.insert(self.key(loaded_image.cacheKey()), self.image)
-                    if self.image.width() > w or self.image.height() > h:
+                    image = QPixmap.fromImage(loaded_image)
+                    img_x = center_img(image.width())
+                    QPixmapCache.insert(self.key(loaded_image.cacheKey()), image)
+                    if image.width() > w or image.height() > h:
                         img_too_big(img_x)
                     else:
-                        if self.image.height() < self.image.width(): #to keep aspect ratio
+                        if image.height() < image.width(): #to keep aspect ratio
                             painter.drawPixmap(QPoint(img_x,y),
-                                    self.image)
+                                    image)
                         else:
                             painter.drawPixmap(QPoint(img_x,y),
-                                    self.image)
+                                    image)
             else:
-
                 painter.save()
                 painter.setPen(QColor(164,164,164,200))
                 if gallery.profile:
