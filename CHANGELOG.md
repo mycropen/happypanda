@@ -1,3 +1,19 @@
+*Happypanda v1.3*
+- Changes
+    - The gallery info window now disappears when moving the selection with the keyboard
+	- New option: Dual Search in Application/General/Search ('dual gallery search' in settings.ini)
+        - default False
+        - If True: Any search will affect both Library (+ Favorites) and Inbox. Clearing it in one will clear both.
+        - If False: Searches are kept separate (like before), but switching between Inbox and Library will restore the search term in the search bar. So if the search bar was cleared in the Inbox, the Library view will still be filtered but not with an empty search bar anymore.
+    - New option: Searchable Inboxin Application/General/Search ('searchable inbox' in settings.ini)
+        - default True
+        - Disabling search in the Inbox may fix an issue where one of multiple new galleries items isn't shown until it's "refreshed" with an empty search.
+
+- Fixes
+	- Gallery thumbnails should now load more consistently when scrolling with arrow keys
+	- The issue where sometimes dropping multiple new galleries into Happypanda leaves one of them hidden in the Inbox until you perform a blank search is possibly fixed while keeping the Inbox searchable. If not, then try disabling search in the Inbox.
+
+
 *Happypanda v1.2.5*
 - Changes
 	- Keys and shortcuts
