@@ -324,7 +324,7 @@ class SettingsDialog(QWidget):
         app_constants.DUAL_SEARCH = self.dual_search.isChecked()
         set(app_constants.DUAL_SEARCH, 'Application', 'dual gallery search')
         app_constants.SEARCHABLE_INBOX = self.searchable_inbox.isChecked()
-        set(app_constants.SEARCHABLE_INBOX, 'Application', 'dual gallery search')
+        set(app_constants.SEARCHABLE_INBOX, 'Application', 'searchable inbox')
         app_constants.SEARCH_ON_ENTER = self.search_on_enter.isChecked()
         set(app_constants.SEARCH_ON_ENTER, 'Application', 'search on enter')
         # App / General / External Viewer
