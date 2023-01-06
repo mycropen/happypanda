@@ -952,7 +952,7 @@ class ExHenManager(HenManager):
         self.e_url = "https://exhentai.org/"
 
 
-class CommenHen:
+class CommonHen:
     "Contains common methods"
     LOCK = threading.Lock()
     TIME_RAND = app_constants.GLOBAL_EHEN_TIME
@@ -1079,7 +1079,7 @@ class CommenHen:
         """
         pass
 
-class NHen(CommenHen):
+class NHen(CommonHen):
     "Fetches galleries from nhen"
     LOGIN_URL = "http://nhentai.net/login/"
 
@@ -1128,7 +1128,7 @@ class NHen(CommenHen):
         pass
 
 
-class EHen(CommenHen):
+class EHen(CommonHen):
     "Fetches galleries from ehen"
     def __init__(self, cookies = None):
         self.cookies = cookies if cookies else settings.ExProperties().cookies
@@ -1263,10 +1263,13 @@ class EHen(CommenHen):
         if not gallery_id_token:
             log_e("Error extracting g_id and g_token from url: {}".format(url))
             return None
-        gallery_id_token = gallery_id_token.group()
-        gallery_id, gallery_token = gallery_id_token.split('/')
-        parsed_url = [int(gallery_id), gallery_token]
-        return parsed_url
+        # gallery_id_token = gallery_id_token.group()
+        # gallery_id, gallery_token = gallery_id_token.split('/')
+        # parsed_url = [gallery_id, gallery_token]
+        # return parsed_url
+        gallery_id = int(gallery_id_token.group(1))
+        gallery_token = gallery_id_token.group(2)
+        return [gallery_id, gallery_token]
 
     def get_metadata(self, list_of_urls, cookies=None):
         """
@@ -1524,7 +1527,7 @@ class ExHen(EHen):
     def search(self, hash_string, **kwargs):
         return super().search(hash_string, cookies=self.cookies, **kwargs)
 
-class ChaikaHen(CommenHen):
+class ChaikaHen(CommonHen):
     "Fetches gallery metadata from panda.chaika.moe"
     g_url = "http://panda.chaika.moe/gallery/"
     g_api_url = "http://panda.chaika.moe/jsearch?gallery="

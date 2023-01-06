@@ -79,6 +79,7 @@ class GalleryDialog(QWidget):
             elif isinstance(arg, str):
                 new_gallery()
                 self.choose_dir(arg)
+                
         else:
             new_gallery()
 
@@ -574,7 +575,7 @@ class GalleryDialog(QWidget):
                     thread.start()
                     thread.join()
                     log_d('Finished chapters')
-                    if new and app_constants.MOVE_IMPORTED_GALLERIES:
+                    if app_constants.MOVE_IMPORTED_GALLERIES:
                         app_constants.OVERRIDE_MONITOR = True
                         new_gallery.move_gallery()
                 if add_to_model:

@@ -5,7 +5,7 @@
         - default False
         - If True: Any search will affect both Library (+ Favorites) and Inbox. Clearing it in one will clear both.
         - If False: Searches are kept separate (like before), but switching between Inbox and Library will restore the search term in the search bar. So if the search bar was cleared in the Inbox, the Library view will still be filtered but not with an empty search bar anymore.
-    - New option: Searchable Inboxin Application/General/Search ('searchable inbox' in settings.ini)
+    - New option: Searchable Inbox in Application/General/Search ('searchable inbox' in settings.ini)
         - default True
         - Disabling search in the Inbox may fix an issue where one of multiple new galleries items isn't shown until it's "refreshed" with an empty search.
 

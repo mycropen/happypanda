@@ -1057,8 +1057,7 @@ class AppWindow(QMainWindow):
             f_item_l = len(f_item) < 2
             subfolder_as_c = not app_constants.SUBFOLDER_AS_GALLERY
             if l and subfolder_as_c or l and f_item_l:
-                g_d = gallerydialog.GalleryDialog(self, acceptable[0])
-                g_d.show()
+                gallery.CommonView.spawn_dialog(self, acceptable[0])
             else:
                 self.gallery_populate(acceptable, True)
             event.accept()
