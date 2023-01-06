@@ -212,6 +212,7 @@ EXTRACT_CHAPTER_BEFORE_OPENING = get(True, 'Application', 'extract chapter befor
 OPEN_GALLERIES_SEQUENTIALLY = get(False, 'Application', 'open galleries sequentially', bool)
 SEND_FILES_TO_TRASH = get(True, 'Application', 'send files to trash', bool)
 SHOW_SIDEBAR_WIDGET = get(False, 'Application', 'show sidebar widget', bool)
+ENABLE_NOTIFICATIONS = get(True, 'Application', 'enable notifications', bool)
 
 # ADVANCED
 GALLERY_DATA_FIX_REGEX = get("", 'Advanced', 'gallery data fix regex', str)

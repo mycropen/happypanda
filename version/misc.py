@@ -1341,7 +1341,7 @@ class SystemTray(QSystemTrayIcon):
                  msecs=10000, minimized=False):
         # NOTE: Crashes on linux
         # TODO: Fix this!!
-        if not app_constants.OS_NAME == "linux":
+        if app_constants.OS_NAME != "linux" and app_constants.ENABLE_NOTIFICATIONS:
             if minimized:
                 if self.parent_widget.isMinimized() or not self.parent_widget.isActiveWindow():
                     return super().showMessage(title, msg, icon, msecs)
