@@ -1173,21 +1173,48 @@ class EHen(CommonHen):
             else:
                 g.link = g.temp_url
         else:
-            if not g.title:
+            # if not g.title:
+            #     g.title = title_artist_dict['title']
+            # if not g.artist:
+            #     g.artist = title_artist_dict['artist']
+            #     if 'Artist' in data['tags']:
+            #         g.artist = data['tags']['Artist'][0].capitalize()
+
+            if (app_constants.ALWAYS_APPLY_TITLE == app_constants.REPLACE_TYPE_ALWAYS) \
+                or (app_constants.ALWAYS_APPLY_TITLE == app_constants.REPLACE_TYPE_NEWONLY 
+                    and (g.view == app_constants.ViewType.Addition or getattr(g, 'new_gallery', False))) \
+                or not g.title:
                 g.title = title_artist_dict['title']
-            if not g.artist:
+
+            if (app_constants.ALWAYS_APPLY_ARTIST == app_constants.REPLACE_TYPE_ALWAYS) \
+                or (app_constants.ALWAYS_APPLY_ARTIST == app_constants.REPLACE_TYPE_NEWONLY 
+                    and (g.view == app_constants.ViewType.Addition or getattr(g, 'new_gallery', False))) \
+                or not g.artist:
                 g.artist = title_artist_dict['artist']
                 if 'Artist' in data['tags']:
                     g.artist = data['tags']['Artist'][0].capitalize()
-            if not g.language:
+
+            if (app_constants.ALWAYS_APPLY_LANGUAGE == app_constants.REPLACE_TYPE_ALWAYS) \
+                or (app_constants.ALWAYS_APPLY_LANGUAGE == app_constants.REPLACE_TYPE_NEWONLY 
+                    and (g.view == app_constants.ViewType.Addition or getattr(g, 'new_gallery', False))) \
+                or not g.language:
                 g.language = title_artist_dict['language'].capitalize()
                 if lang:
                     g.language = lang
-            if not g.type or g.type == 'Other':
+
+            if (app_constants.ALWAYS_APPLY_G_TYPE == app_constants.REPLACE_TYPE_ALWAYS) \
+                or (app_constants.ALWAYS_APPLY_G_TYPE == app_constants.REPLACE_TYPE_NEWONLY 
+                    and (g.view == app_constants.ViewType.Addition or getattr(g, 'new_gallery', False))) \
+                or not g.type or g.type == 'Other':
                 g.type = data['type']
+
             if not g.pub_date:
                 g.pub_date = data['pub_date']
-            if not g.tags:
+
+            if (app_constants.ALWAYS_APPLY_TAGS == app_constants.REPLACE_TYPE_ALWAYS) \
+                or (app_constants.ALWAYS_APPLY_TAGS == app_constants.REPLACE_TYPE_NEWONLY 
+                    and (g.view == app_constants.ViewType.Addition or getattr(g, 'new_gallery', False))) \
+                or not g.tags:
                 g.tags = data['tags']
             else:
                 for ns in data['tags']:
@@ -1197,6 +1224,7 @@ class EHen(CommonHen):
                                 g.tags[ns].append(tag)
                     else:
                         g.tags[ns] = data['tags'][ns]
+                        
             if 'url' in data:
                 if not g.link:
                     g.link = data['url']

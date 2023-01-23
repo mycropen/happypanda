@@ -327,8 +327,7 @@ class AppWindow(QMainWindow):
         if not parent:
             parent = self
         text = "Which gallery do you want to extract metadata from?"
-        s_gallery_popup = misc.SingleGalleryChoices(gallery, title_url_list,
-                                              text, parent)
+        s_gallery_popup = misc.SingleGalleryChoices(gallery, title_url_list, text, parent)
         s_gallery_popup.USER_CHOICE.connect(queue.put)
 
     def get_metadata(self, gal=None):
@@ -1061,7 +1060,7 @@ class AppWindow(QMainWindow):
             f_item_l = len(f_item) < 2
             subfolder_as_c = not app_constants.SUBFOLDER_AS_GALLERY
             if l and subfolder_as_c or l and f_item_l:
-                gallery.CommonView.spawn_dialog(self, acceptable[0])
+                gallery.CommonView.spawn_dialog(self, acceptable[0], True)
             else:
                 self.gallery_populate(acceptable, True)
             event.accept()

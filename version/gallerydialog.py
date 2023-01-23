@@ -30,7 +30,7 @@ class GalleryDialog(QWidget):
     or pass a path to preset path
     """
 
-    def __init__(self, parent, arg=None):
+    def __init__(self, parent, arg=None, is_new_gallery=False):
         super().__init__(parent, Qt.Dialog)
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAutoFillBackground(True)
@@ -55,6 +55,7 @@ class GalleryDialog(QWidget):
         final_buttons.addWidget(self.done)
         self._multiple_galleries = False
         self._edit_galleries = []
+        self._new_single_gallery = is_new_gallery
 
         def new_gallery():
             self.setWindowTitle('Add a new gallery')
@@ -79,9 +80,9 @@ class GalleryDialog(QWidget):
             elif isinstance(arg, str):
                 new_gallery()
                 self.choose_dir(arg)
-                
         else:
             new_gallery()
+            self._new_single_gallery = True
 
         log_d('GalleryDialog: Create UI: successful')
         self.setLayout(m_l)
@@ -445,7 +446,6 @@ class GalleryDialog(QWidget):
                 self.path_lbl.setStyleSheet("color:red")
                 self.path_lbl.setText('No path specified')
                 return False
-
         return True
 
     def reject(self):
@@ -456,9 +456,9 @@ class GalleryDialog(QWidget):
             msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msgbox.setDefaultButton(QMessageBox.No)
             if msgbox.exec() == QMessageBox.Yes:
-                self.close()
+                self.delayed_close()
         else:
-            self.close()
+            self.delayed_close()
 
     def web_metadata(self, url, btn_widget, pgr_widget):
         if not self.path_lbl.text():
@@ -498,6 +498,7 @@ class GalleryDialog(QWidget):
             return None
 
         dummy_gallery._g_dialog_url = url
+        dummy_gallery.new_gallery = self._new_single_gallery
         self._fetch_inst.galleries = [dummy_gallery]
         self._disconnect()
         self._fetch_inst.GALLERY_PICKER.connect(gallery_picker)

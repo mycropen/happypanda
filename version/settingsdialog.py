@@ -200,6 +200,11 @@ class SettingsDialog(QWidget):
         self.web_time_offset.setValue(app_constants.GLOBAL_EHEN_TIME)
         self.continue_a_metadata_fetcher.setChecked(app_constants.CONTINUE_AUTO_METADATA_FETCHER)
         self.use_jpn_title.setChecked(app_constants.USE_JPN_TITLE)
+        self.always_apply_title.setCurrentIndex(app_constants.ALWAYS_APPLY_TITLE)
+        self.always_apply_artist.setCurrentIndex(app_constants.ALWAYS_APPLY_ARTIST)
+        self.always_apply_language.setCurrentIndex(app_constants.ALWAYS_APPLY_LANGUAGE)
+        self.always_apply_g_type.setCurrentIndex(app_constants.ALWAYS_APPLY_G_TYPE)
+        self.always_apply_tags.setCurrentIndex(app_constants.ALWAYS_APPLY_TAGS)
         self.use_gallery_link.setChecked(app_constants.USE_GALLERY_LINK)
         self.use_global_ehen_lock.setChecked(app_constants.USE_GLOBAL_EHEN_LOCK)
         self.fallback_chaika.setChecked(True) if 'chaikahen' in app_constants.HEN_LIST else None
@@ -282,7 +287,7 @@ class SettingsDialog(QWidget):
         app_constants.SEND_FILES_TO_TRASH = self.send_2_trash.isChecked()
         set(app_constants.SEND_FILES_TO_TRASH, 'Application', 'send files to trash')
         app_constants.ENABLE_NOTIFICATIONS = self.enable_notifications.isChecked()
-        set(app_constants.ENABLE_NOTIFICATIONS, 'Application', 'send files to trash')
+        set(app_constants.ENABLE_NOTIFICATIONS, 'Application', 'enable notifications')
 
         # App / General / Gallery
 
@@ -420,6 +425,21 @@ class SettingsDialog(QWidget):
 
         app_constants.USE_JPN_TITLE = self.use_jpn_title.isChecked()
         set(app_constants.USE_JPN_TITLE, 'Web', 'use jpn title')
+
+        app_constants.ALWAYS_APPLY_TITLE = self.always_apply_title.currentIndex()
+        set(app_constants.ALWAYS_APPLY_TITLE, 'Web', 'always apply title')
+
+        app_constants.ALWAYS_APPLY_ARTIST = self.always_apply_artist.currentIndex()
+        set(app_constants.ALWAYS_APPLY_ARTIST, 'Web', 'always apply artist')
+
+        app_constants.ALWAYS_APPLY_LANGUAGE = self.always_apply_language.currentIndex()
+        set(app_constants.ALWAYS_APPLY_LANGUAGE, 'Web', 'always apply language')
+
+        app_constants.ALWAYS_APPLY_G_TYPE = self.always_apply_g_type.currentIndex()
+        set(app_constants.ALWAYS_APPLY_G_TYPE, 'Web', 'always apply gallery type')
+
+        app_constants.ALWAYS_APPLY_TAGS = self.always_apply_tags.currentIndex()
+        set(app_constants.ALWAYS_APPLY_TAGS, 'Web', 'always apply tags')
 
         app_constants.USE_GALLERY_LINK = self.use_gallery_link.isChecked()
         set(app_constants.USE_GALLERY_LINK, 'Web', 'use gallery link')
@@ -931,9 +951,41 @@ class SettingsDialog(QWidget):
                                  'Enabling this option makes it so that a gallery\'s old data'+
                                  ' is deleted and replaced with the new data.')
         replace_metadata_info.setWordWrap(True)
-        self.replace_metadata = QCheckBox('Replace old metadata with new metadata')
+        self.replace_metadata = QCheckBox('Replace all old metadata with new metadata')
         web_metadata_m_l.addRow(replace_metadata_info)
         web_metadata_m_l.addRow(self.replace_metadata)
+
+        def add_replace_options(widget):
+            widget.addItem('Always', app_constants.REPLACE_TYPE_ALWAYS)
+            widget.addItem('Inbox & new galleries only', app_constants.REPLACE_TYPE_NEWONLY)
+            widget.addItem('Never', app_constants.REPLACE_TYPE_NEVER)
+
+        self.always_apply_title = QComboBox(self)
+        add_replace_options(self.always_apply_title)
+        web_metadata_m_l.addRow('Replace existing title:', self.always_apply_title)
+        self.always_apply_artist = QComboBox(self)
+        add_replace_options(self.always_apply_artist)
+        web_metadata_m_l.addRow('Replace existing artist:', self.always_apply_artist)
+        self.always_apply_language = QComboBox(self)
+        add_replace_options(self.always_apply_language)
+        web_metadata_m_l.addRow('Replace existing language:', self.always_apply_language)
+        self.always_apply_g_type = QComboBox(self)
+        add_replace_options(self.always_apply_g_type)
+        web_metadata_m_l.addRow('Replace existing gallery type:', self.always_apply_g_type)
+        self.always_apply_tags = QComboBox(self)
+        add_replace_options(self.always_apply_tags)
+        web_metadata_m_l.addRow('Replace existing tags:', self.always_apply_tags)
+
+        def toggle_replacement_options():
+            self.always_apply_title.setEnabled(not self.replace_metadata.isChecked())
+            self.always_apply_artist.setEnabled(not self.replace_metadata.isChecked())
+            self.always_apply_language.setEnabled(not self.replace_metadata.isChecked())
+            self.always_apply_g_type.setEnabled(not self.replace_metadata.isChecked())
+            self.always_apply_tags.setEnabled(not self.replace_metadata.isChecked())
+
+        self.replace_metadata.stateChanged.connect(toggle_replacement_options)
+        toggle_replacement_options()
+
         self.always_first_hit = QCheckBox('Always choose first gallery found')
         web_metadata_m_l.addRow(self.always_first_hit)
         use_gallery_link_info = QLabel("Enable this option to fetch metadata using the currently applied URL on the gallery")

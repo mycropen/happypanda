@@ -1592,8 +1592,8 @@ class CommonView:
             event.ignore()
 
     @staticmethod
-    def spawn_dialog(app_inst, gallery=None):
-        dialog = gallerydialog.GalleryDialog(app_inst, gallery)
+    def spawn_dialog(app_inst, gallery=None, new_gallery=False):
+        dialog = gallerydialog.GalleryDialog(app_inst, gallery, new_gallery)
         dialog.show()
 
 class MangaViews:

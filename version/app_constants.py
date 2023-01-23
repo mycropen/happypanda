@@ -117,6 +117,10 @@ class ProfileType(enum.Enum):
 	Default = 1
 	Small = 2
 
+REPLACE_TYPE_ALWAYS = 0
+REPLACE_TYPE_NEWONLY = 1
+REPLACE_TYPE_NEVER = 2
+
 # Application
 SYSTEM_TRAY = None
 NOTIF_BAR = None
@@ -245,6 +249,11 @@ TORRENT_CLIENT = get('', 'Web', 'torrent client', str)
 HEN_LIST = get(['chaikahen'], 'Web', 'hen list', list)
 DOWNLOAD_GALLERY_TO_LIB = get(False, 'Web', 'download galleries to library', bool)
 USE_GLOBAL_EHEN_LOCK = get(True, 'Web', 'global ehen metadata fetch lock', bool)
+ALWAYS_APPLY_TITLE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply title', int)
+ALWAYS_APPLY_ARTIST = get(REPLACE_TYPE_NEVER, 'Web', 'always apply artist', int)
+ALWAYS_APPLY_LANGUAGE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply language', int)
+ALWAYS_APPLY_G_TYPE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply gallery type', int)
+ALWAYS_APPLY_TAGS = get(REPLACE_TYPE_NEVER, 'Web', 'always apply tags', int)
 
 # External Viewer
 EXTERNAL_VIEWER_SUPPORT = {'honeyview':['Honeyview.exe']}
