@@ -39,7 +39,7 @@ class SettingsDialog(QWidget):
 
         self.parent_widget = parent
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.resize(700, 500)
+        self.resize(800, 650)
         self.restore_values()
         self.initUI()
         self.setWindowTitle('Settings')
@@ -947,6 +947,7 @@ class SettingsDialog(QWidget):
         self.web_time_offset.setMaximum(99)
         web_metadata_m_l.addRow(time_offset_info)
         web_metadata_m_l.addRow('Delay in seconds:', self.web_time_offset)
+        web_metadata_m_l.addRow(QLabel(''))
         replace_metadata_info = QLabel('By default metadata is appended to a gallery.\n'+
                                  'Enabling this option makes it so that a gallery\'s old data'+
                                  ' is deleted and replaced with the new data.')
@@ -960,6 +961,9 @@ class SettingsDialog(QWidget):
             widget.addItem('Inbox & new galleries only', app_constants.REPLACE_TYPE_NEWONLY)
             widget.addItem('Never', app_constants.REPLACE_TYPE_NEVER)
 
+        replace_metadata_anyway = QLabel('Selectively replace metadata anyway:')
+        replace_metadata_anyway.setWordWrap(True)
+        web_metadata_m_l.addRow(replace_metadata_anyway)
         self.always_apply_title = QComboBox(self)
         add_replace_options(self.always_apply_title)
         web_metadata_m_l.addRow('Replace existing title:', self.always_apply_title)
@@ -986,6 +990,7 @@ class SettingsDialog(QWidget):
         self.replace_metadata.stateChanged.connect(toggle_replacement_options)
         toggle_replacement_options()
 
+        web_metadata_m_l.addRow(QLabel(''))
         self.always_first_hit = QCheckBox('Always choose first gallery found')
         web_metadata_m_l.addRow(self.always_first_hit)
         use_gallery_link_info = QLabel("Enable this option to fetch metadata using the currently applied URL on the gallery")
