@@ -1,3 +1,16 @@
+*Happypanda v1.4*
+- Changes
+	- Option to disable desktop notifications (Application/General)
+	- Gallery info window hides itself when changing tabs
+	- New sort option: Page Count
+		- Because of how the database is set up, this sort option will not saved after closing the app.
+	- New Options (Web/Metadata) to selectively copy some metadata anyway if "Replace all old metadata" is not set
+		- No more copypasting url, title and author for new galleries. Now only the url is needed.
+		- Options are "Always", "Inbox & new galleries only" or "Never".
+	
+- Fixes
+	- #1: the crash that happened when closing a gallery dialog with the X after fetching metadata.
+
 *Happypanda v1.3*
 - Changes
     - The gallery info window now disappears when moving the selection with the keyboard
