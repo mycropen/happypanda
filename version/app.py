@@ -165,6 +165,7 @@ class AppWindow(QMainWindow):
         def done(status=True):
             self.db_startup_invoker.emit(gallery.MangaViews.manga_views)
             #self.db_startup.startup()
+
             if app_constants.FIRST_TIME_LEVEL != app_constants.INTERNAL_LEVEL:
                 normalize_first_time()
             if app_constants.UPDATE_VERSION != app_constants.vs:
@@ -230,6 +231,7 @@ class AppWindow(QMainWindow):
         #QSizePolicy.Preferred)
         self.download_window = io_misc.GalleryDownloader(self)
         self.download_window.hide()
+        
         # init toolbar
         self.init_toolbar()
 
@@ -472,7 +474,6 @@ class AppWindow(QMainWindow):
         #self.manga_list_view.gallery_model.rowsAboutToBeRemoved.connect(self.gallery_delete_spinner.show)
         #self.manga_list_view.gallery_model.rowsRemoved.connect(self.gallery_delete_spinner.before_hide)
 
-
     def search(self, srch_string):
         "Args should be Search Enums"
         self.search_bar.setText(srch_string)
@@ -532,8 +533,6 @@ class AppWindow(QMainWindow):
                 self.search_bar.setText(new_view.get_current_view().sort_model.current_term)
             if self.current_manga_view.get_current_view().gallery_window.isVisible():
                 self.current_manga_view.get_current_view().gallery_window.hide_animation.start()
-
-
 
         self.tab_manager = misc_db.ToolbarTabManager(self.toolbar, self)
         self.tab_manager.favorite_btn.clicked.connect(lambda: switch_view(True))
@@ -659,6 +658,9 @@ class AppWindow(QMainWindow):
         sort_menu.set_toolbutton_text()
         sort_action.setMenu(sort_menu)
         sort_action.setPopupMode(QToolButton.InstantPopup)
+        self.tab_manager.favorite_btn.clicked.connect(sort_menu.update_toolbutton_text)
+        self.tab_manager.library_btn.clicked.connect(sort_menu.update_toolbutton_text)
+        self.addition_tab.clicked.connect(sort_menu.update_toolbutton_text)
         self.toolbar.addWidget(sort_action)
 
         def set_new_sort(s):
@@ -700,7 +702,6 @@ class AppWindow(QMainWindow):
         case_search_option = search_options_menu.addAction('Case Sensitive')
         case_search_option.setCheckable(True)
         case_search_option.setChecked(app_constants.GALLERY_SEARCH_CASE)
-
 
         def set_search_case(b):
             app_constants.GALLERY_SEARCH_CASE = b
@@ -1096,10 +1097,12 @@ class AppWindow(QMainWindow):
             pass
 
         # settings
-        settings.set(self.manga_list_view.current_sort, 'General', 'current sort')
+        if self.manga_list_view.current_sort != 'page_count':
+            settings.set(self.manga_list_view.current_sort, 'General', 'current sort')
         settings.set(app_constants.IGNORE_PATHS, 'Application', 'ignore paths')
         if not self.isMaximized():
             settings.win_save(self, 'AppWindow')
+        settings.save()
 
         # temp dir
         try:

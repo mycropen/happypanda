@@ -24,6 +24,7 @@ import uuid
 import functools
 import re as regex
 from dateutil import parser as dateparser
+from dataclasses import dataclass, field
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTime
 
@@ -50,13 +51,10 @@ method_return = queue.Queue()
 db_constants.METHOD_QUEUE = method_queue
 db_constants.METHOD_RETURN = method_return
 
+@dataclass(order=True, repr=False)
 class PriorityObject:
-    def __init__(self, priority, data):
-        self.p = priority
-        self.data = data
-
-    def __lt__(self, other):
-        return self.p < other.p
+    priority: float
+    data: list=field(compare=False)
 
 def process_methods():
     """
@@ -2185,7 +2183,6 @@ class DatabaseStartup(QObject):
     DONE = pyqtSignal()
     PROGRESS = pyqtSignal(str)
     _DB = DBBase()
-
 
     def __init__(self):
         super().__init__()

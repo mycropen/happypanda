@@ -245,6 +245,8 @@ class SortMenu(QMenu):
         s_last_read.triggered.connect(functools.partial(self.new_sort.emit, 'last_read'))
         s_rating = self.sort_actions.addAction(QAction("Rating", self.sort_actions, checkable=True))
         s_rating.triggered.connect(functools.partial(self.new_sort.emit, 'rating'))
+        s_page_count = self.sort_actions.addAction(QAction("Page Count", self.sort_actions, checkable=True))
+        s_page_count.triggered.connect(functools.partial(self.new_sort.emit, 'page_count'))
 
         self.addAction(asc_desc_act)
         self.addSeparator()
@@ -255,8 +257,13 @@ class SortMenu(QMenu):
         self.addAction(s_title)
         self.addAction(s_rating)
         self.addAction(s_times_read)
+        self.addAction(s_page_count)
 
         self.set_current_sort()
+
+    def update_toolbutton_text(self):
+        self.set_current_sort()
+        self.set_toolbutton_text()
 
     def set_toolbutton_text(self):
         act = self.sort_actions.checkedAction()
@@ -283,6 +290,9 @@ class SortMenu(QMenu):
                 check_key(act, 'last_read')
             elif act.text() == 'Rating':
                 check_key(act, 'rating')
+            elif act.text() == 'Page Count':
+                check_key(act, 'page_count')
+        self.set_toolbutton_text()
 
     def asc_desc(self):
         if self.parent_widget.current_manga_view.sort_model.sortOrder() == Qt.AscendingOrder:

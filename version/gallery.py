@@ -432,6 +432,7 @@ class GalleryModel(QAbstractTableModel):
     TIME_ROLE = Qt.UserRole + 8
     RATING_ROLE = Qt.UserRole + 9
     RATING_COUNT = Qt.UserRole + 10
+    PAGE_COUNT = Qt.UserRole + 11
 
     ROWCOUNT_CHANGE = pyqtSignal()
     STATUSBAR_MSG = pyqtSignal(str)
@@ -616,6 +617,9 @@ class GalleryModel(QAbstractTableModel):
         if role == self.RATING_COUNT:
             return current_gallery.rating
 
+        if role == self.PAGE_COUNT:
+            return current_gallery.chapters.pages()
+
         return None
 
     def rowCount(self, index=QModelIndex()):
@@ -715,7 +719,7 @@ class GridDelegate(QStyledItemDelegate):
         self.title_font.setFamily(self.font_name)
         self.artist_font = QFont()
         self.artist_font.setFamily(self.font_name)
-        if self.font_size is not 0:
+        if self.font_size != 0:
             self.title_font.setPixelSize(self.font_size)
             self.artist_font.setPixelSize(self.font_size)
         self.title_font_m = QFontMetrics(self.title_font)
@@ -1346,6 +1350,10 @@ class MangaView(QListView):
                 self.sort_model.setSortRole(GalleryModel.RATING_COUNT)
                 self.sort_model.sort(0, Qt.DescendingOrder)
                 self.current_sort = 'rating'
+            elif name == 'page_count':
+                self.sort_model.setSortRole(GalleryModel.PAGE_COUNT)
+                self.sort_model.sort(0, Qt.DescendingOrder)
+                self.current_sort = 'page_count'
 
     def contextMenuEvent(self, event):
         CommonView.contextMenuEvent(self, event)
