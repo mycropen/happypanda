@@ -269,7 +269,7 @@ class GalleryDialog(QWidget):
         self.pub_edit.setFocusPolicy(Qt.ClickFocus)
         self.path_lbl.setFocusPolicy(Qt.ClickFocus)
         
-        self.title_edit.setFocus()
+        self.url_edit.setFocus()
 
     def resizeEvent(self, event):
         self.tags_edit.setFixedHeight(event.size().height()//8)
