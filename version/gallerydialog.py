@@ -67,29 +67,35 @@ class GalleryDialog(QWidget):
         if arg:
             if isinstance(arg, (list, gallerydb.Gallery)):
                 if isinstance(arg, gallerydb.Gallery):
+                    # editing a single gallery
                     self.setWindowTitle('Edit gallery')
                     self._edit_galleries.append(arg)
+                    self.resize(500, 460)
                 else:
+                    # multi-gallery edit
                     self.setWindowTitle('Edit {} galleries'.format(len(arg)))
                     self._multiple_galleries = True
                     self._edit_galleries.extend(arg)
+                    self.resize(500, 420)
                 self.commonUI()
                 self.setGallery(arg)
                 self.done.clicked.connect(self.accept_edit)
                 self.cancel.clicked.connect(self.reject_edit)
+
             elif isinstance(arg, str):
+                # new gallery from file path
                 new_gallery()
                 self.choose_dir(arg)
+                self.resize(500, 510)
+
         else:
+            # new gallery without pre-selected file
             new_gallery()
             self._new_single_gallery = True
+            self.resize(500, 510)
 
         log_d('GalleryDialog: Create UI: successful')
         self.setLayout(m_l)
-        if self._multiple_galleries:
-            self.resize(500, 480)
-        else:
-            self.resize(500, 600)
         frect = self.frameGeometry()
         frect.moveCenter(QDesktopWidget().availableGeometry().center())
         self.move(frect.topLeft())
@@ -269,7 +275,9 @@ class GalleryDialog(QWidget):
         self.pub_edit.setFocusPolicy(Qt.ClickFocus)
         self.path_lbl.setFocusPolicy(Qt.ClickFocus)
         
-        self.title_edit.setFocus()
+        if   self._new_single_gallery: self.title_edit.setFocus()
+        elif self._multiple_galleries: self.tags_edit.setFocus()
+        else:                          self.url_edit.setFocus()
 
     def resizeEvent(self, event):
         self.tags_edit.setFixedHeight(event.size().height()//8)
