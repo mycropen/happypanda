@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QDesktopWidget, QGroupBox,
                              QPushButton, QProgressBar, QTextEdit, QComboBox,
                              QDateEdit, QFileDialog, QMessageBox, QScrollArea,
                              QCheckBox, QSizePolicy, QSpinBox)
-from PyQt5.QtCore import (pyqtSignal, Qt, QPoint, QDate, QThread, QTimer)
+from PyQt5.QtCore import (pyqtSignal, Qt, QPoint, QDate, QThread, QTimer, QObject)
 
 import app_constants
 import utils
@@ -15,6 +15,7 @@ import fetch
 import misc
 import database
 import settings
+import pewnet
 
 log = logging.getLogger(__name__)
 log_i = log.info
@@ -56,6 +57,13 @@ class GalleryDialog(QWidget):
         self._multiple_galleries = False
         self._edit_galleries = []
         self._new_single_gallery = is_new_gallery
+
+        # single: single url, single fetch thread
+        #    all: make parent_widget do it
+        self.get_metadata_type = 'single'
+
+        # for comparison in set_web_metadata()
+        self.url_for_metadata = ''
 
         def new_gallery():
             self.setWindowTitle('Add a new gallery')
@@ -99,12 +107,8 @@ class GalleryDialog(QWidget):
         frect = self.frameGeometry()
         frect.moveCenter(QDesktopWidget().availableGeometry().center())
         self.move(frect.topLeft())
-        self._fetch_inst = fetch.Fetch()
-        # self._fetch_thread = QThread(self)
-        self._fetch_thread = QThread(parent)
-        self._fetch_thread.setObjectName("GalleryDialog metadata thread")
-        self._fetch_inst.moveToThread(self._fetch_thread)
-        self._fetch_thread.started.connect(self._fetch_inst.auto_web_metadata)
+        self.parent_widget.gallery_dialog_group.register(self)
+        self._fetch_thread = None
 
     def commonUI(self):
         if not self._multiple_galleries:
@@ -116,22 +120,24 @@ class GalleryDialog(QWidget):
             web_info.setToolTip(app_constants.SUPPORTED_METADATA_URLS)
             web_info.setToolTipDuration(999999999)
             web_main_layout.addWidget(web_info)
-            web_layout = QHBoxLayout()
-            web_main_layout.addLayout(web_layout)
+            self.web_layout = QHBoxLayout()
+            web_main_layout.addLayout(self.web_layout)
             f_web.setLayout(web_main_layout)
-            def basic_web(name):
-                return QLabel(name), QLineEdit(), QPushButton("Get metadata"), QProgressBar()
 
-            url_lbl, self.url_edit, self.url_btn, self.url_prog = basic_web("URL:")
-            self.url_btn.clicked.connect(lambda: self.web_metadata(self.url_edit.text(), self.url_btn,
-                                                self.url_prog))
+            url_lbl = QLabel("URL:")
+            self.url_edit = QLineEdit()
+            self.url_btn = QPushButton("Get metadata")
+            self.url_prog = QProgressBar()
+
+            self.url_btn.clicked.connect(self.url_btn_clicked)
+
             self.url_prog.setTextVisible(False)
             self.url_prog.setMinimum(0)
             self.url_prog.setMaximum(0)
-            web_layout.addWidget(url_lbl, 0, Qt.AlignLeft)
-            web_layout.addWidget(self.url_edit, 0)
-            web_layout.addWidget(self.url_btn, 0, Qt.AlignRight)
-            web_layout.addWidget(self.url_prog, 0, Qt.AlignRight)
+            self.web_layout.addWidget(url_lbl, 0, Qt.AlignLeft)
+            self.web_layout.addWidget(self.url_edit, 0)
+            self.web_layout.addWidget(self.url_btn, 0, Qt.AlignRight)
+            self.web_layout.addWidget(self.url_prog, 0, Qt.AlignRight)
             self.url_edit.setPlaceholderText("Insert supported gallery URLs or just press the button!")
             self.url_prog.hide()
 
@@ -278,6 +284,12 @@ class GalleryDialog(QWidget):
         if   self._new_single_gallery: self.title_edit.setFocus()
         elif self._multiple_galleries: self.tags_edit.setFocus()
         else:                          self.url_edit.setFocus()
+
+    def url_btn_clicked(self):
+        if self.get_metadata_type == 'single':
+            self.web_metadata()
+        elif self.get_metadata_type == 'all':
+            self.parent_widget.gallery_dialog_group.all_metadata()
 
     def resizeEvent(self, event):
         self.tags_edit.setFixedHeight(event.size().height()//8)
@@ -465,22 +477,24 @@ class GalleryDialog(QWidget):
             msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msgbox.setDefaultButton(QMessageBox.No)
             if msgbox.exec() == QMessageBox.Yes:
+                self.parent_widget.gallery_dialog_group.unregister(self)
                 self.delayed_close()
         else:
             self.delayed_close()
 
-    def web_metadata(self, url, btn_widget, pgr_widget):
+    def web_metadata(self, fetch_inst: fetch.Fetch = None):
         if not self.path_lbl.text():
             return
-        self.link_lbl.setText(url)
-        btn_widget.hide()
-        pgr_widget.show()
+        self.link_lbl.setText(self.url_edit.text())
+        self.url_for_metadata = self.url_edit.text()
+        self.url_btn.hide()
+        self.url_prog.show()
 
         def status(stat):
             def do_hide():
                 try:
-                    pgr_widget.hide()
-                    btn_widget.show()
+                    self.url_prog.hide()
+                    self.url_btn.show()
                 except RuntimeError:
                     pass
 
@@ -492,7 +506,7 @@ class GalleryDialog(QWidget):
                     border-bottom-right-radius: 5px;
                     border-bottom-left-radius: 5px;
                     border: .px solid black;}"""
-                pgr_widget.setStyleSheet(danger)
+                self.url_prog.setStyleSheet(danger)
                 QTimer.singleShot(3000, do_hide)
 
         def gallery_picker(gallery, title_url_list, q):
@@ -504,25 +518,44 @@ class GalleryDialog(QWidget):
             dummy_gallery = self.make_gallery(gallerydb.Gallery(), False, True)
         if not dummy_gallery:
             status(False)
-            return None
+            return
 
-        dummy_gallery._g_dialog_url = url
+        dummy_gallery._g_dialog_url = self.url_edit.text()
         dummy_gallery.new_gallery = self._new_single_gallery
-        self._fetch_inst.galleries = [dummy_gallery]
-        self._disconnect()
-        self._fetch_inst.GALLERY_PICKER.connect(gallery_picker)
-        self._fetch_inst.GALLERY_EMITTER.connect(self.set_web_metadata)
-        self._fetch_inst.FINISHED.connect(status)
-        self._fetch_thread.start()
-        log_i('fetch thread started')
+        if isinstance(fetch_inst, fetch.Fetch):
+            # Fetch was provided in the call, i.e. from a GalleryDialogGroup
+            # GalleryDialogGroup will also start the fetch thread
+            fetch_inst.galleries.append(dummy_gallery)
+            fetch_inst.GALLERY_PICKER.connect(gallery_picker)
+            fetch_inst.GALLERY_EMITTER.connect(self.set_web_metadata)
+            fetch_inst.FINISHED.connect(status)
+        else:
+            # single GalleryDialog metadata fetch
+            self._fetch_inst = fetch.Fetch()
+            # self._fetch_thread = QThread(self)
+            self._fetch_thread = QThread(self.parent_widget)
+            self._fetch_thread.setObjectName("GalleryDialog metadata thread")
+            self._fetch_inst.moveToThread(self._fetch_thread)
+            self._fetch_thread.started.connect(self._fetch_inst.auto_web_metadata)
+
+            self._fetch_inst.galleries = [dummy_gallery]
+            self._disconnect(self._fetch_inst)
+            self._fetch_inst.GALLERY_PICKER.connect(gallery_picker)
+            self._fetch_inst.GALLERY_EMITTER.connect(self.set_web_metadata)
+            self._fetch_inst.FINISHED.connect(status)
+            self._fetch_thread.start()
+            log_i('fetch thread started')
             
     def set_web_metadata(self, metadata):
         assert isinstance(metadata, gallerydb.Gallery)
+        log_d(f'got metadata for {metadata.link} ({metadata.title})')
+        if metadata.link != self.url_for_metadata: return
+        log_d(f'applying metadata for {metadata.link} ({metadata.title})')
         self.link_lbl.setText(metadata.link)
         self.title_edit.setText(metadata.title)
         self.author_edit.setText(metadata.artist)
-        tags = ""
-        lang = ['English', 'Japanese']
+        # tags = ""
+        # lang = ['English', 'Japanese']
         self._find_combobox_match(self.lang_box, metadata.language, 2)
         self.tags_edit.setText(utils.tag_to_string(metadata.tags))
         pub_string = "{}".format(metadata.pub_date)
@@ -612,16 +645,17 @@ class GalleryDialog(QWidget):
         self.link_btn.hide()
         self.link_btn2.show()
 
-    def _disconnect(self):
+    def _disconnect(self, fetch_inst):
         try:
-            self._fetch_inst.GALLERY_PICKER.disconnect()
-            self._fetch_inst.GALLERY_EMITTER.disconnect()
-            self._fetch_inst.FINISHED.disconnect()
+            fetch_inst.GALLERY_PICKER.disconnect()
+            fetch_inst.GALLERY_EMITTER.disconnect()
+            fetch_inst.FINISHED.disconnect()
         except TypeError:
             pass
 
     def delayed_close(self):
-        if self._fetch_thread.isRunning():
+        self.parent_widget.gallery_dialog_group.unregister(self)
+        if isinstance(self._fetch_thread, QThread) and self._fetch_thread.isRunning():
             self._fetch_thread.finished.connect(self.close)
             self.hide()
         else:
@@ -651,9 +685,81 @@ class GalleryDialog(QWidget):
         #   reject_edit
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             if self.url_edit.hasFocus():
-                self.web_metadata(self.url_edit.text(), self.url_btn, self.url_prog)
+                self.web_metadata()
             elif not self.descr_edit.hasFocus() and not self.tags_edit.hasFocus():
                 self.done.click()
         elif event.key() == Qt.Key_Escape:
             self.cancel.click()
+        elif event.key() == Qt.Key_Control:
+            self.url_btn.setText("Get all metadata")
+            self.get_metadata_type = 'all'
         return super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Control:
+            self.url_btn.setText("Get metadata")
+            self.get_metadata_type = 'single'
+        return super().keyReleaseEvent(event)
+
+    def closeEvent(self, event):
+        self.parent_widget.gallery_dialog_group.unregister(self)
+
+
+class GalleryDialogGroup(QObject):
+    """
+    Keeps track of open GalleryDialogs.
+    Facilitates the fetching of multiple galleries' metadata at once.
+    """
+    def __init__(self, parent):
+        super(GalleryDialogGroup, self).__init__()
+        self.parent_widget = parent
+        self.gds: set[GalleryDialog] = set()
+        self.fetch_insts: set[fetch.Fetch] = set()
+
+    def register(self, gd: GalleryDialog):
+        self.gds.add(gd)
+
+    def unregister(self, gd: GalleryDialog):
+        try:
+            self.gds.remove(gd)
+        except KeyError:
+            pass
+
+    def remove_fetch(self, fetch_inst):
+        try:
+            self.fetch_insts.remove(fetch_inst)
+        except KeyError:
+            pass
+
+    def all_metadata(self):
+        # make a Fetch instance (and thread) that collects the gallery URLs from all registered GalleryDialogs
+        # then start the thread here
+        # make a new Fetch instance and thread when the API limit for a single request is reached
+        if len(self.gds) == 0: return
+
+        fetch_inst = None
+        fetch_thread = None
+        g_counter = 0
+
+        for i, gd in enumerate(self.gds):
+            if i % pewnet.CommonHen._QUEUE_LIMIT == 0:
+                if fetch_thread is not None:
+                    fetch_thread.start()
+                    log_i(f'fetch thread started for {g_counter} galler{"y" if g_counter == 1 else "ies"}')
+                    g_counter = 0
+
+                fetch_inst = fetch.Fetch()
+                self.fetch_insts.add(fetch_inst)
+                fetch_thread = QThread(self.parent_widget)
+                fetch_thread.setObjectName("GalleryDialog metadata thread")
+                fetch_inst.moveToThread(fetch_thread)
+                fetch_inst.FINISHED.connect(lambda: self.remove_fetch(fetch_inst))
+                fetch_thread.started.connect(fetch_inst.auto_web_metadata)
+
+            log_d(f'adding url from GalleryDialog {i+1}/{len(self.gds)}')
+            gallery = gd.web_metadata(fetch_inst=fetch_inst)
+            if gallery is not None: self.gallery_to_dialog[gallery] = gd
+            g_counter += 1
+
+        fetch_thread.start()
+        log_i(f'fetch thread started for {g_counter} galler{"y" if g_counter == 1 else "ies"}')

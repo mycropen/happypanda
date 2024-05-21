@@ -95,6 +95,9 @@ class AppWindow(QMainWindow):
         self.set_shortcuts()
         self.graphics_blur.setParent(self)
 
+        # for multi-gallery metadata fetching from GalleryDialog windows
+        self.gallery_dialog_group = gallerydialog.GalleryDialogGroup(self)
+
     def set_shortcuts(self):
         quit = QShortcut(QKeySequence('Ctrl+Q'), self, self.close)
         search_focus = QShortcut(QKeySequence(QKeySequence.Find), self, lambda:self.search_bar.setFocus(Qt.ShortcutFocusReason))

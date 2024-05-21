@@ -285,7 +285,7 @@ class Fetch(QObject):
         if gallery:
             gallery.exed = 1
             self.GALLERY_EMITTER.emit(gallery, None, False)
-            log_d('Success')
+            log_d('Emitted gallery: {}'.format(gallery.title.encode(errors='ignore')))
 
     def fetch_metadata(self, gallery=None, hen=None, proc=False):
         """
@@ -325,10 +325,7 @@ class Fetch(QObject):
                 continue
             log_i('({}/{}) Applying metadata for gallery: {}'.format(x, len(self.galleries_in_queue),
                                                             g.title.encode(errors='ignore')))
-            if app_constants.REPLACE_METADATA:
-                g = hen.apply_metadata(g, data, False)
-            else:
-                g = hen.apply_metadata(g, data)
+            g = hen.apply_metadata(g, data, append = not app_constants.REPLACE_METADATA)
             self._return_gallery_metadata(g)
             log_i('Successfully applied metadata to gallery: {}'.format(g.title.encode(errors='ignore')))
         self.galleries_in_queue.clear()
@@ -338,6 +335,8 @@ class Fetch(QObject):
     def _auto_metadata_process(self, galleries, hen, valid_url, **kwargs):
         hen.LAST_USED = time.time()
         self.AUTO_METADATA_PROGRESS.emit("Checking gallery urls...")
+        if len(galleries) == 1: log_d(f'Fetching metadata for 1 gallery')
+        else:                   log_d(f'Fetching metadata for {len(galleries)} galleries')
 
         fetched_galleries = []
         checked_pre_url_galleries = []

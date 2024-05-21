@@ -1,3 +1,8 @@
+*Happypanda v1.5*
+- Changes
+	- Holding Ctrl in a gallery edit dialog now lets you get the metadata for all open gallery edit dialogs at once
+		- Technically in batches of 25, but that's much better than 1 at a time
+
 *Happypanda v1.4*
 - Changes
 	- Option to disable desktop notifications (Application/General)

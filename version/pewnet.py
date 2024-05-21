@@ -1330,18 +1330,22 @@ class EHen(CommonHen):
                 else:
                     r = requests.post(self.e_url, json=payload, timeout=30, headers=self.HEADERS)
             except requests.ConnectionError as err:
-                self.end_lock()
                 log_e("Could not fetch metadata: {}".format(err))
                 raise app_constants.MetadataFetchFail("connection error")
-            self.end_lock()
+            finally:
+                self.end_lock()
+                
             if not self.handle_error(r):
                 return 'error'
-        else: return None
+        else:
+            return None
+
         try:
             r.raise_for_status()
         except:
             log.exception('Could not fetch metadata: status error')
             return None
+
         return r.json(), dict_metadata
 
     @classmethod
