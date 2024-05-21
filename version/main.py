@@ -64,7 +64,10 @@ def start(test=False):
         except FileExistsError:
             pass
 
-        log_handlers.append(logging.FileHandler(debug_log_path, 'w', 'utf-8'))
+        debug_file_handler = logging.FileHandler(debug_log_path, 'w', 'utf-8')
+        debug_log_formatter = logging.Formatter('%(asctime)-8s %(levelname)-6s %(filename)s (%(funcName)s): %(message)s')
+        debug_file_handler.setFormatter(debug_log_formatter)
+        log_handlers.append(debug_file_handler)
         log_level = logging.DEBUG
         app_constants.DEBUG = True
     else:
