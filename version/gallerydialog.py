@@ -685,7 +685,7 @@ class GalleryDialog(QWidget):
         #   reject_edit
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             if self.url_edit.hasFocus():
-                self.web_metadata()
+                self.url_btn_clicked()
             elif not self.descr_edit.hasFocus() and not self.tags_edit.hasFocus():
                 self.done.click()
         elif event.key() == Qt.Key_Escape:
