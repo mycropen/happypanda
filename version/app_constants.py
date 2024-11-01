@@ -23,7 +23,7 @@ except ImportError:
     from .database import db_constants
 
 # Version number
-vs  = '1.5'
+vs  = '1.5.1'
 DEBUG = False
 
 OS_NAME = ''
@@ -666,12 +666,12 @@ ABOUT =\
 <p>License: <a href="https://www.gnu.org/licenses/gpl-2.0.txt"> GENERAL PUBLIC LICENSE, Version 2</a></p>
 <p>Happypanda was created using:</p>
 <ul>
-<li>Python 3.5</li>
+<li>Python 3.8</li>
 <li>The Qt5 Framework</li>
 <li>Various python libraries (see github repo)</li>
 </ul>
 <p>Contributors (github):
-rachmadaniHaryono (big thanks!), nonamethanks, ImoutoChan, Moshidesu, peaceanpizza, utterbull, LePearlo, Kramoule</p>
+rachmadaniHaryono (big thanks!), nonamethanks, ImoutoChan, Moshidesu, peaceanpizza, utterbull, LePearlo, Kramoule, mycropen</p>
 
 </body></html>
 	""".format(vs, db_constants.CURRENT_DB_VERSION)

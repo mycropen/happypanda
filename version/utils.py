@@ -46,7 +46,7 @@ log_w = log.warning
 log_e = log.error
 log_c = log.critical
 
-IMG_FILES = ('.jpg','.bmp','.png','.gif', '.jpeg')
+IMG_FILES = ('.jpg','.bmp','.png','.gif', '.jpeg', '.webp')
 ARCHIVE_FILES = ('.zip', '.cbz', '.rar', '.cbr')
 FILE_FILTER = '*.zip *.cbz *.rar *.cbr'
 IMG_FILTER = '*.jpg *.bmp *.png *.jpeg'
@@ -927,16 +927,9 @@ def title_parser(title):
     log_d("Parsing title: {}".format(title))
 
     #If title is not absolute, then it's not a pathname and we allow a "/" inside it
-    if(os.path.isabs(title)):
-        title = os.path.basename(title)
+    if (os.path.isabs(title)): title = os.path.basename(title)
+
     title = " ".join(title.split())
-    # if '/' in title:
-    #     try:
-    #         title = os.path.split(title)[1]
-    #         if not title:
-    #             title = title
-    #     except IndexError:
-    #         pass
 
     for x in ARCHIVE_FILES:
         if title.endswith(x):
@@ -986,7 +979,17 @@ def title_parser(title):
         # some galleries have titles like '(C92) romaji title | translated title (franchise)'
         if app_constants.GALLERY_TITLE_SEP != 'both':
             if '｜' in t or '|' in t:
-                p = re.search(r'(([^|｜\(\)\[\]]+\s*)+)\s*[|｜]\s*(([^|｜\(\)\[\]]+\s*)+)', t)
+                # The inclusion of parentheses in the regex before the separator makes the regex engine run into an infinite loop for titles like
+                #   [Nagashiro Rouge] When Magical Girls Kiss Chapter 1-3 (END) | Eigyou Mahou Shoujo ga Kiss Shitara Chapter 1-3 (END)
+                # But taking them out will make it think that parentheses that were kept at the start of the title like the (Bokura no Love Live! 41) here
+                #   (Bokura no Love Live! 41) [Kitaku Jikan (Kitaku)] Oshiri 100% | 100% Butt (Love Live! Nijigasaki High School Idol Club) [English]
+                # are part of the left variant of the title. But unless I implement another way to parse the title parts, I think losing that bit is preferable to the application freezing.
+                # 
+                # This entire function should probably completely separate the title into its components and reassemble it from only the parts the user cares about.
+                # But that's a total pain because uploaders can't seem to stick to even a handful of standards for gallery titles.
+
+                # p = re.search(r'(([^|｜\(\)\[\]]+\s*)+)\s*[|｜]\s*(([^|｜\(\)\[\]]+\s*)+)', t)
+                p = re.search(r'(([^|｜]+\s*)+)\s*[|｜]\s*(([^|｜]+\s*)+)', t)
                 if app_constants.GALLERY_TITLE_SEP == 'left':
                     t = ' '.join([t[:p.span()[0]], p[1], t[p.span()[1]:]])
                 elif app_constants.GALLERY_TITLE_SEP == 'right':
@@ -997,6 +1000,7 @@ def title_parser(title):
         if len(nt) > 0: t = nt
 
         parsed_title['title'] = t
+        
     except AssertionError:
         parsed_title['title'] = title
 
