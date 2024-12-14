@@ -690,9 +690,9 @@ def open_chapter(chapterpath, archive=None):
         return filepath
 
     try:
-        try: # folder
+        if os.path.isdir(temp_p):
             filepath = find_f_img_folder()
-        except NotADirectoryError: # archive
+        else:
             try:
                 if not app_constants.EXTRACT_CHAPTER_BEFORE_OPENING and app_constants.EXTERNAL_VIEWER_PATH:
                     filepath = find_f_img_archive(False)
