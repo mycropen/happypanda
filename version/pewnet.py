@@ -1594,7 +1594,7 @@ class ChaikaHen(CommonHen):
             hash_search = True
             chaika_g_id = None
             old_url = url
-            re_string = "^(http\:\/\/|https\:\/\/)?(www\.)?([^\.]?)(panda\.chaika\.moe\/(archive|gallery)\/[0-9]+)" # to validate chaika urls
+            re_string = r"^(http://|https://)?(www\.)?([^\.]?)(panda\.chaika\.moe/(archive|gallery)/[0-9]+)" # to validate chaika urls
             if regex.match(re_string, url):
                 g_or_a_id = regex.search("([0-9]+)", url).group()
                 if 'gallery' in url:

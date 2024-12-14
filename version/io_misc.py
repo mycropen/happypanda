@@ -354,9 +354,9 @@ class GalleryDownloader(QWidget):
             self.download_list.add_entry(h_item)
 
     def website_validator(self, url):
-        match_prefix = "^(http\:\/\/|https\:\/\/)?(www\.)?([^\.]?)" # http:// or https:// + www.
-        match_base = "(.*\.)+" # base. Replace with domain
-        match_tld = "[a-zA-Z0-9][a-zA-Z0-9\-]*" # com
+        match_prefix = r"^(http://|https://)?(www\.)?([^\.]?)" # http:// or https:// + www.
+        match_base = r"(.*\.)+" # base. Replace with domain
+        match_tld = r"[a-zA-Z0-9][a-zA-Z0-9\-]*" # com
         end = "/?$"
 
         # ATTENTION: the prefix will automatically get prepended to the pattern string! Don't try to match it.
@@ -366,19 +366,19 @@ class GalleryDownloader(QWidget):
                 return True
             return False
 
-        if regex_validate("((g\.e-hentai)\.org\/g\/[0-9]+\/[a-z0-9]+)"):
+        if regex_validate(r"((g\.e-hentai)\.org/g/[0-9]+/[a-z0-9]+)"):
             manager = pewnet.HenManager()
-        elif regex_validate("((?<!g\.)(e-hentai)\.org\/g\/[0-9]+\/[a-z0-9]+)"):
+        elif regex_validate(r"((?<!g\.)(e-hentai)\.org/g/[0-9]+/[a-z0-9]+)"):
             manager = pewnet.HenManager()
-        elif regex_validate("((exhentai)\.org\/g\/[0-9]+\/[a-z0-9]+)"):
+        elif regex_validate(r"((exhentai)\.org/g/[0-9]+/[a-z0-9]+)"):
             exprops = settings.ExProperties()
             if pewnet.ExHen().check_login(exprops.cookies):
                 manager = pewnet.ExHenManager()
             else:
                 raise app_constants.NeedLogin()
-        elif regex_validate("(panda\.chaika\.moe\/(archive|gallery)\/[0-9]+)"):
+        elif regex_validate(r"(panda\.chaika\.moe/(archive|gallery)/[0-9]+)"):
             manager = pewnet.ChaikaManager()
-        elif regex_validate("(asmhentai\.com\/g\/[0-9]+)"):
+        elif regex_validate(r"(asmhentai\.com/g/[0-9]+)"):
             manager = AsmManager()
         else:
             raise app_constants.WrongURL
