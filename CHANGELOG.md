@@ -93,7 +93,7 @@
 	- New helpful color widgets added to `Settings -> Visual` [rachmadaniHaryono]
 	- Gallery Contextmenu:
 		- Added `Set rating` to quickly set gallery rating
-		- Added `Lookup Artist` to open a new tab on preffered site with the artist's galleries
+		- Added `Lookup Artist` to open a new tab on preferred site with the artist's galleries
 		- Added `Reset read count` under `Advanced`
 	- Gallery Lists are now included when exporting gallery data
 	- New sorting option: Gallery Rating

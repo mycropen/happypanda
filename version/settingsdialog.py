@@ -665,7 +665,7 @@ class SettingsDialog(QWidget):
 
         # App / General / External Viewer
         app_external_viewer, app_external_viewer_l = groupbox('External Viewer', QFormLayout, application_general, app_general_m_l)
-        external_viewer_p_info = QLabel("Tip: If your preffered image viewer doesn't work, try changing the arguments sent in the Advanced section")
+        external_viewer_p_info = QLabel("Tip: If your preferred image viewer doesn't work, try changing the arguments sent in the Advanced section")
         external_viewer_p_info.setWordWrap(True)
         app_external_viewer_l.addRow(external_viewer_p_info)
         self.external_viewer_path = PathLineEdit(app_external_viewer, False, '')
