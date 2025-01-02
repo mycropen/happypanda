@@ -74,18 +74,19 @@ def start(test=False):
         try:
             with open(log_path, 'x') as f:
                 pass
-        except FileExistsError: pass
-        log_handlers.append(logging.handlers.RotatingFileHandler(
-            log_path, maxBytes=1000000*10, encoding='utf-8', backupCount=2))
+        except FileExistsError:
+            pass
+
+        log_handlers.append(logging.handlers.RotatingFileHandler(log_path, maxBytes=1000000*10, encoding='utf-8', backupCount=2))
 
     # Fix for logging not working
     # clear the handlers first before adding these custom handler
     # http://stackoverflow.com/a/15167862
     logging.getLogger('').handlers = []
     logging.basicConfig(level=log_level,
-                    format='%(asctime)-8s %(levelname)-6s %(name)-6s %(message)s',
-                    datefmt='%d-%m %H:%M',
-                    handlers=tuple(log_handlers))
+                        format='%(asctime)-8s %(levelname)-6s %(name)-6s %(message)s',
+                        datefmt='%d-%m %H:%M',
+                        handlers=tuple(log_handlers))
 
     log = logging.getLogger(__name__)
     log_i = log.info
@@ -174,7 +175,7 @@ def start(test=False):
         #	while not done:
         #		try:
         #			if threading.active_count() > 5000:
-            #				thread_list = []
+        #    				thread_list = []
         #				done = True
         #			else:
         #				thread_list.append(
