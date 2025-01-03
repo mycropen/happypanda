@@ -21,7 +21,6 @@ import requests
 import scandir
 import random
 import traceback
-from pkg_resources import parse_version
 
 from PyQt5.QtCore import (Qt, QSize, pyqtSignal, QThread, QEvent, QTimer,
                           QObject, QPoint, QPropertyAnimation)
@@ -175,10 +174,9 @@ class AppWindow(QMainWindow):
                 settings.set(app_constants.vs, 'Application', 'version')
 
             if app_constants.UPDATE_VERSION != app_constants.vs:
-                self.notif_bubble.update_text("Happypanda has been updated!",
-                    "Don't forget to check out what's new in this version <a href='https://github.com/mycropen/happypanda/blob/master/CHANGELOG.md'>by clicking here!</a>")
+                self.notif_bubble.update_text("Happypanda has been updated!", "Don't forget to check out what's new in this version <a href='https://github.com/mycropen/happypanda/blob/master/CHANGELOG.md'>by clicking here!</a>")
 
-            if parse_version(app_constants.UPDATE_VERSION) <= parse_version("1.1.1"):
+            if str(app_constants.UPDATE_VERSION) <= "1.1.1":
                 pop = misc.BasePopup(self, blur=False)
                 ml = QVBoxLayout(pop.main_widget)
                 ml.addWidget(QLabel("\nHello everyone, this is a fork to the much beloved Happypanda.\n"+
@@ -190,9 +188,9 @@ class AppWindow(QMainWindow):
                 pop.adjustSize()
                 pop.show()
 
-            if app_constants.ENABLE_MONITOR and \
-                app_constants.MONITOR_PATHS and all(app_constants.MONITOR_PATHS):
+            if app_constants.ENABLE_MONITOR and app_constants.MONITOR_PATHS and all(app_constants.MONITOR_PATHS):
                 self.init_watchers()
+
             self.download_manager = pewnet.Downloader()
             app_constants.DOWNLOAD_MANAGER = self.download_manager
             self.download_manager.start_manager(4)
@@ -310,7 +308,7 @@ class AppWindow(QMainWindow):
 
         def check_update(vs):
             log_i('Received version: {}\nCurrent version: {}'.format(vs, app_constants.vs))
-            if parse_version(vs) > parse_version(app_constants.vs):
+            if str(vs) > str(app_constants.vs):
                 if len(vs) < 10:
                     self.notification_bar.begin_show()
                     self.notification_bar.add_text("Version {} of Happypanda is".format(vs) + " available. Click here to update!", False)
