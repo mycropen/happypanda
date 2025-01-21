@@ -1,3 +1,12 @@
+
+*Happypanda v1.5.1*
+- Changes
+    - Allow .webp images in archives. If you got "Invalid gallery source" before, try again now.
+
+- Fixes
+    - Separating titles that have parentheses before the "|" should no longer cause the app to freeze.
+
+
 *Happypanda v1.5*
 - Changes
 	- Holding Ctrl in a gallery edit dialog now lets you get the metadata for all open gallery edit dialogs at once
