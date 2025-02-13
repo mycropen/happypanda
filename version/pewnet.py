@@ -30,6 +30,11 @@ from tempfile import (
 )
 
 from bs4 import BeautifulSoup
+
+# cannot import name 'cached_property' from 'werkzeug' (required by robobrowser)
+import werkzeug
+werkzeug.cached_property = werkzeug.utils.cached_property
+
 from robobrowser import RoboBrowser
 from robobrowser.exceptions import RoboError
 
