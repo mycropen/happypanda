@@ -620,7 +620,7 @@ class GalleryModel(QAbstractTableModel):
         if role == self.PAGE_COUNT:
             return current_gallery.chapters.pages()
 
-        return None
+        return QVariant()
 
     def rowCount(self, index=QModelIndex()):
         if index.isValid():
