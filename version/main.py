@@ -257,5 +257,9 @@ def start(test=False):
 if __name__ == '__main__':
     current_exit_code = 0
     while current_exit_code == app_constants.APP_RESTART_CODE:
-        current_exit_code = start()
+        try:
+            current_exit_code = start()
+        except:
+            logging.getLogger(__name__).critical(f'Application crashed with uncaught exception. Traceback:')
+            logging.getLogger(__name__).critical(traceback.format_exc())
     sys.exit(current_exit_code)
