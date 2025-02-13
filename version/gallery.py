@@ -471,8 +471,10 @@ class GalleryModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return QVariant()
-        if index.row() >= len(self._data) or \
-            index.row() < 0:
+        if not isinstance(index.row(), int) or not isinstance(len(self._data), int):
+            log_e(f'{index.row() = }')
+            log_e(f'{len(self._data) = }')
+        if index.row() >= len(self._data) or index.row() < 0:
             return QVariant()
 
         current_row = index.row() 
