@@ -879,82 +879,83 @@ class AppWindow(QMainWindow):
 
     def gallery_populate(self, path, validate=False):
         "Scans the given path for gallery to add into the DB"
-        if len(path) != 0:
-            data_thread = QThread(self)
-            data_thread.setObjectName('General gallery populate')
-            self.addition_tab.click()
-            self.g_populate_inst = fetch.Fetch()
-            self.g_populate_inst.series_path = path
-            self._g_populate_count = 0
+        if len(path) < 1: return
 
-            fetch_spinner = misc.Spinner(self)
-            fetch_spinner.set_size(60)
-            fetch_spinner.set_text("Populating")
-            fetch_spinner.show()
+        data_thread = QThread(self)
+        data_thread.setObjectName('General gallery populate')
+        self.addition_tab.click()
+        self.g_populate_inst = fetch.Fetch()
+        self.g_populate_inst.series_path = path
+        self._g_populate_count = 0
 
-            def finished(status):
-                fetch_spinner.hide()
-                ## attempts to fix the missing gallery in inbox issue after dropping multiple items at once
-                # self.addition_tab.view.get_current_view().update()
-                # self.current_manga_view.get_current_view().sort_model.refresh()
-                if not status:
-                    log_e('Populating DB from gallery folder: Nothing was added!')
-                    self.notif_bubble.update_text("Gallery Populate",
-                                   "<font color='red'>Nothing was added. Check happypanda_log for details..</font>")
+        fetch_spinner = misc.Spinner(self)
+        fetch_spinner.set_size(60)
+        fetch_spinner.set_text("Populating")
+        fetch_spinner.show()
 
-            def skipped_gs(s_list):
-                "Skipped galleries"
-                msg_box = QMessageBox(self)
-                msg_box.setIcon(QMessageBox.Question)
-                msg_box.setText('Do you want to view skipped paths?')
-                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                msg_box.setDefaultButton(QMessageBox.No)
-                if msg_box.exec() == QMessageBox.Yes:
-                    list_wid = QTableWidget(self)
-                    list_wid.setAttribute(Qt.WA_DeleteOnClose)
-                    list_wid.setRowCount(len(s_list))
-                    list_wid.setColumnCount(2)
-                    list_wid.setAlternatingRowColors(True)
-                    list_wid.setEditTriggers(list_wid.NoEditTriggers)
-                    list_wid.setHorizontalHeaderLabels(['Reason', 'Path'])
-                    list_wid.setSelectionBehavior(list_wid.SelectRows)
-                    list_wid.setSelectionMode(list_wid.SingleSelection)
-                    list_wid.setSortingEnabled(True)
-                    list_wid.verticalHeader().hide()
-                    list_wid.setAutoScroll(False)
-                    for x, g in enumerate(s_list):
-                        list_wid.setItem(x, 0, QTableWidgetItem(g[1]))
-                        list_wid.setItem(x, 1, QTableWidgetItem(g[0]))
-                    list_wid.resizeColumnsToContents()
-                    list_wid.setWindowTitle('{} skipped paths'.format(len(s_list)))
-                    list_wid.setWindowFlags(Qt.Window)
-                    list_wid.resize(900,400)
+        def finished(status):
+            fetch_spinner.hide()
+            ## attempts to fix the missing gallery in inbox issue after dropping multiple items at once
+            # self.addition_tab.view.get_current_view().update()
+            # self.current_manga_view.get_current_view().sort_model.refresh()
+            if not status:
+                log_e('Populating DB from gallery folder: Nothing was added!')
+                self.notif_bubble.update_text("Gallery Populate",
+                               "<font color='red'>Nothing was added. Check happypanda_log for details..</font>")
 
-                    list_wid.doubleClicked.connect(lambda i: utils.open_path(list_wid.item(i.row(), 1).text(), list_wid.item(i.row(), 1).text()))
+        def skipped_gs(s_list):
+            "Skipped galleries"
+            msg_box = QMessageBox(self)
+            msg_box.setIcon(QMessageBox.Question)
+            msg_box.setText('Do you want to view skipped paths?')
+            msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msg_box.setDefaultButton(QMessageBox.No)
+            if msg_box.exec() == QMessageBox.Yes:
+                list_wid = QTableWidget(self)
+                list_wid.setAttribute(Qt.WA_DeleteOnClose)
+                list_wid.setRowCount(len(s_list))
+                list_wid.setColumnCount(2)
+                list_wid.setAlternatingRowColors(True)
+                list_wid.setEditTriggers(list_wid.NoEditTriggers)
+                list_wid.setHorizontalHeaderLabels(['Reason', 'Path'])
+                list_wid.setSelectionBehavior(list_wid.SelectRows)
+                list_wid.setSelectionMode(list_wid.SingleSelection)
+                list_wid.setSortingEnabled(True)
+                list_wid.verticalHeader().hide()
+                list_wid.setAutoScroll(False)
+                for x, g in enumerate(s_list):
+                    list_wid.setItem(x, 0, QTableWidgetItem(g[1]))
+                    list_wid.setItem(x, 1, QTableWidgetItem(g[0]))
+                list_wid.resizeColumnsToContents()
+                list_wid.setWindowTitle('{} skipped paths'.format(len(s_list)))
+                list_wid.setWindowFlags(Qt.Window)
+                list_wid.resize(900,400)
 
-                    list_wid.show()
+                list_wid.doubleClicked.connect(lambda i: utils.open_path(list_wid.item(i.row(), 1).text(), list_wid.item(i.row(), 1).text()))
 
-            def a_progress(prog):
-                fetch_spinner.set_text("Populating... {}/{}".format(prog, self._g_populate_count))
+                list_wid.show()
 
-            def add_to_model(gallery):
-                self.addition_tab.view.add_gallery(gallery, app_constants.KEEP_ADDED_GALLERIES)
+        def a_progress(prog):
+            fetch_spinner.set_text("Populating... {}/{}".format(prog, self._g_populate_count))
 
-            def set_count(c):
-                self._g_populate_count = c
+        def add_to_model(gallery):
+            self.addition_tab.view.add_gallery(gallery, app_constants.KEEP_ADDED_GALLERIES)
 
-            self.g_populate_inst.moveToThread(data_thread)
-            self.g_populate_inst.PROGRESS.connect(a_progress)
-            self.g_populate_inst.DATA_COUNT.connect(set_count)
-            self.g_populate_inst.LOCAL_EMITTER.connect(add_to_model)
-            self.g_populate_inst.FINISHED.connect(finished)
-            self.g_populate_inst.FINISHED.connect(self.g_populate_inst.deleteLater)
-            # self.g_populate_inst.SKIPPED.connect(skipped_gs)
-            data_thread.finished.connect(data_thread.deleteLater)
-            data_thread.started.connect(self.g_populate_inst.local)
-            data_thread.start()
-            #self.g_populate_inst.local()
-            log_i('Populating DB from directory/archive')
+        def set_count(c):
+            self._g_populate_count = c
+
+        self.g_populate_inst.moveToThread(data_thread)
+        self.g_populate_inst.PROGRESS.connect(a_progress)
+        self.g_populate_inst.DATA_COUNT.connect(set_count)
+        self.g_populate_inst.LOCAL_EMITTER.connect(add_to_model)
+        self.g_populate_inst.FINISHED.connect(finished)
+        self.g_populate_inst.FINISHED.connect(self.g_populate_inst.deleteLater)
+        # self.g_populate_inst.SKIPPED.connect(skipped_gs)
+        data_thread.finished.connect(data_thread.deleteLater)
+        data_thread.started.connect(self.g_populate_inst.local)
+        data_thread.start()
+        #self.g_populate_inst.local()
+        log_i('Populating DB from directory/archive')
 
     def scan_for_new_galleries(self):
         available_folders = app_constants.ENABLE_MONITOR and \
