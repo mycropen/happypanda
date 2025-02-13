@@ -22,6 +22,7 @@ import pickle
 import enum
 import time
 import re as regex
+import traceback
 
 from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex, QVariant,
                           QSize, QRect, QEvent, pyqtSignal, QThread,
@@ -273,10 +274,10 @@ class SortFilterModel(QSortFilterProxyModel):
             if index.isValid():
                 if self._search_ready:
                     gallery = index.data(Qt.UserRole + 1)
+                    if gallery is None: return False
                     try:
                         return self.gallery_search.result[gallery.id]
                     except KeyError:
-                        # pass
                         # this might fix the missing gallery in inbox issue after dropping multiple items
                         return (self.current_view == self.CAT_VIEW)
                 else:
@@ -469,154 +470,171 @@ class GalleryModel(QAbstractTableModel):
         self.STATUSBAR_MSG.emit(msg)
 
     def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return QVariant()
-        if not isinstance(index.row(), int) or not isinstance(len(self._data), int):
-            log_e(f'{index.row() = }')
-            log_e(f'{len(self._data) = }')
-        if index.row() >= len(self._data) or index.row() < 0:
-            return QVariant()
+        # <class 'TypeError'>: isValid(self): not enough arguments
+        #   ????????
+        # <class 'TypeError'>: column(self): too many arguments
+        #   (╯°□°）╯︵ ┻━┻
 
-        current_row = index.row() 
-        current_gallery = self._data[current_row]
-        current_column = index.column()
+        try:
+            # if not isinstance(index, QModelIndex):
+                # return QVariant()
 
-        # TODO: name all these roles and put them in app_constants...
-        if role == Qt.DisplayRole:
-            if current_column == self._TITLE:
-                title = current_gallery.title
-                return title
-            elif current_column == self._ARTIST:
+            if not index.isValid():
+                return QVariant()
+
+            if not isinstance(index.row(), int) or not isinstance(len(self._data), int):
+                log_e(f'{index.row() = }')
+                log_e(f'{len(self._data) = }')
+
+            if index.row() >= len(self._data) or index.row() < 0:
+                return QVariant()
+
+            current_row = index.row() 
+            current_gallery = self._data[current_row]
+
+            current_column = index.column()
+
+            # TODO: name all these roles and put them in app_constants...
+            if role == Qt.DisplayRole:
+                if current_column == self._TITLE:
+                    title = current_gallery.title
+                    return title
+                elif current_column == self._ARTIST:
+                    artist = current_gallery.artist
+                    return artist
+                elif current_column == self._TAGS:
+                    tags = utils.tag_to_string(current_gallery.tags)
+                    return tags
+                elif current_column == self._TYPE:
+                    type = current_gallery.type
+                    return type
+                elif current_column == self._FAV:
+                    if current_gallery.fav == 1:
+                        return u'\u2605'
+                    return ''
+                elif current_column == self._CHAPTERS:
+                    return len(current_gallery.chapters)
+                elif current_column == self._LANGUAGE:
+                    return current_gallery.language
+                elif current_column == self._LINK:
+                    return current_gallery.link
+                elif current_column == self._DESCR:
+                    return current_gallery.info
+                elif current_column == self._DATE_ADDED:
+                    g_dt = "{}".format(current_gallery.date_added)
+                    qdate_g_dt = QDateTime.fromString(g_dt, "yyyy-MM-dd HH:mm:ss")
+                    return qdate_g_dt
+                elif current_column == self._PUB_DATE:
+                    g_pdt = "{}".format(current_gallery.pub_date)
+                    qdate_g_pdt = QDateTime.fromString(g_pdt, "yyyy-MM-dd HH:mm:ss")
+                    if qdate_g_pdt.isValid():
+                        return qdate_g_pdt
+                    return 'No date set'
+                return None
+
+            # for artist searching
+            elif role == self.ARTIST_ROLE:
                 artist = current_gallery.artist
                 return artist
-            elif current_column == self._TAGS:
-                tags = utils.tag_to_string(current_gallery.tags)
-                return tags
-            elif current_column == self._TYPE:
-                type = current_gallery.type
-                return type
-            elif current_column == self._FAV:
-                if current_gallery.fav == 1:
-                    return u'\u2605'
-                return ''
-            elif current_column == self._CHAPTERS:
-                return len(current_gallery.chapters)
-            elif current_column == self._LANGUAGE:
-                return current_gallery.language
-            elif current_column == self._LINK:
-                return current_gallery.link
-            elif current_column == self._DESCR:
-                return current_gallery.info
-            elif current_column == self._DATE_ADDED:
-                g_dt = "{}".format(current_gallery.date_added)
-                qdate_g_dt = QDateTime.fromString(g_dt, "yyyy-MM-dd HH:mm:ss")
-                return qdate_g_dt
-            elif current_column == self._PUB_DATE:
-                g_pdt = "{}".format(current_gallery.pub_date)
-                qdate_g_pdt = QDateTime.fromString(g_pdt, "yyyy-MM-dd HH:mm:ss")
-                if qdate_g_pdt.isValid():
-                    return qdate_g_pdt
-                return 'No date set'
-            return None
 
-        # for artist searching
-        elif role == self.ARTIST_ROLE:
-            artist = current_gallery.artist
-            return artist
+            elif role == Qt.DecorationRole:
+                pixmap = current_gallery.profile
+                return pixmap
+            
+            elif role == Qt.BackgroundRole:
+                bg_color = QColor(242, 242, 242)
+                # bg_brush = QBrush(bg_color)
+                return bg_color
 
-        elif role == Qt.DecorationRole:
-            pixmap = current_gallery.profile
-            return pixmap
-        
-        elif role == Qt.BackgroundRole:
-            bg_color = QColor(242, 242, 242)
-            # bg_brush = QBrush(bg_color)
-            return bg_color
+            elif role == Qt.ToolTipRole and app_constants.GRID_TOOLTIP:
+                add_bold = []
+                add_tips = []
+                if app_constants.TOOLTIP_TITLE:
+                    add_bold.append('<b>Title:</b>')
+                    add_tips.append(current_gallery.title)
+                if app_constants.TOOLTIP_AUTHOR:
+                    add_bold.append('<b>Author:</b>')
+                    add_tips.append(current_gallery.artist)
+                if app_constants.TOOLTIP_CHAPTERS:
+                    add_bold.append('<b>Chapters:</b>')
+                    add_tips.append(len(current_gallery.chapters))
+                if app_constants.TOOLTIP_STATUS:
+                    add_bold.append('<b>Status:</b>')
+                    add_tips.append(current_gallery.status)
+                if app_constants.TOOLTIP_TYPE:
+                    add_bold.append('<b>Type:</b>')
+                    add_tips.append(current_gallery.type)
+                if app_constants.TOOLTIP_LANG:
+                    add_bold.append('<b>Language:</b>')
+                    add_tips.append(current_gallery.language)
+                if app_constants.TOOLTIP_DESCR:
+                    add_bold.append('<b>Description:</b><br />')
+                    add_tips.append(current_gallery.info)
+                if app_constants.TOOLTIP_TAGS:
+                    add_bold.append('<b>Tags:</b>')
+                    add_tips.append(utils.tag_to_string(current_gallery.tags))
+                if app_constants.TOOLTIP_LAST_READ:
+                    add_bold.append('<b>Last read:</b>')
+                    add_tips.append('{} ago'.format(utils.get_date_age(current_gallery.last_read)) if current_gallery.last_read else "Never!")
+                if app_constants.TOOLTIP_TIMES_READ:
+                    add_bold.append('<b>Times read:</b>')
+                    add_tips.append(current_gallery.times_read)
+                if app_constants.TOOLTIP_PUB_DATE:
+                    add_bold.append('<b>Publication Date:</b>')
+                    add_tips.append('{}'.format(current_gallery.pub_date).split(' ')[0])
+                if app_constants.TOOLTIP_DATE_ADDED:
+                    add_bold.append('<b>Date added:</b>')
+                    add_tips.append('{}'.format(current_gallery.date_added).split(' ')[0])
 
-        elif role == Qt.ToolTipRole and app_constants.GRID_TOOLTIP:
-            add_bold = []
-            add_tips = []
-            if app_constants.TOOLTIP_TITLE:
-                add_bold.append('<b>Title:</b>')
-                add_tips.append(current_gallery.title)
-            if app_constants.TOOLTIP_AUTHOR:
-                add_bold.append('<b>Author:</b>')
-                add_tips.append(current_gallery.artist)
-            if app_constants.TOOLTIP_CHAPTERS:
-                add_bold.append('<b>Chapters:</b>')
-                add_tips.append(len(current_gallery.chapters))
-            if app_constants.TOOLTIP_STATUS:
-                add_bold.append('<b>Status:</b>')
-                add_tips.append(current_gallery.status)
-            if app_constants.TOOLTIP_TYPE:
-                add_bold.append('<b>Type:</b>')
-                add_tips.append(current_gallery.type)
-            if app_constants.TOOLTIP_LANG:
-                add_bold.append('<b>Language:</b>')
-                add_tips.append(current_gallery.language)
-            if app_constants.TOOLTIP_DESCR:
-                add_bold.append('<b>Description:</b><br />')
-                add_tips.append(current_gallery.info)
-            if app_constants.TOOLTIP_TAGS:
-                add_bold.append('<b>Tags:</b>')
-                add_tips.append(utils.tag_to_string(current_gallery.tags))
-            if app_constants.TOOLTIP_LAST_READ:
-                add_bold.append('<b>Last read:</b>')
-                add_tips.append('{} ago'.format(utils.get_date_age(current_gallery.last_read)) if current_gallery.last_read else "Never!")
-            if app_constants.TOOLTIP_TIMES_READ:
-                add_bold.append('<b>Times read:</b>')
-                add_tips.append(current_gallery.times_read)
-            if app_constants.TOOLTIP_PUB_DATE:
-                add_bold.append('<b>Publication Date:</b>')
-                add_tips.append('{}'.format(current_gallery.pub_date).split(' ')[0])
-            if app_constants.TOOLTIP_DATE_ADDED:
-                add_bold.append('<b>Date added:</b>')
-                add_tips.append('{}'.format(current_gallery.date_added).split(' ')[0])
+                tooltip = ""
+                tips = list(zip(add_bold, add_tips))
+                for tip in tips:
+                    tooltip += "{} {}<br />".format(tip[0], tip[1])
+                return tooltip
 
-            tooltip = ""
-            tips = list(zip(add_bold, add_tips))
-            for tip in tips:
-                tooltip += "{} {}<br />".format(tip[0], tip[1])
-            return tooltip
+            elif role == self.GALLERY_ROLE:
+                return current_gallery
 
-        elif role == self.GALLERY_ROLE:
-            return current_gallery
+            # favorite satus
+            elif role == self.FAV_ROLE:
+                return current_gallery.fav
 
-        # favorite satus
-        elif role == self.FAV_ROLE:
-            return current_gallery.fav
+            elif role == self.DATE_ADDED_ROLE:
+                date_added = "{}".format(current_gallery.date_added)
+                qdate_added = QDateTime.fromString(date_added, "yyyy-MM-dd HH:mm:ss")
+                return qdate_added
+            
+            elif role == self.PUB_DATE_ROLE:
+                if current_gallery.pub_date:
+                    pub_date = "{}".format(current_gallery.pub_date)
+                    qpub_date = QDateTime.fromString(pub_date, "yyyy-MM-dd HH:mm:ss")
+                    return qpub_date
 
-        elif role == self.DATE_ADDED_ROLE:
-            date_added = "{}".format(current_gallery.date_added)
-            qdate_added = QDateTime.fromString(date_added, "yyyy-MM-dd HH:mm:ss")
-            return qdate_added
-        
-        elif role == self.PUB_DATE_ROLE:
-            if current_gallery.pub_date:
-                pub_date = "{}".format(current_gallery.pub_date)
-                qpub_date = QDateTime.fromString(pub_date, "yyyy-MM-dd HH:mm:ss")
-                return qpub_date
+            elif role == self.TIMES_READ_ROLE:
+                return current_gallery.times_read
 
-        elif role == self.TIMES_READ_ROLE:
-            return current_gallery.times_read
+            elif role == self.LAST_READ_ROLE:
+                if current_gallery.last_read:
+                    last_read = "{}".format(current_gallery.last_read)
+                    qlast_read = QDateTime.fromString(last_read, "yyyy-MM-dd HH:mm:ss")
+                    return qlast_read
 
-        elif role == self.LAST_READ_ROLE:
-            if current_gallery.last_read:
-                last_read = "{}".format(current_gallery.last_read)
-                qlast_read = QDateTime.fromString(last_read, "yyyy-MM-dd HH:mm:ss")
-                return qlast_read
+            elif role == self.TIME_ROLE:
+                return current_gallery.qtime
 
-        elif role == self.TIME_ROLE:
-            return current_gallery.qtime
+            elif role == self.RATING_ROLE:
+                return StarRating(current_gallery.rating)
 
-        elif role == self.RATING_ROLE:
-            return StarRating(current_gallery.rating)
+            elif role == self.RATING_COUNT:
+                return current_gallery.rating
 
-        elif role == self.RATING_COUNT:
-            return current_gallery.rating
-
-        elif role == self.PAGE_COUNT:
-            return current_gallery.chapters.pages()
+            elif role == self.PAGE_COUNT:
+                return current_gallery.chapters.pages()
+        except:
+            log_e(f'Exception in GalleryModel.data:')
+            log_e(f'    {index = }')
+            log_e(f'    {role = }')
+            log_e(traceback.format_exc())
 
         return QVariant()
 
