@@ -481,7 +481,8 @@ class GalleryModel(QAbstractTableModel):
         current_gallery = self._data[current_row]
         current_column = index.column()
 
-        def column_checker():
+        # TODO: name all these roles and put them in app_constants...
+        if role == Qt.DisplayRole:
             if current_column == self._TITLE:
                 title = current_gallery.title
                 return title
@@ -497,8 +498,7 @@ class GalleryModel(QAbstractTableModel):
             elif current_column == self._FAV:
                 if current_gallery.fav == 1:
                     return u'\u2605'
-                else:
-                    return ''
+                return ''
             elif current_column == self._CHAPTERS:
                 return len(current_gallery.chapters)
             elif current_column == self._LANGUAGE:
@@ -516,28 +516,24 @@ class GalleryModel(QAbstractTableModel):
                 qdate_g_pdt = QDateTime.fromString(g_pdt, "yyyy-MM-dd HH:mm:ss")
                 if qdate_g_pdt.isValid():
                     return qdate_g_pdt
-                else:
-                    return 'No date set'
+                return 'No date set'
+            return None
 
-        # TODO: name all these roles and put them in app_constants...
-
-        if role == Qt.DisplayRole:
-            return column_checker()
         # for artist searching
-        if role == self.ARTIST_ROLE:
+        elif role == self.ARTIST_ROLE:
             artist = current_gallery.artist
             return artist
 
-        if role == Qt.DecorationRole:
+        elif role == Qt.DecorationRole:
             pixmap = current_gallery.profile
             return pixmap
         
-        if role == Qt.BackgroundRole:
+        elif role == Qt.BackgroundRole:
             bg_color = QColor(242, 242, 242)
-            bg_brush = QBrush(bg_color)
+            # bg_brush = QBrush(bg_color)
             return bg_color
 
-        if app_constants.GRID_TOOLTIP and role == Qt.ToolTipRole:
+        elif role == Qt.ToolTipRole and app_constants.GRID_TOOLTIP:
             add_bold = []
             add_tips = []
             if app_constants.TOOLTIP_TITLE:
@@ -583,43 +579,43 @@ class GalleryModel(QAbstractTableModel):
                 tooltip += "{} {}<br />".format(tip[0], tip[1])
             return tooltip
 
-        if role == self.GALLERY_ROLE:
+        elif role == self.GALLERY_ROLE:
             return current_gallery
 
         # favorite satus
-        if role == self.FAV_ROLE:
+        elif role == self.FAV_ROLE:
             return current_gallery.fav
 
-        if role == self.DATE_ADDED_ROLE:
+        elif role == self.DATE_ADDED_ROLE:
             date_added = "{}".format(current_gallery.date_added)
             qdate_added = QDateTime.fromString(date_added, "yyyy-MM-dd HH:mm:ss")
             return qdate_added
         
-        if role == self.PUB_DATE_ROLE:
+        elif role == self.PUB_DATE_ROLE:
             if current_gallery.pub_date:
                 pub_date = "{}".format(current_gallery.pub_date)
                 qpub_date = QDateTime.fromString(pub_date, "yyyy-MM-dd HH:mm:ss")
                 return qpub_date
 
-        if role == self.TIMES_READ_ROLE:
+        elif role == self.TIMES_READ_ROLE:
             return current_gallery.times_read
 
-        if role == self.LAST_READ_ROLE:
+        elif role == self.LAST_READ_ROLE:
             if current_gallery.last_read:
                 last_read = "{}".format(current_gallery.last_read)
                 qlast_read = QDateTime.fromString(last_read, "yyyy-MM-dd HH:mm:ss")
                 return qlast_read
 
-        if role == self.TIME_ROLE:
+        elif role == self.TIME_ROLE:
             return current_gallery.qtime
 
-        if role == self.RATING_ROLE:
+        elif role == self.RATING_ROLE:
             return StarRating(current_gallery.rating)
 
-        if role == self.RATING_COUNT:
+        elif role == self.RATING_COUNT:
             return current_gallery.rating
 
-        if role == self.PAGE_COUNT:
+        elif role == self.PAGE_COUNT:
             return current_gallery.chapters.pages()
 
         return QVariant()
