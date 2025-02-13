@@ -1,5 +1,5 @@
-werkzeug==0.16.1
-pyqt5==5.13.2
+werkzeug
+pyqt5
 requests
 beautifulsoup4
 scandir
