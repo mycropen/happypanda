@@ -26,7 +26,7 @@ from PyQt5.QtCore import (Qt, QDate, QPoint, pyqtSignal, QThread,
                           QTimer, QObject, QSize, QRect, QFileInfo,
                           QMargins, QPropertyAnimation, QRectF,
                           QTimeLine, QMargins, QPropertyAnimation, QByteArray,
-                          QPointF, QSizeF, QProcess)
+                          QPointF, QSizeF, QProcess, qRound)
 from PyQt5.QtGui import (QTextCursor, QIcon, QMouseEvent, QFont,
                          QPixmapCache, QPalette, QPainter, QBrush,
                          QColor, QPen, QPixmap, QMovie, QPaintEvent, QFontMetrics,
@@ -66,6 +66,16 @@ log_d = log.debug
 log_w = log.warning
 log_e = log.error
 log_c = log.critical
+
+
+# qtawesome sabotages itself by calling QFont.setPixelSize(size: int) with a float
+# so we're rerouting such calls in here since the calls that cause it to crash start from misc.py
+def _setPixelSize(self, size: int | float):
+    QFont.original_setPixelSize(self, int(size))
+QFont.original_setPixelSize = QFont.setPixelSize
+QFont.setPixelSize = _setPixelSize
+
+
 
 def text_layout(text, width, font, font_metrics, alignment=Qt.AlignCenter):
     "Lays out wrapped text"
@@ -228,7 +238,7 @@ class SortMenu(QMenu):
         super().__init__(parent)
         self.parent_widget = app_inst
         self.toolbutton = toolbutton
-        self.sort_actions = QActionGroup(self, exclusive=True)
+        self.sort_actions = QActionGroup(self)
         asc_desc_act = QAction("Asc/Desc", self)
         asc_desc_act.triggered.connect(self.asc_desc)
         s_title = self.sort_actions.addAction(QAction("Title", self.sort_actions, checkable=True))
@@ -589,12 +599,11 @@ class GalleryMetaWindow(ArrowWindow):
     def _set_gallery(self, gallery):
         self.current_gallery = gallery
         self.g_widget.apply_gallery(gallery)
-        self.g_widget.resize(self.width() - self.content_margin,
-                                     self.height() - self.content_margin)
+        self.g_widget.resize(self.width() - self.content_margin, self.height() - self.content_margin)
         if self.direction == self.LEFT:
-            start_point = QPoint(self.arrow_size.width(), 0)
+            start_point = QPoint(qRound(self.arrow_size.width()), 0)
         elif self.direction == self.TOP:
-            start_point = QPoint(0, self.arrow_size.height())
+            start_point = QPoint(0, qRound(self.arrow_size.height()))
         else:
             start_point = QPoint(0, 0)
         # title
@@ -879,7 +888,7 @@ class Spinner(TransparentWidget):
 
     def _update_layout(self):
         self.text_layout = text_layout(self.text, self.width() - self._text_margin, self.font(), self.fontMetrics())
-        self.setFixedHeight(self._min_size + self.text_layout.boundingRect().height())
+        self.setFixedHeight(self._min_size + int(self.text_layout.boundingRect().height()))
 
     def set_size(self, w):
         self.setFixedWidth(w)
@@ -919,7 +928,7 @@ class Spinner(TransparentWidget):
         try:
             painter.setRenderHint(QPainter.Antialiasing)
 
-            txt_rect = QRectF(0,0,0,0)
+            txt_rect = QRect(0,0,0,0)
             if not self.text:
                 txt_rect.setHeight(self.fontMetrics().height())
 
@@ -960,7 +969,7 @@ class Spinner(TransparentWidget):
             self.current_state = self.about_to_show
             self.state_timer.stop()
             self.activated.emit()
-            self._timer.start(1000 / max(1, self.fps))
+            self._timer.start(1000 // max(1, self.fps))
         super().showEvent(event)
 
     def hideEvent(self, event):
@@ -1011,8 +1020,7 @@ class GalleryMenu(QMenu):
         self.selected = selected_indexes
         if self.view.view_type == app_constants.ViewType.Default:
             if not self.selected:
-                favourite_act = self.addAction('Favorite',
-                                         lambda: self.parent_widget.manga_list_view.favorite(self.index))
+                favourite_act = self.addAction('Favorite', lambda: self.parent_widget.manga_list_view.favorite(self.index))
                 favourite_act.setCheckable(True)
                 if self.gallery.fav:
                     favourite_act.setChecked(True)

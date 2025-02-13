@@ -974,8 +974,7 @@ class GridDelegate(QStyledItemDelegate):
                     star_start_x = type_rect.x()+type_rect.width() if app_constants.DISPLAY_GALLERY_TYPE else x
                     star_width = star_rating.sizeHint().width()
                     star_start_x += ((x+w-star_start_x)-(star_width))/2
-                    star_rating.paint(painter,
-                        QRect(star_start_x, type_rect.y(), star_width, type_rect.height()))
+                    star_rating.paint(painter, QRectF(star_start_x, type_rect.y(), star_width, type_rect.height()))
 
             if gallery.state == app_constants.GalleryState.New:
                 painter.save()
@@ -995,7 +994,7 @@ class GridDelegate(QStyledItemDelegate):
                 painter.translate(x, y + app_constants.THUMB_H_SIZE)
                 box_color = QBrush(QColor(label_color))#QColor(0,0,0,123))
                 painter.setBrush(box_color)
-                rect = QRect(0, 0, w, lbl_h) #x, y, width, height
+                rect = QRectF(0, 0, w, lbl_h) #x, y, width, height
                 painter.fillRect(rect, box_color)
                 painter.restore()
                 return rect
