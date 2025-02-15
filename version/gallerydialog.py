@@ -1,12 +1,11 @@
-import queue, os, threading, random, logging, time, scandir
+import os, threading, logging
 from datetime import datetime
 
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QDesktopWidget, QGroupBox,
-                             QHBoxLayout, QFormLayout, QLabel, QLineEdit,
-                             QPushButton, QProgressBar, QTextEdit, QComboBox,
-                             QDateEdit, QFileDialog, QMessageBox, QScrollArea,
-                             QCheckBox, QSizePolicy, QSpinBox)
-from PyQt5.QtCore import (pyqtSignal, Qt, QPoint, QDate, QThread, QTimer, QObject)
+from PyQt5.QtWidgets import (QFrame, QGridLayout, QLayout, QStyle, QWidget, QVBoxLayout, QDesktopWidget, QGroupBox,
+                             QHBoxLayout, QLabel, QLineEdit, QPushButton, QProgressBar, QTextEdit, QComboBox,
+                             QDateEdit, QFileDialog, QMessageBox, QCheckBox, QSizePolicy, QSpinBox)
+from PyQt5.QtCore import (QPoint, QRect, Qt, QDate, QThread, QTimer, QObject)
+from PyQt5.QtGui import QShowEvent
 
 import app_constants
 import utils
@@ -30,21 +29,19 @@ class GalleryDialog(QWidget):
     Pass a list of QModelIndexes to edit their data
     or pass a path to preset path
     """
-
     def __init__(self, parent, arg=None, is_new_gallery=False):
         super().__init__(parent, Qt.Dialog)
+
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAutoFillBackground(True)
         self.parent_widget = parent
         m_l = QVBoxLayout()
+
+        self.frame = QFrame()
+        self.frame.setFrameShape(QFrame.Shape.StyledPanel)
         self.main_layout = QVBoxLayout()
-        dummy = QWidget(self)
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameStyle(scroll_area.StyledPanel)
-        dummy.setLayout(self.main_layout)
-        scroll_area.setWidget(dummy)
-        m_l.addWidget(scroll_area, 3)
+        self.frame.setLayout(self.main_layout)
+        m_l.addWidget(self.frame, 3)
 
         final_buttons = QHBoxLayout()
         final_buttons.setAlignment(Qt.AlignRight)
@@ -57,6 +54,8 @@ class GalleryDialog(QWidget):
         self._multiple_galleries = False
         self._edit_galleries = []
         self._new_single_gallery = is_new_gallery
+
+        self._gallery_dialog_type = 0
 
         # single: single url, single fetch thread
         #    all: make parent_widget do it
@@ -75,16 +74,15 @@ class GalleryDialog(QWidget):
         if arg:
             if isinstance(arg, (list, gallerydb.Gallery)):
                 if isinstance(arg, gallerydb.Gallery):
-                    # editing a single gallery
+                    # editing a single existing gallery
                     self.setWindowTitle('Edit gallery')
                     self._edit_galleries.append(arg)
-                    self.resize(500, 460)
                 else:
                     # multi-gallery edit
                     self.setWindowTitle('Edit {} galleries'.format(len(arg)))
                     self._multiple_galleries = True
                     self._edit_galleries.extend(arg)
-                    self.resize(500, 420)
+
                 self.commonUI()
                 self.setGallery(arg)
                 self.done.clicked.connect(self.accept_edit)
@@ -94,13 +92,14 @@ class GalleryDialog(QWidget):
                 # new gallery from file path
                 new_gallery()
                 self.choose_dir(arg)
-                self.resize(500, 510)
 
         else:
             # new gallery without pre-selected file
             new_gallery()
             self._new_single_gallery = True
-            self.resize(500, 510)
+
+        # the Frame will figure out its own minimum height based on this width and its children's size policies
+        self.resize(app_constants.GALLERY_EDIT_WIDTH, 400)
 
         log_d('GalleryDialog: Create UI: successful')
         self.setLayout(m_l)
@@ -114,14 +113,14 @@ class GalleryDialog(QWidget):
         if not self._multiple_galleries:
             f_web = QGroupBox("Metadata from the Web")
             f_web.setCheckable(False)
-            self.main_layout.addWidget(f_web)
+            self.main_layout.addWidget(f_web, 0)
             web_main_layout = QVBoxLayout()
             web_info = misc.ClickedLabel("Which gallery URLs are supported? (hover)", parent=self)
             web_info.setToolTip(app_constants.SUPPORTED_METADATA_URLS)
             web_info.setToolTipDuration(999999999)
-            web_main_layout.addWidget(web_info)
+            web_main_layout.addWidget(web_info, 0)
             self.web_layout = QHBoxLayout()
-            web_main_layout.addLayout(self.web_layout)
+            web_main_layout.addLayout(self.web_layout, 1)
             f_web.setLayout(web_main_layout)
 
             url_lbl = QLabel("URL:")
@@ -143,40 +142,59 @@ class GalleryDialog(QWidget):
 
         f_gallery = QGroupBox("Gallery Info")
         f_gallery.setCheckable(False)
-        self.main_layout.addWidget(f_gallery)
-        gallery_layout = QFormLayout()
+        self.main_layout.addWidget(f_gallery, 1)
+        # gallery_layout = QFormLayout()
+        gallery_layout = QGridLayout()
         f_gallery.setLayout(gallery_layout)
 
-        def checkbox_layout(widget):
-            if self._multiple_galleries:
-                l = QHBoxLayout()
-                l.addWidget(widget.g_check)
-                widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-                l.addWidget(widget)
-                return l
-            else:
+        def checkbox_layout(widget: QWidget):
+            # if self._multiple_galleries:
+            #     l = QHBoxLayout()
+            #     l.addWidget(widget.g_check)
+            #     # widget.setSizePolicy(hor_size_policy, ver_size_policy)
+            #     l.addWidget(widget)
+            #     return l
+            # else:
+            #     widget.g_check.setChecked(True)
+            #     widget.g_check.hide()
+            #     return widget
+            l = QHBoxLayout()
+            l.addWidget(widget.g_check)
+            l.addWidget(widget)
+            if not self._multiple_galleries:
                 widget.g_check.setChecked(True)
                 widget.g_check.hide()
-                return widget
+            return l
 
-        def add_check(widget):
+        def add_check(widget) -> QWidget:
             widget.g_check = QCheckBox(self)
             return widget
 
         self.title_edit = add_check(QLineEdit())
+        self.title_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.author_edit = add_check(QLineEdit())
         author_completer = misc.GCompleter(self, False, True, False)
         author_completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.author_edit.setCompleter(author_completer)
+        self.author_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.descr_edit = add_check(QTextEdit())
         self.descr_edit.setAcceptRichText(True)
         self.descr_edit.setTabChangesFocus(True)
+        self.descr_edit.setMinimumHeight(40)
+        self.descr_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
+
         self.lang_box = add_check(QComboBox())
         self.lang_box.addItems(app_constants.G_LANGUAGES)
         self.lang_box.addItems(app_constants.G_CUSTOM_LANGUAGES)
+        self.lang_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.rating_box = add_check(QSpinBox())
         self.rating_box.setMaximum(5)
         self.rating_box.setMinimum(0)
+        self.rating_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self._find_combobox_match(self.lang_box, app_constants.G_DEF_LANGUAGE, 0)
         tags_l = QVBoxLayout()
         tag_info = misc.ClickedLabel("How do i write namespace & tags? (hover)", parent=self)
@@ -187,12 +205,18 @@ class GalleryDialog(QWidget):
                       "Tags are seperated by a comma, NOT whitespace.\nNamespaces will be capitalized while tags"+
                       " will be lowercased.")
         tag_info.setToolTipDuration(99999999)
+        tag_info.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         tags_l.addWidget(tag_info)
         self.tags_edit = add_check(misc.CompleterTextEdit())
         self.tags_edit.setCompleter(misc.GCompleter(self, False, False))
         self.tags_edit.setTabChangesFocus(True)
+        self.tags_edit.setPlaceholderText("Press Tab to autocomplete (Ctrl + E to show popup)")
+        self.tags_edit.setMinimumHeight(60)
+        self.tags_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
+
         self.tags_append = QCheckBox("Append tags", self)
         self.tags_append.setChecked(False)
+        self.tags_append.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         if not self._multiple_galleries:
             self.tags_append.hide()
         if self._multiple_galleries:
@@ -202,23 +226,30 @@ class GalleryDialog(QWidget):
             tags_ml.addLayout(checkbox_layout(self.tags_edit), 5)
             tags_l.addLayout(tags_ml, 3)
         else:
-            tags_l.addWidget(checkbox_layout(self.tags_edit), 5)
-        self.tags_edit.setPlaceholderText("Press Tab to autocomplete (Ctrl + E to show popup)")
+            tags_l.addLayout(checkbox_layout(self.tags_edit), 5)
+
         self.type_box = add_check(QComboBox())
         self.type_box.addItems(app_constants.G_TYPES)
         self._find_combobox_match(self.type_box, app_constants.G_DEF_TYPE, 0)
         #self.type_box.currentIndexChanged[int].connect(self.doujin_show)
         #self.doujin_parent = QLineEdit()
         #self.doujin_parent.setVisible(False)
+        self.type_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.status_box = add_check(QComboBox())
         self.status_box.addItems(app_constants.G_STATUS)
         self._find_combobox_match(self.status_box, app_constants.G_DEF_STATUS, 0)
+        self.status_box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.pub_edit = add_check(QDateEdit())
         self.pub_edit.setCalendarPopup(True)
         self.pub_edit.setDate(QDate.currentDate())
+        self.pub_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.path_lbl = misc.ClickedLabel("")
         self.path_lbl.setWordWrap(True)
         self.path_lbl.clicked.connect(lambda a: utils.open_path(a, a) if a else None)
+        self.path_lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         link_layout = QHBoxLayout()
         self.link_lbl = add_check(QLabel(""))
@@ -228,12 +259,14 @@ class GalleryDialog(QWidget):
         if self._multiple_galleries:
             link_layout.addLayout(checkbox_layout(self.link_lbl))
         else:
-            link_layout.addWidget(checkbox_layout(self.link_lbl))
+            link_layout.addLayout(checkbox_layout(self.link_lbl))
         self.link_edit.hide()
         self.link_btn = QPushButton("Modify")
         self.link_btn.setFixedWidth(50)
+        self.link_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.link_btn2 = QPushButton("Set")
         self.link_btn2.setFixedWidth(40)
+        self.link_btn2.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.link_btn.clicked.connect(self.link_modify)
         self.link_btn2.clicked.connect(self.link_set)
         link_layout.addWidget(self.link_btn)
@@ -248,21 +281,58 @@ class GalleryDialog(QWidget):
             lang_l = lang_
         else:
             lang_l = QHBoxLayout()
-            lang_l.addWidget(lang_)
+            lang_l.addLayout(lang_)
             lang_l.addWidget(QLabel("Rating:"), 0, Qt.AlignRight)
-            lang_l.addWidget(rating_)
+            lang_l.addLayout(rating_)
 
+        # gallery_layout.addRow("Title:", checkbox_layout(self.title_edit))
+        # gallery_layout.addRow("Author:", checkbox_layout(self.author_edit))
+        # gallery_layout.addRow("Description:", checkbox_layout(self.descr_edit))
+        # gallery_layout.addRow("Language:", lang_l)
+        # gallery_layout.addRow("Tags:", tags_l)
+        # gallery_layout.addRow("Type:", checkbox_layout(self.type_box))
+        # gallery_layout.addRow("Status:", checkbox_layout(self.status_box))
+        # gallery_layout.addRow("Publication Date:", checkbox_layout(self.pub_edit))
+        # gallery_layout.addRow("Path:", self.path_lbl)
+        # gallery_layout.addRow("URL:", link_layout)
+        
+        gallery_layout.addWidget(QLabel("Title:"),                  0, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("Author:"),                 1, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("Description:"),            2, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+        gallery_layout.addWidget(QLabel("Language:"),               3, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("Tags:"),                   4, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+        gallery_layout.addWidget(QLabel("Type:"),                   5, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("Status:"),                 6, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("Publication Date:"),       7, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("Path:"),                   8, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addWidget(QLabel("URL:"),                    9, 0, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        gallery_layout.addLayout(checkbox_layout(self.title_edit),  0, 1)
+        gallery_layout.addLayout(checkbox_layout(self.author_edit), 1, 1)
+        gallery_layout.addLayout(checkbox_layout(self.descr_edit),  2, 1)
+        if isinstance(lang_l, QLayout):
+            gallery_layout.addLayout(lang_l,                        3, 1)
+        else:
+            gallery_layout.addWidget(lang_l,                        3, 1)
+        gallery_layout.addLayout(tags_l,                            4, 1)
+        gallery_layout.addLayout(checkbox_layout(self.type_box),    5, 1)
+        gallery_layout.addLayout(checkbox_layout(self.status_box),  6, 1)
+        gallery_layout.addLayout(checkbox_layout(self.pub_edit),    7, 1)
+        gallery_layout.addWidget(self.path_lbl,                     8, 1)
+        gallery_layout.addLayout(link_layout,                       9, 1)
 
-        gallery_layout.addRow("Title:", checkbox_layout(self.title_edit))
-        gallery_layout.addRow("Author:", checkbox_layout(self.author_edit))
-        gallery_layout.addRow("Description:", checkbox_layout(self.descr_edit))
-        gallery_layout.addRow("Language:", lang_l)
-        gallery_layout.addRow("Tags:", tags_l)
-        gallery_layout.addRow("Type:", checkbox_layout(self.type_box))
-        gallery_layout.addRow("Status:", checkbox_layout(self.status_box))
-        gallery_layout.addRow("Publication Date:", checkbox_layout(self.pub_edit))
-        gallery_layout.addRow("Path:", self.path_lbl)
-        gallery_layout.addRow("URL:", link_layout)
+        gallery_layout.setColumnStretch(0, 0)
+        gallery_layout.setColumnStretch(1, 1)
+
+        gallery_layout.setRowStretch(0, 0)
+        gallery_layout.setRowStretch(1, 0)
+        gallery_layout.setRowStretch(2, 0)
+        gallery_layout.setRowStretch(3, 0)
+        gallery_layout.setRowStretch(4, 5)
+        gallery_layout.setRowStretch(5, 0)
+        gallery_layout.setRowStretch(6, 0)
+        gallery_layout.setRowStretch(7, 0)
+        gallery_layout.setRowStretch(8, 0)
+        gallery_layout.setRowStretch(8, 0)
 
         if not self._multiple_galleries: QWidget.setTabOrder(self.url_edit, self.title_edit)
         QWidget.setTabOrder(self.title_edit, self.author_edit)
@@ -291,10 +361,12 @@ class GalleryDialog(QWidget):
         elif self.get_metadata_type == 'all':
             self.parent_widget.gallery_dialog_group.all_metadata()
 
-    def resizeEvent(self, event):
-        self.tags_edit.setFixedHeight(event.size().height()//8)
-        self.descr_edit.setFixedHeight(event.size().height()//12.5)
-        return super().resizeEvent(event)
+    # def resizeEvent(self, event):
+        # self.tags_edit.setFixedHeight(int(event.size().height()//8))
+        # self.descr_edit.setFixedHeight(int(event.size().height()//12.5))
+        # print([self.size(), self.scroll_area.verticalScrollBar().isVisible(), self.scroll_area.horizontalScrollBar().isVisible()])
+        # print([self.size()])
+        # return super().resizeEvent(event)
 
     def _find_combobox_match(self, combobox, key, default):
         f_index = combobox.findText(key, Qt.MatchFixedString)
@@ -703,6 +775,12 @@ class GalleryDialog(QWidget):
 
     def closeEvent(self, event):
         self.parent_widget.gallery_dialog_group.unregister(self)
+
+    def showEvent(self, a0: QShowEvent) -> None:
+        if self.parentWidget():
+            parent_rect = QRect(self.parentWidget().mapToGlobal(QPoint(0, 0)), self.parentWidget().size())
+            self.move(QStyle.alignedRect(Qt.LayoutDirection.LeftToRight, Qt.AlignmentFlag.AlignCenter, self.size(), parent_rect).topLeft())
+        return super().showEvent(a0)
 
 
 class GalleryDialogGroup(QObject):
