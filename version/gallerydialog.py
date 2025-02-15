@@ -762,13 +762,13 @@ class GalleryDialog(QWidget):
                 self.done.click()
         elif event.key() == Qt.Key_Escape:
             self.cancel.click()
-        elif event.key() == Qt.Key_Control:
+        elif not self._multiple_galleries and event.key() == Qt.Key_Control:
             self.url_btn.setText("Get all metadata")
             self.get_metadata_type = 'all'
         return super().keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Control:
+        if not self._multiple_galleries and event.key() == Qt.Key_Control:
             self.url_btn.setText("Get metadata")
             self.get_metadata_type = 'single'
         return super().keyReleaseEvent(event)
