@@ -215,7 +215,7 @@ class GalleryDialog(QWidget):
         self.tags_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
 
         self.tags_append = QCheckBox("Append tags", self)
-        self.tags_append.setChecked(False)
+        self.tags_append.setChecked(True)
         self.tags_append.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         if not self._multiple_galleries:
             self.tags_append.hide()
@@ -350,10 +350,6 @@ class GalleryDialog(QWidget):
         self.cancel.setFocusPolicy(Qt.ClickFocus)
         self.pub_edit.setFocusPolicy(Qt.ClickFocus)
         self.path_lbl.setFocusPolicy(Qt.ClickFocus)
-        
-        if   self._new_single_gallery: self.title_edit.setFocus()
-        elif self._multiple_galleries: self.tags_edit.setFocus()
-        else:                          self.url_edit.setFocus()
 
     def url_btn_clicked(self):
         if self.get_metadata_type == 'single':
@@ -756,7 +752,7 @@ class GalleryDialog(QWidget):
         # Escape:
         #   reject_edit
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            if self.url_edit.hasFocus():
+            if not self._multiple_galleries and self.url_edit.hasFocus():
                 self.url_btn_clicked()
             elif not self.descr_edit.hasFocus() and not self.tags_edit.hasFocus():
                 self.done.click()
@@ -780,6 +776,12 @@ class GalleryDialog(QWidget):
         if self.parentWidget():
             parent_rect = QRect(self.parentWidget().mapToGlobal(QPoint(0, 0)), self.parentWidget().size())
             self.move(QStyle.alignedRect(Qt.LayoutDirection.LeftToRight, Qt.AlignmentFlag.AlignCenter, self.size(), parent_rect).topLeft())
+            
+        if self._multiple_galleries:
+            self.tags_edit.setFocus()
+        else:
+            self.url_edit.setFocus()
+        
         return super().showEvent(a0)
 
 
