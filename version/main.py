@@ -16,7 +16,7 @@ import sys, logging, logging.handlers, os, argparse, platform, scandir
 import traceback
 
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QFile, Qt
+from PyQt5.QtCore import QCoreApplication, QFile, Qt
 from PyQt5.QtGui import QFontDatabase
 
 from database import db, db_constants
@@ -105,7 +105,9 @@ def start(test=False):
 
     if app_constants.FORCE_HIGH_DPI_SUPPORT:
         log_i("Enabling high DPI display support")
-        os.environ.putenv("QT_DEVICE_PIXEL_RATIO", "auto")
+        # os.putenv("QT_DEVICE_PIXEL_RATIO", "auto")
+        # os.putenv("QT_ENABLE_HIGHDPI_SCALING", "1")
+        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
 
     effects = [Qt.UI_AnimateCombo, Qt.UI_FadeMenu, Qt.UI_AnimateMenu,
             Qt.UI_AnimateTooltip, Qt.UI_FadeTooltip]
@@ -118,7 +120,7 @@ def start(test=False):
     application.setApplicationName('Happypanda')
     application.setApplicationDisplayName('Happypanda')
     application.setApplicationVersion('v{}'.format(app_constants.vs))
-    application.setAttribute(Qt.AA_UseHighDpiPixmaps)
+    application.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
     application.font().setStyleStrategy(application.font().PreferAntialias)
 
     log_i('Starting Happypanda...'.format(app_constants.vs))
