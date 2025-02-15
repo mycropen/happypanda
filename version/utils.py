@@ -391,6 +391,7 @@ class ArchiveFile():
     close -> close archive
     """
     zip, rar = range(2)
+    
     def __init__(self, filepath):
         self.type = 0
         try:
@@ -1290,7 +1291,7 @@ def make_chapters(gallery_object):
     chap_container = gallery_object.chapters
     path = gallery_object.path
     metafile = GMetafile()
-    try:
+    if os.path.isdir(path):
         log_d('Listing dir...')
         con = scandir.scandir(path) # list all folders in gallery dir
         log_i('Gallery source is a directory')
@@ -1313,7 +1314,7 @@ def make_chapters(gallery_object):
             metafile.update(GMetafile(path))
             chap.pages = len([x for x in scandir.scandir(path) if x.name.lower().endswith(IMG_FILES)])
 
-    except NotADirectoryError:
+    else:
         if path.endswith(ARCHIVE_FILES):
             gallery_object.is_archive = 1
             log_i("Gallery source is an archive")

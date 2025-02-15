@@ -93,7 +93,7 @@ class Fetch(QObject):
             new_gallery = Gallery()
             images_paths = []
             metafile = utils.GMetafile()
-            try:
+            if os.path.isdir(temp_p):
                 con = scandir.scandir(temp_p) #all of content in the gallery folder
                 log_i('Gallery source is a directory')
                 chapters = sorted([sub.path for sub in con if sub.is_dir() or sub.name.endswith(utils.ARCHIVE_FILES)])\
@@ -117,7 +117,7 @@ class Fetch(QObject):
                     chap.pages = len(list(scandir.scandir(path)))
                 
                 parsed = utils.title_parser(folder_name)
-            except NotADirectoryError:
+            else:
                 try:
                     if is_archive or temp_p.endswith(utils.ARCHIVE_FILES):
                         log_i('Gallery source is an archive')

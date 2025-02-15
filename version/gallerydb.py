@@ -1229,7 +1229,7 @@ class HashDB(DBBase):
                         with open(pages[i], 'rb') as f:
                             hashes[i] = generate_img_hash(f)
 
-            except NotADirectoryError:
+            except (NotADirectoryError, OSError):
                 temp_dir = os.path.join(app_constants.temp_dir, str(uuid.uuid4()))
                 is_archive = gallery.is_archive
                 try:
