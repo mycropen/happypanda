@@ -105,7 +105,6 @@ class SettingsDialog(QWidget):
 
         self.restore_options()
 
-
     def change(self, item):
         def curr_index(index):
             if index != self.right_panel.currentIndex():
@@ -164,15 +163,15 @@ class SettingsDialog(QWidget):
         # App / General / External Viewer
         self.external_viewer_path.setText(app_constants.EXTERNAL_VIEWER_PATH)
 
-        # App / Monitor / Misc
+        # App / Monitoring / Misc
         self.enable_monitor.setChecked(app_constants.ENABLE_MONITOR)
         self.look_new_gallery_startup.setChecked(app_constants.LOOK_NEW_GALLERY_STARTUP)
 
-        # App / Monitor / Folders
+        # App / Monitoring / Folders
         for path in app_constants.MONITOR_PATHS:
             self.add_folder_monitor(path)
 
-        # App / Monitor / Ignore list
+        # App / Monitoring / Ignore list
         for ext in app_constants.IGNORE_EXTS:
             if ext == 'Folder':
                 self.ignore_folder.setChecked(True)
@@ -355,12 +354,12 @@ class SettingsDialog(QWidget):
         set(app_constants.GALLERY_TRIM_CURLY, 'Application', 'remove curly braces')
         app_constants.GALLERY_TITLE_SEP = app_constants.G_TITLE_SIDES[self.new_gallery_keep_title.currentIndex()]
         set(app_constants.GALLERY_TITLE_SEP, 'Application', 'keep side of title with vertical bar')
-        # App / Monitor / misc
+        # App / Monitoring / misc
         app_constants.ENABLE_MONITOR = self.enable_monitor.isChecked()
         set(app_constants.ENABLE_MONITOR, 'Application', 'enable monitor')
         app_constants.LOOK_NEW_GALLERY_STARTUP = self.look_new_gallery_startup.isChecked()
         set(app_constants.LOOK_NEW_GALLERY_STARTUP, 'Application', 'look new gallery startup')
-        # App / Monitor / folders
+        # App / Monitoring / folders
         paths = []
         folder_p_widgets = self.take_all_layout_widgets(self.folders_layout)
         for x, l_edit in enumerate(folder_p_widgets):
@@ -370,7 +369,7 @@ class SettingsDialog(QWidget):
 
         set(paths, 'Application', 'monitor paths')
         app_constants.MONITOR_PATHS = paths
-        # App / Monitor / ignore list
+        # App / Monitoring / ignore list
         exts_list = []
         for ext in [self.ignore_folder, self.ignore_zip, self.ignore_cbz, self.ignore_rar, self.ignore_cbr]:
             if ext.isChecked():
@@ -630,16 +629,17 @@ class SettingsDialog(QWidget):
                 parent.addTab(new_t, name)
             return new_t, new_l
 
-
         # App
         application = QTabWidget(self)
         self.application_index = self.right_panel.addWidget(application)
-        application_general, app_general_m_l = new_tab('General', application, True)
+
 
         # App / General
+        application_general, app_general_m_l = new_tab('General', application, True)
         self.sidebar_widget_hidden = QCheckBox("Show sidebar widget on startup")
-        app_general_m_l.addRow(self.sidebar_widget_hidden)
+
         self.send_2_trash = QCheckBox("Send deleted files to recycle bin", self)
+        app_general_m_l.addRow(self.sidebar_widget_hidden)
         self.send_2_trash.setToolTip("When unchecked, files will get deleted permanently and be unrecoverable!")
         app_general_m_l.addRow(self.send_2_trash)
         self.keep_added_gallery = QCheckBox("Remove galleries added in inbox on exit")
@@ -647,11 +647,15 @@ class SettingsDialog(QWidget):
         app_general_m_l.addRow(self.keep_added_gallery)
         self.enable_notifications = QCheckBox("Enable desktop notifications", self)
         app_general_m_l.addRow(self.enable_notifications)
+        self.always_drop_to_inbox = QCheckBox("Send every new gallery to the Inbox", self)
+        self.always_drop_to_inbox.setToolTip("If unchecked, then dragging a single gallery onto Happypanda will open an edit dialog instead.")
+        app_general_m_l.addRow(self.always_drop_to_inbox)
+
 
         # App / General / Search
         app_search, app_search_layout = groupbox('Search', QFormLayout, application_general)
         app_general_m_l.addRow(app_search)
-        # App / General / Search / autocomplete
+
         self.search_autocomplete = QCheckBox('*')
         self.search_autocomplete.setChecked(app_constants.SEARCH_AUTOCOMPLETE)
         self.search_autocomplete.setToolTip('Turn autocomplete on/off')
@@ -664,11 +668,12 @@ class SettingsDialog(QWidget):
         self.searchable_inbox.setChecked(app_constants.SEARCHABLE_INBOX)
         self.searchable_inbox.setToolTip('Enable search function in the Inbox')
         app_search_layout.addRow('Searchable Inbox', self.searchable_inbox)
-        # App / General / Search / search behaviour
+
         self.search_every_keystroke = QRadioButton('Search on every keystroke *', app_search)
         app_search_layout.addRow(self.search_every_keystroke)
         self.search_on_enter = QRadioButton('Search on return-key *', app_search)
         app_search_layout.addRow(self.search_on_enter)
+
 
         # App / General / External Viewer
         app_external_viewer, app_external_viewer_l = groupbox('External Viewer', QFormLayout, application_general, app_general_m_l)
@@ -683,22 +688,26 @@ class SettingsDialog(QWidget):
         self.external_viewer_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         app_external_viewer_l.addRow('Path:', self.external_viewer_path)
 
+
         # App / General / Rar Support
         app_rar_group, app_rar_layout = groupbox('RAR Support *', QFormLayout, self)
         app_general_m_l.addRow(app_rar_group)
-        rar_info = QLabel('Specify the path to the unrar tool to enable rar support.\n'+
-                    'Windows: "unrar.exe" should be in the "bin" directory if you installed from the'+
-                    ' self-extracting archive provided on github.\nOSX: You can install this via HomeBrew.'+
-                    ' Path should be something like: "/usr/local/bin/unrar".\nLinux: Should already be'+
-                    ' installed. You can just type "unrar". If it\'s not installed, use your package manager: pacman -S unrar')
+        rar_info = QLabel('Specify the path to the unrar tool to enable rar support.\n' \
+                          'Windows: An "unrar.exe" should be in the "bin" directory if you installed from the self-extracting archive provided on github.\n' \
+                          'OSX: You can install this via HomeBrew. The path should be something like: "/usr/local/bin/unrar".\n' \
+                          'Linux: Should already be installed as just "unrar". If it\'s not installed, use your package manager: pacman -S unrar')
+
         rar_info.setWordWrap(True)
         app_rar_layout.addRow(rar_info)
         self.path_to_unrar = PathLineEdit(self, False, filters='')
         app_rar_layout.addRow('UnRAR tool path:', self.path_to_unrar)
 
+
         # App / Gallery
         app_gallery_page, app_gallery_l = new_tab('Gallery', application, True)
 
+
+        # App / Gallery / Default values
         g_def_values, g_def_values_l = groupbox("Default values", QFormLayout, app_gallery_page)
         app_gallery_l.addRow(g_def_values)
         self.g_languages = QComboBox(self)
@@ -710,9 +719,11 @@ class SettingsDialog(QWidget):
         self.g_status = QComboBox(self)
         g_def_values_l.addRow("Default Status", self.g_status)
 
+
+        # App / Gallery / 
         self.subfolder_as_chapters = QCheckBox("Subdirectiories should be treated as standalone galleries instead of chapters (applies in archives too)")
         self.subfolder_as_chapters.setToolTip("This option will enable creating standalone galleries for each subdirectiories found recursively when importing."+
-                                        "\nDefault action is treating each subfolder found as chapters of a gallery.")
+                                              "\nDefault action is treating each subfolder found as chapters of a gallery.")
         extract_gallery_info = QLabel("Note: This option has no effect when turned off if path to external viewer is not specified.")
         self.extract_gallery_before_opening = QCheckBox("Extract archive before opening (Uncheck only if your viewer supports it)")
         self.open_galleries_sequentially = QCheckBox("Open chapters sequentially (Note: has no effect if path to viewer is not specified)")
@@ -725,16 +736,18 @@ class SettingsDialog(QWidget):
         app_gallery_l.addRow(self.extract_gallery_before_opening)
         app_gallery_l.addRow(self.open_galleries_sequentially)
 
-        self.move_imported_gs, move_imported_gs_l = groupbox('Move imported galleries',
-                                                       QFormLayout, app_gallery_page)
+
+        # App / Gallery / Move imported galleries
+        self.move_imported_gs, move_imported_gs_l = groupbox('Move imported galleries', QFormLayout, app_gallery_page)
         self.move_imported_gs.setCheckable(True)
         self.move_imported_gs.setToolTip("Move imported galleries to specified folder.")
         self.move_imported_def_path = PathLineEdit()
         move_imported_gs_l.addRow('Directory:', self.move_imported_def_path)
         app_gallery_l.addRow(self.move_imported_gs)
 
-        self.rename_g_source_group, rename_g_source_l = groupbox('Rename gallery source (Coming soon)',
-                                                      QFormLayout, app_gallery_page)
+
+        # App / Gallery / Rename gallery source
+        self.rename_g_source_group, rename_g_source_l = groupbox('Rename gallery source (Coming soon)', QFormLayout, app_gallery_page)
         self.rename_g_source_group.setCheckable(True)
         self.rename_g_source_group.setDisabled(True)
         app_gallery_l.addRow(self.rename_g_source_group)
@@ -750,6 +763,8 @@ class SettingsDialog(QWidget):
         rename_g_source_flow_l.addWidget(self.rename_title)
         rename_g_source_flow_l.addWidget(self.rename_lang)
 
+
+        # App / Gallery / New Gallery Fixes
         new_gallery_fixes, new_gallery_fixes_l = groupbox('New Gallery Fixes', QFormLayout, app_gallery_page)
         app_gallery_l.addRow(new_gallery_fixes)
         self.new_gallery_trim_starting_paren_checkbox = QCheckBox('Remove starting parentheses like (C98), (COMIC1☆7), etc. from new galleries', new_gallery_fixes)
@@ -762,12 +777,15 @@ class SettingsDialog(QWidget):
         self.new_gallery_keep_title.addItem('Keep part after', 2)
         new_gallery_fixes_l.addRow('For titles split with \'|\':', self.new_gallery_keep_title)
 
+
+        # App / Gallery / Random Gallery Opener
         random_gallery_opener, random_g_opener_l = groupbox('Random Gallery Opener', QFormLayout, app_gallery_page)
         app_gallery_l.addRow(random_gallery_opener)
         self.open_random_g_chapters = QCheckBox("Open random gallery chapters")
         random_g_opener_l.addRow(self.open_random_g_chapters)
 
-        # App / Monitor
+
+        # App / Monitoring
         app_monitor_page = QScrollArea()
         app_monitor_page.setBackgroundRole(QPalette.Base)
         app_monitor_dummy = QWidget()
@@ -775,14 +793,16 @@ class SettingsDialog(QWidget):
         app_monitor_page.setWidget(app_monitor_dummy)
         application.addTab(app_monitor_page, 'Monitoring')
         app_monitor_m_l = QVBoxLayout(app_monitor_dummy)
-        # App / Monitor / misc
-        app_monitor_misc_group = QGroupBox('General *', self)
+
+
+        # App / Monitoring / General
+        app_monitor_misc_group = QGroupBox('General', self)
         app_monitor_m_l.addWidget(app_monitor_misc_group)
         app_monitor_misc_m_l = QFormLayout(app_monitor_misc_group)
-        monitor_info = QLabel('Directory monitoring will monitor the specified directories for any'+
-                        ' filesystem events. For example if you delete a gallery source in one of your'+
-                        ' monitored directories the application will inform you and ask if'+
-                        ' you want to delete the gallery from the application as well.')
+        monitor_info = QLabel('Directory monitoring will monitor the specified directories for any filesystem events. ' \
+                              'For example if you delete a gallery source in one of your monitored directories the application ' \
+                              'will inform you and ask if you want to delete the gallery from the application as well.')
+
         monitor_info.setWordWrap(True)
         app_monitor_misc_m_l.addRow(monitor_info)
         self.enable_monitor = QCheckBox('Enable directory monitoring')
@@ -790,8 +810,9 @@ class SettingsDialog(QWidget):
         self.look_new_gallery_startup = QCheckBox('Scan for new galleries on startup')
         app_monitor_misc_m_l.addRow(self.look_new_gallery_startup)
 
-        # App / Monitor / folders
-        app_monitor_group = QGroupBox('Directories *', self)
+
+        # App / Monitoring / Directories
+        app_monitor_group = QGroupBox('Directories', self)
         app_monitor_m_l.addWidget(app_monitor_group, 1)
         app_monitor_folders_m_l = QVBoxLayout(app_monitor_group)
         app_monitor_folders_add = QPushButton('+')
@@ -802,8 +823,12 @@ class SettingsDialog(QWidget):
         self.folders_layout = QFormLayout()
         app_monitor_folders_m_l.addLayout(self.folders_layout)
 
+
         # App / Ignore
         app_ignore, app_ignore_m_l = new_tab('Ignore', application, True)
+
+
+        # App / Ignore / Folder & File extensions
         ignore_ext_group, ignore_ext_l = groupbox('Folder && File extensions (Check to ignore)', QVBoxLayout, app_monitor_dummy)
         app_ignore_m_l.addRow(ignore_ext_group)
         ignore_ext_list_l = FlowLayout()
@@ -819,6 +844,8 @@ class SettingsDialog(QWidget):
         self.ignore_cbr = QCheckBox("CBR", ignore_ext_group)
         ignore_ext_list_l.addWidget(self.ignore_cbr)
 
+
+        # App / Ignore / List
         app_ignore_group, app_ignore_list_l = groupbox('List', QVBoxLayout, app_monitor_dummy)
         app_ignore_m_l.addRow(app_ignore_group)
         add_buttons_l = QHBoxLayout()
@@ -832,9 +859,11 @@ class SettingsDialog(QWidget):
         self.ignore_path_l = QFormLayout()
         app_ignore_list_l.addLayout(self.ignore_path_l)
 
+
         # Web
         web = QTabWidget(self)
         self.web_index = self.right_panel.addWidget(web)
+
 
         # Web / Logins
         logins_page, logins_layout = new_tab("Logins", web, True)
@@ -906,8 +935,8 @@ class SettingsDialog(QWidget):
 
         # Web / Downloader
         web_downloader, web_downloader_l = new_tab('Downloader', web)
-        hen_download_group, hen_download_group_l = groupbox('E-Hentai',
-                                                      QFormLayout, web_downloader)
+        hen_download_group, hen_download_group_l = groupbox('E-Hentai', QFormLayout, web_downloader)
+
         web_downloader_l.addRow(hen_download_group)
         self.archive_download = QRadioButton('Archive', hen_download_group)
         self.torrent_download = QRadioButton('Torrent', hen_download_group)
@@ -918,11 +947,12 @@ class SettingsDialog(QWidget):
         self.download_directory = PathLineEdit(web_downloader)
         web_downloader_l.addRow('Destination:', self.download_directory)
         self.torrent_client = PathLineEdit(web_downloader, False, '')
-        web_downloader_l.addRow(QLabel("Leave empty to use default torrent client."+
-                                 "\nIt is NOT recommended to import a file while it's still downloading."))
+        web_downloader_l.addRow(QLabel("Leave empty to use default torrent client.\nIt is NOT recommended to import a file while it's still downloading."))
+
         web_downloader_l.addRow('Torrent client:', self.torrent_client)
         self.download_gallery_lib = QCheckBox("Send downloaded galleries directly to library")
         web_downloader_l.addRow(self.download_gallery_lib)
+
 
         # Web / Metadata
         web_metadata_page = QScrollArea()
@@ -955,9 +985,9 @@ class SettingsDialog(QWidget):
         web_metadata_m_l.addRow(time_offset_info)
         web_metadata_m_l.addRow('Delay in seconds:', self.web_time_offset)
         web_metadata_m_l.addRow(QLabel(''))
-        replace_metadata_info = QLabel('By default metadata is appended to a gallery.\n'+
-                                 'Enabling this option makes it so that a gallery\'s old data'+
-                                 ' is deleted and replaced with the new data.')
+        replace_metadata_info = QLabel('By default metadata is appended to a gallery.\n' \
+                                       'Enabling this option makes it so that a gallery\'s old data ' \
+                                       'is deleted and replaced with the new data.')
         replace_metadata_info.setWordWrap(True)
         self.replace_metadata = QCheckBox('Replace all old metadata with new metadata')
         web_metadata_m_l.addRow(replace_metadata_info)
@@ -1002,8 +1032,8 @@ class SettingsDialog(QWidget):
         web_metadata_m_l.addRow(self.always_first_hit)
         use_gallery_link_info = QLabel("Enable this option to fetch metadata using the currently applied URL on the gallery")
         self.use_gallery_link = QCheckBox('Use currently applied gallery URL')
-        self.use_gallery_link.setToolTip("Metadata will be fetched from the current gallery URL"+
-                                   " if it's a supported gallery url")
+        self.use_gallery_link.setToolTip("Metadata will be fetched from the current gallery URL if it's a supported gallery url")
+
         web_metadata_m_l.addRow(use_gallery_link_info)
         web_metadata_m_l.addRow(self.use_gallery_link)
         fallback_source_info = QLabel("Specify which sources metadata fetcher should fallback to when a gallery is not found.")
@@ -1017,6 +1047,8 @@ class SettingsDialog(QWidget):
         # Visual
         visual = QTabWidget(self)
         self.visual_index = self.right_panel.addWidget(visual)
+
+        # Visual / General
         visual_general_page, visual_general_layout = new_tab('General', visual, True)
 
         galleryedit_box, galleryedit_box_layout = groupbox('Gallery Edit Dialog', QFormLayout, visual_general_page)
@@ -1027,9 +1059,12 @@ class SettingsDialog(QWidget):
         self.galleryedit_width.setFixedWidth(120)
         galleryedit_box_layout.addRow('Dialog Width:', self.galleryedit_width)
 
-        # grid view
+
+        # Visual / Grid View
         grid_view_general_page, grid_view_layout = new_tab("Grid View", visual, True)
-        # grid view / popup
+
+
+        # Visual / Grid View / Popup
         grid_popup, grid_popup_l = groupbox("Popup", QFormLayout, grid_view_general_page)
         grid_view_layout.addRow(grid_popup)
         self.g_popup_width = QSpinBox(grid_popup)
@@ -1041,14 +1076,15 @@ class SettingsDialog(QWidget):
         self.g_popup_height.setFixedWidth(120)
         grid_popup_l.addRow("Popup Height:", self.g_popup_height)
 
-        # grid view / tooltip
+
+        # Visual / Grid View / Tooltip
         self.grid_tooltip_group = QGroupBox('Tooltip', grid_view_general_page)
         self.grid_tooltip_group.setCheckable(True)
         grid_view_layout.addRow(self.grid_tooltip_group)
         grid_tooltip_layout = QFormLayout()
         self.grid_tooltip_group.setLayout(grid_tooltip_layout)
-        grid_tooltip_layout.addRow(QLabel('Control what is'+
-                                    ' displayed in the tooltip when hovering a gallery'))
+        grid_tooltip_layout.addRow(QLabel('Control what is displayed in the tooltip when hovering a gallery'))
+
         grid_tooltips_hlayout = FlowLayout()
         grid_tooltip_layout.addRow(grid_tooltips_hlayout)
         self.visual_grid_tooltip_title = QCheckBox('Title')
@@ -1075,7 +1111,9 @@ class SettingsDialog(QWidget):
         grid_tooltips_hlayout.addWidget(self.visual_grid_tooltip_pub_date)
         self.visual_grid_tooltip_date_added = QCheckBox('Date added')
         grid_tooltips_hlayout.addWidget(self.visual_grid_tooltip_date_added)
-        # grid view / gallery
+
+
+        # Visual / Grid View / Gallery
         grid_gallery_group = QGroupBox('Gallery', grid_view_general_page)
         grid_view_layout.addRow(grid_gallery_group)
         grid_gallery_main_l = QFormLayout()
@@ -1113,15 +1151,9 @@ class SettingsDialog(QWidget):
         gallery_font.addWidget(choose_font, 0, Qt.AlignLeft)
         gallery_font.addWidget(Spacer('h'), 1, Qt.AlignLeft)
 
-        class NoWheelSlider(QSlider):
-            def __init__(self, ori, p):
-                super().__init__(ori, p)
-
-            def wheelEvent(self, ev):
-                ev.ignore()
-
         gallery_size_lbl = QLabel(self)
-        self.gallery_size = NoWheelSlider(Qt.Horizontal, self)
+        self.gallery_size = QSlider(Qt.Horizontal, self)
+        self.gallery_size.wheelEvent = lambda event: event.ignore()
         self.gallery_size.valueChanged.connect(lambda x: gallery_size_lbl.setText(str(x+2)))
         self.gallery_size.setMinimum(-2)
         self.gallery_size.setMaximum(10)
@@ -1143,70 +1175,67 @@ class SettingsDialog(QWidget):
         self.grid_spacing.setFixedWidth(self.grid_spacing.width())
         grid_gallery_main_l.addRow("Spacing:*", self.grid_spacing)
 
-        # grid view / colors
+
+        # Visual / Grid View / Colors
         grid_colors_group = QGroupBox('Colors', grid_view_general_page)
         grid_view_layout.addRow(grid_colors_group)
         grid_colors_l = QFormLayout()
         grid_colors_group.setLayout(grid_colors_l)
+
         def color_lineedit():
             l = QLineEdit()
             l.setPlaceholderText('Hex colors. Eg.: #323232')
             l.setMaximumWidth(200)
             return l
 
-        self.grid_label_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            hex_color=app_constants.GRID_VIEW_LABEL_COLOR)
+        self.grid_label_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(hex_color=app_constants.GRID_VIEW_LABEL_COLOR)
         grid_colors_l.addRow('Label color:', hbox_layout)
-        self.grid_title_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            hex_color=app_constants.GRID_VIEW_TITLE_COLOR)
+        self.grid_title_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(hex_color=app_constants.GRID_VIEW_TITLE_COLOR)
         grid_colors_l.addRow('Title color:', hbox_layout)
-        self.grid_artist_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            hex_color=app_constants.GRID_VIEW_ARTIST_COLOR)
+        self.grid_artist_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(hex_color=app_constants.GRID_VIEW_ARTIST_COLOR)
         grid_colors_l.addRow('Artist color:', hbox_layout)
 
-        # grid view / colors / ribbon
+
+        # Visual / Grid View / Colors / Ribbon
         self.colors_ribbon_group, colors_ribbon_l = groupbox('Ribbon', QFormLayout, grid_colors_group)
         self.colors_ribbon_group.setCheckable(True)
         grid_colors_l.addRow(self.colors_ribbon_group)
 
-        self.ribbon_manga_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-             app_constants.GRID_VIEW_T_MANGA_COLOR)
+        self.ribbon_manga_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_MANGA_COLOR)
         colors_ribbon_l.addRow('Manga', hbox_layout)
-        self.ribbon_doujin_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_DOUJIN_COLOR)
+        self.ribbon_doujin_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_DOUJIN_COLOR)
         colors_ribbon_l.addRow('Doujinshi', hbox_layout)
-        self.ribbon_artist_cg_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_ARTIST_CG_COLOR)
+        self.ribbon_artist_cg_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_ARTIST_CG_COLOR)
         colors_ribbon_l.addRow('Artist CG', hbox_layout)
-        self.ribbon_game_cg_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_GAME_CG_COLOR)
+        self.ribbon_game_cg_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_GAME_CG_COLOR)
         colors_ribbon_l.addRow('Game CG', hbox_layout)
-        self.ribbon_western_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_WESTERN_COLOR)
+        self.ribbon_western_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_WESTERN_COLOR)
         colors_ribbon_l.addRow('Western', hbox_layout)
-        self.ribbon_image_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_IMAGE_COLOR)
+        self.ribbon_image_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_IMAGE_COLOR)
         colors_ribbon_l.addRow('Image', hbox_layout)
-        self.ribbon_non_h_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_NON_H_COLOR)
+        self.ribbon_non_h_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_NON_H_COLOR)
         colors_ribbon_l.addRow('Non-H', hbox_layout)
-        self.ribbon_cosplay_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_COSPLAY_COLOR)
+        self.ribbon_cosplay_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_COSPLAY_COLOR)
         colors_ribbon_l.addRow('Cosplay', hbox_layout)
-        self.ribbon_other_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(
-            app_constants.GRID_VIEW_T_OTHER_COLOR)
+        self.ribbon_other_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_OTHER_COLOR)
         colors_ribbon_l.addRow('Other', hbox_layout)
 
-        # Style
+        # Visual / Style
         style_page = QWidget(self)
         visual.addTab(style_page, 'Style')
-        # visual.setTabEnabled(0, False)  # General
-        visual.setTabEnabled(2, False)  # Style
+
+        # disable tab "Style"
+        visual.setTabEnabled(2, False)
+        # start at "Grid View"
         visual.setCurrentIndex(1)
+
 
         # Advanced
         advanced = QTabWidget(self)
         self.advanced_index = self.right_panel.addWidget(advanced)
+
+
+        # Advanced / Misc
         advanced_misc_scroll = QScrollArea(self)
         advanced_misc_scroll.setBackgroundRole(QPalette.Base)
         advanced_misc_scroll.setWidgetResizable(True)
@@ -1223,6 +1252,8 @@ class SettingsDialog(QWidget):
         self.force_high_dpi_support = QCheckBox("Force High DPI support *", self)
         misc_controls_layout.addRow(self.force_high_dpi_support)
 
+
+        # Advanced / Misc / External Viewer Arguments
         external_view_group, external_view_l = groupbox("External Viewer Arguments", QFormLayout, advanced)
         misc_controls_layout.addRow(external_view_group)
         external_viewer_info = QLabel(app_constants.EXTERNAL_VIEWER_INFO)
@@ -1231,31 +1262,36 @@ class SettingsDialog(QWidget):
         external_view_l.addRow("Available tokens:", external_viewer_info)
         external_view_l.addRow("Arguments:", self.external_viewer_args)
 
+
         # Advanced / Misc / Grid View
         misc_gridview = QGroupBox('Grid View')
         misc_controls_layout.addRow(misc_gridview)
         misc_gridview_layout = QFormLayout()
         misc_gridview.setLayout(misc_gridview_layout)
+
+
         # Advanced / Misc / Grid View / scroll speed
         scroll_speed_spin_box = QSpinBox()
         scroll_speed_spin_box.setFixedWidth(60)
-        scroll_speed_spin_box.setToolTip('Control the speed when scrolling in'+
-                                   ' grid view. DEFAULT: 7')
+        scroll_speed_spin_box.setToolTip('Control the speed when scrolling in grid view. DEFAULT: 7')
         scroll_speed_spin_box.setValue(self.scroll_speed)
         def scroll_speed(v): self.scroll_speed = v
         scroll_speed_spin_box.valueChanged[int].connect(scroll_speed)
         misc_gridview_layout.addRow('Scroll speed:', scroll_speed_spin_box)
+
+
         # Advanced / Misc / Grid View / cache size
         cache_size_spin_box = QSpinBox()
         cache_size_spin_box.setFixedWidth(120)
         cache_size_spin_box.setMaximum(999999999)
-        cache_size_spin_box.setToolTip('This can greatly reduce lags/freezes in the grid view.' +
-                                 ' Increase the value if you experience lag when scrolling'+
-                                 ' through galleries. DEFAULT: 200 MiB')
+        cache_size_spin_box.setToolTip('This can greatly reduce lags/freezes in the grid view. ' \
+                                       'Increase the value if you experience lag when scrolling through galleries. ' \
+                                       'DEFAULT: 200 MiB')
         def cache_size(c): self.cache_size = (self.cache_size[0], c)
         cache_size_spin_box.setValue(self.cache_size[1])
         cache_size_spin_box.valueChanged[int].connect(cache_size)
         misc_gridview_layout.addRow('Cache Size (MiB):', cache_size_spin_box)
+
 
         # Advanced / Gallery
         advanced_gallery, advanced_gallery_m_l = new_tab('Gallery', advanced)
@@ -1287,11 +1323,13 @@ class SettingsDialog(QWidget):
         rebuild_thumbs_btn.clicked.connect(rebuild_thumbs)
         advanced_gallery_m_l.addRow(rebuild_thumbs_info)
         advanced_gallery_m_l.addRow(rebuild_thumbs_btn)
+
+
+        # Advanced / Gallery / Gallery Renamer
         g_data_fixer_group, g_data_fixer_l =  groupbox('Gallery Renamer', QFormLayout, advanced_gallery)
         g_data_fixer_group.setEnabled(False)
         advanced_gallery_m_l.addRow(g_data_fixer_group)
-        g_data_regex_fix_lbl = QLabel("Rename a gallery through regular expression."+
-                                " A regex cheatsheet is located at About -> Regex Cheatsheet.")
+        g_data_regex_fix_lbl = QLabel("Rename a gallery through regular expression. A regex cheatsheet is located at About -> Regex Cheatsheet.")
         g_data_regex_fix_lbl.setWordWrap(True)
         g_data_fixer_l.addRow(g_data_regex_fix_lbl)
         self.g_data_regex_fix_edit = QLineEdit()
@@ -1307,8 +1345,11 @@ class SettingsDialog(QWidget):
         g_data_fixer_options.addWidget(self.g_data_fixer_title)
         g_data_fixer_options.addWidget(self.g_data_fixer_artist)
 
+
         # Advanced / Database
         advanced_db_page, advanced_db_page_l = new_tab('Database', advanced)
+
+
         # Advanced / Database / Import/Export
         def init_export():
             confirm_msg = QMessageBox(QMessageBox.Question, '', 'Are you sure you want to export your database?',
@@ -1385,11 +1426,13 @@ class SettingsDialog(QWidget):
         open_hp_folder.setFixedWidth(open_hp_folder.width())
         about_layout.addWidget(open_hp_folder)
 
+
         ## About / DB Overview
         #about_db_overview, about_db_overview_m_l = new_tab('DB Overview', about)
         #about_stats_tab_widget = misc_db.DBOverview(self.parent_widget)
         #about_db_overview_m_l.addRow(about_stats_tab_widget)
         #about_db_overview.setEnabled(False)
+
 
         # About / Troubleshooting
         about_troubleshoot_page = QWidget()
@@ -1403,11 +1446,13 @@ class SettingsDialog(QWidget):
         troubleshoot_layout.addWidget(guide_lbl, 0, Qt.AlignTop)
         troubleshoot_layout.addWidget(Spacer('v'))
 
-        # About / Search tutorial
+
+        # About / Search Guide
         about_search_tut, about_search_tut_l = new_tab("Search Guide", about, True)
         g_search_lbl = QLabel(app_constants.SEARCH_TUTORIAL_TAGS)
         g_search_lbl.setWordWrap(True)
         about_search_tut_l.addRow(g_search_lbl)
+
 
         # About / Regex Cheatsheet
         about_s_regex, about_s_regex_l = new_tab("Regex Cheatsheet", about, True)
@@ -1415,7 +1460,8 @@ class SettingsDialog(QWidget):
         reg_info.setWordWrap(True)
         about_s_regex_l.addRow(reg_info)
 
-        # About / Keyboard shortcuts
+
+        # About / Keyboard Shortcuts
         about_k_shortcuts, about_k_shortcuts_l = new_tab("Keyboard Shortcuts", about, True)
         k_short_info = QLabel(app_constants.KEYBOARD_SHORTCUTS_INFO)
         k_short_info.setWordWrap(True)
@@ -1461,7 +1507,6 @@ class SettingsDialog(QWidget):
             items.append(item.widget())
         return items
 
-
     def choose_font(self):
         tup = QFontDialog.getFont(self)
         font = tup[0]
@@ -1477,7 +1522,6 @@ class SettingsDialog(QWidget):
 
     def reject(self):
         self.close()
-        
 
     def _find_combobox_match(self, combobox, key, default):
         f_index = combobox.findText(key, Qt.MatchFixedString)
