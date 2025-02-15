@@ -217,6 +217,7 @@ OPEN_GALLERIES_SEQUENTIALLY = get(False, 'Application', 'open galleries sequenti
 SEND_FILES_TO_TRASH = get(True, 'Application', 'send files to trash', bool)
 SHOW_SIDEBAR_WIDGET = get(False, 'Application', 'show sidebar widget', bool)
 ENABLE_NOTIFICATIONS = get(True, 'Application', 'enable notifications', bool)
+ALWAYS_DROP_TO_INBOX = get(False, 'Application', 'always send to inbox', bool)
 
 # ADVANCED
 GALLERY_DATA_FIX_REGEX = get("", 'Advanced', 'gallery data fix regex', str)

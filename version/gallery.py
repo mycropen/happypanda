@@ -296,39 +296,39 @@ class SortFilterModel(QSortFilterProxyModel):
     def status_b_msg(self, msg):
         self.sourceModel().status_b_msg(msg)
 
-    def canDropMimeData(self, data, action, row, coloumn, index):
-        return False
-        if not data.hasFormat("list/gallery"):
-            return False
-        return True
+    # def canDropMimeData(self, data, action, row, coloumn, index):
+    #     return False
+    #     if not data.hasFormat("list/gallery"):
+    #         return False
+    #     return True
 
-    def dropMimeData(self, data, action, row, coloumn, index):
-        if not self.canDropMimeData(data, action, row, coloumn, index):
-            return False
-        if action == Qt.IgnoreAction:
-            return True
+    # def dropMimeData(self, data, action, row, coloumn, index):
+    #     if not self.canDropMimeData(data, action, row, coloumn, index):
+    #         return False
+    #     if action == Qt.IgnoreAction:
+    #         return True
         
-        # if the drop occured on an item
-        if not index.isValid():
-            return False
+    #     # if the drop occured on an item
+    #     if not index.isValid():
+    #         return False
 
-        g_list = pickle.loads(data.data("list/gallery").data())
-        item_g = index.data(GalleryModel.GALLERY_ROLE)
-        # ignore false positive
-        for g in g_list:
-            if g.id == item_g.id:
-                return False
+    #     g_list = pickle.loads(data.data("list/gallery").data())
+    #     item_g = index.data(GalleryModel.GALLERY_ROLE)
+    #     # ignore false positive
+    #     for g in g_list:
+    #         if g.id == item_g.id:
+    #             return False
 
-        txt = 'galleries' if len(g_list) > 1 else 'gallery'
-        msg = QMessageBox(self.parent_widget)
-        msg.setText("Are you sure you want to merge the galleries into this gallery as chapter(s)?".format(txt))
-        msg.setStandardButtons(msg.Yes | msg.No)
-        if msg.exec() == msg.No:
-            return False
+    #     txt = 'galleries' if len(g_list) > 1 else 'gallery'
+    #     msg = QMessageBox(self.parent_widget)
+    #     msg.setText("Are you sure you want to merge the galleries into this gallery as chapter(s)?".format(txt))
+    #     msg.setStandardButtons(msg.Yes | msg.No)
+    #     if msg.exec() == msg.No:
+    #         return False
         
-        # TODO: finish this
+    #     # TODO: finish this
 
-        return True
+    #     return True
 
     def mimeTypes(self):
         return ['list/gallery'] + super().mimeTypes()

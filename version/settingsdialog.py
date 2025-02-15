@@ -152,6 +152,7 @@ class SettingsDialog(QWidget):
         self.path_to_unrar.setText(app_constants.unrar_tool_path)
         self.keep_added_gallery.setChecked(not app_constants.KEEP_ADDED_GALLERIES)
         self.enable_notifications.setChecked(app_constants.ENABLE_NOTIFICATIONS)
+        self.always_drop_to_inbox.setChecked(app_constants.ALWAYS_DROP_TO_INBOX)
 
         # App / Gallery / New Gallery Fixes
         self.new_gallery_trim_starting_paren_checkbox.setChecked(app_constants.GALLERY_TRIM_PARENTHESES)
@@ -290,6 +291,8 @@ class SettingsDialog(QWidget):
         set(app_constants.SEND_FILES_TO_TRASH, 'Application', 'send files to trash')
         app_constants.ENABLE_NOTIFICATIONS = self.enable_notifications.isChecked()
         set(app_constants.ENABLE_NOTIFICATIONS, 'Application', 'enable notifications')
+        app_constants.ALWAYS_DROP_TO_INBOX = self.always_drop_to_inbox.isChecked()
+        set(app_constants.ALWAYS_DROP_TO_INBOX, 'Application', 'always send to inbox')
 
         # App / General / Gallery
 
