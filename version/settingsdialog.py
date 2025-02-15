@@ -219,6 +219,9 @@ class SettingsDialog(QWidget):
         self.torrent_client.setText(app_constants.TORRENT_CLIENT)
         self.download_gallery_lib.setChecked(app_constants.DOWNLOAD_GALLERY_TO_LIB)
 
+        # Visual / General
+        self.galleryedit_width.setValue(app_constants.GALLERY_EDIT_WIDTH)
+
         # Visual / Grid View
         self.g_popup_width.setValue(app_constants.POPUP_WIDTH)
         self.g_popup_height.setValue(app_constants.POPUP_HEIGHT)
@@ -452,6 +455,10 @@ class SettingsDialog(QWidget):
             henlist.append('chaikahen')
         app_constants.HEN_LIST = henlist
         set(app_constants.HEN_LIST, 'Web', 'hen list')
+
+        # Visual / General
+        app_constants.GALLERY_EDIT_WIDTH = self.galleryedit_width.value()
+        set(app_constants.GALLERY_EDIT_WIDTH, 'Visual', 'galleryedit.w')
 
         # Visual / Grid View
         app_constants.POPUP_WIDTH = self.g_popup_width.value()
@@ -1010,8 +1017,15 @@ class SettingsDialog(QWidget):
         # Visual
         visual = QTabWidget(self)
         self.visual_index = self.right_panel.addWidget(visual)
-        visual_general_page = QWidget()
-        visual.addTab(visual_general_page, 'General')
+        visual_general_page, visual_general_layout = new_tab('General', visual, True)
+
+        galleryedit_box, galleryedit_box_layout = groupbox('Gallery Edit Dialog', QFormLayout, visual_general_page)
+        visual_general_layout.addRow(galleryedit_box)
+
+        self.galleryedit_width = QSpinBox(galleryedit_box)
+        self.galleryedit_width.setRange(200, 100000)
+        self.galleryedit_width.setFixedWidth(120)
+        galleryedit_box_layout.addRow('Dialog Width:', self.galleryedit_width)
 
         # grid view
         grid_view_general_page, grid_view_layout = new_tab("Grid View", visual, True)
@@ -1186,8 +1200,8 @@ class SettingsDialog(QWidget):
         # Style
         style_page = QWidget(self)
         visual.addTab(style_page, 'Style')
-        visual.setTabEnabled(0, False)
-        visual.setTabEnabled(2, False)
+        # visual.setTabEnabled(0, False)  # General
+        visual.setTabEnabled(2, False)  # Style
         visual.setCurrentIndex(1)
 
         # Advanced

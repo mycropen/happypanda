@@ -266,6 +266,9 @@ THUMBNAIL_CACHE_SIZE = (1024, get(200, 'Advanced', 'cache size', int)) #1024 is 
 PREFETCH_ITEM_AMOUNT = get(50, 'Advanced', 'prefetch item amount', int)# amount of items to prefetch
 SCROLL_SPEED = get(7, 'Advanced', 'scroll speed', int) # controls how many steps it takes when scrolling
 
+# Gallery Edit Dialog
+GALLERY_EDIT_WIDTH = get(600, 'Visual', 'galleryedit.w', int)
+
 # POPUP
 POPUP_WIDTH = get(500, 'Visual', 'popup.w', int)
 POPUP_HEIGHT = get(300, 'Visual', 'popup.h', int)
