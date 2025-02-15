@@ -1443,8 +1443,8 @@ class MangaTableView(QTableView):
                 selection = self.selectedIndexes()
             elif isinstance(self, QTableView):
                 selection = self.selectionModel().selectedRows()
-            if self.gallery_window.isVisible():
-                self.gallery_window.hide_animation.start()
+            # if self.gallery_window.isVisible():
+            #     self.gallery_window.hide_animation.start()
             # Shift+F2: open combined edit dialog of selected items
             if event.modifiers() == Qt.ShiftModifier and len(selection) > 1:
                 galleries = [sel_item.data(Qt.UserRole+1) for sel_item in selection]
