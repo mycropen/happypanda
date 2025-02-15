@@ -86,8 +86,7 @@ class SettingsDialog(QWidget):
         cancel_btn = QPushButton('Cancel')
         cancel_btn.clicked.connect(self.close)
         info_lbl = QLabel()
-        info_lbl.setText('<a href="https://github.com/Pewpews/happypanda">'+
-                   'Visit GitHub Repo</a> | Options marked with * requires application restart.')
+        info_lbl.setText('<a href="https://github.com/mycropen/happypanda">Visit GitHub Repo</a> | Options marked with * requires application restart.')
         info_lbl.setTextFormat(Qt.RichText)
         info_lbl.setTextInteractionFlags(Qt.TextBrowserInteraction)
         info_lbl.setOpenExternalLinks(True)
