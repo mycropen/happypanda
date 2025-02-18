@@ -671,14 +671,14 @@ class GalleryMetaWindow(ArrowWindow):
                 if idx.isValid():
                     chap = self._get_chap(idx)
                     menu = QMenu(self)
-                    open = menu.addAction('Open', lambda: chap.open())
+                    action_open = menu.addAction('Open', chap.open)
                     def open_source():
                         text = 'Opening archive...' if chap.in_archive else 'Opening folder...'
                         app_constants.STAT_MSG_METHOD(text)
                         path = chap.gallery.path if chap.in_archive else chap.path
                         utils.open_path(path)
                     t = "Open archive" if chap.in_archive else "Open folder"
-                    open_path = menu.addAction(t, open_source)
+                    action_open_path = menu.addAction(t, open_source)
                     menu.exec_(event.globalPos())
                     event.accept()
                     del menu
