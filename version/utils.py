@@ -91,7 +91,7 @@ class GMetafile:
     def _eze(self, fp):
         if not fp.name.endswith('.json'):
             return
-        j = json.load(fp, encoding='utf-8')
+        j = json.load(fp)
         eze = ['gallery_info', 'image_api_key', 'image_info']
         # eze
         if all(x in j for x in eze):
@@ -147,7 +147,7 @@ class GMetafile:
         ## Doesnt work for some reason.. too lazy to debug
         #elif fp.name.endswith('info.json'):
         #    log_i('Detected metafile: HDoujin json')
-        #    j = json.load(fp, encoding='utf-8')
+        #    j = json.load(fp)
         #    j = j['manga_info']
         #    self.metadata['title'] = j['title']
         #    for n, a in enumerate(j['artist']):
