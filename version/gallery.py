@@ -1302,7 +1302,7 @@ class MangaView(QListView):
             else:
                 for sel_item in selection:
                     CommonView.spawn_dialog(self.parent_widget, sel_item.data(Qt.UserRole + 1))
-        elif event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left, Qt.Key_PageUp, Qt.Key_PageDown) and self.gallery_window.isVisible():
+        elif event.key() in (Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left, Qt.Key_PageUp, Qt.Key_PageDown, Qt.Key_Escape) and self.gallery_window.isVisible():
             self.gallery_window.hide_animation.start()
         return super().keyPressEvent(event)
 
