@@ -17,7 +17,6 @@ import os
 import subprocess
 import sys
 import logging
-import traceback
 import zipfile
 import hashlib
 import shutil
@@ -1083,14 +1082,6 @@ def regex_search(a, b, override_case=False, args=[]):
                     return True
         except re.error:
             pass
-        except Exception as e:
-            # I keep getting "<class 'SystemError'>: unknown opcode" exceptions from this block.
-            # Specifically from "types.py", line 171, in __get__ (Python 3.8).
-            # I have absolutely no idea why this suddenly keeps happening and in the process of development
-            # I've been messing around with my installation too much to revert any single change,
-            # so for now I'll just monitor exactly when this occurs.
-            log_e(f'Exception while looking for {a} in {b}')
-            log_e(traceback.format_exc())
     return False
 
 def search_term(a, b, override_case=False, args=[]):
