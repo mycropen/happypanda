@@ -123,6 +123,7 @@ def create_animation(parent, prop):
     p_array = QByteArray().append(prop)
     return QPropertyAnimation(parent, p_array)
 
+
 class ArrowHandle(QWidget):
     "Arrow Handle"
     IN, OUT = range(2)
@@ -174,6 +175,7 @@ class ArrowHandle(QWidget):
             self.click()
         return super().mousePressEvent(event)
 
+
 class Line(QFrame):
     "'v' for vertical line or 'h' for horizontail line, color is hex string"
     def __init__(self, orentiation, parent=None):
@@ -184,6 +186,7 @@ class Line(QFrame):
         else:
             self.setFrameShape(self.HLine)
         self.setFrameShadow(self.Sunken)
+
 
 class CompleterPopupView(QListView):
     def __init__(self, *args, **kwargs):
@@ -202,6 +205,7 @@ class CompleterPopupView(QListView):
         self.fade_animation.start()
         super().showEvent(event)
 
+
 class ElidedLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -210,6 +214,7 @@ class ElidedLabel(QLabel):
         metrics = QFontMetrics(self.font())
         elided = metrics.elidedText(self.text(), Qt.ElideRight, self.width())
         painter.drawText(self.rect(), self.alignment(), elided)
+
 
 class BaseMoveWidget(QWidget):
     def __init__(self, parent=None, **kwargs):
@@ -318,6 +323,7 @@ class SortMenu(QMenu):
         self.set_current_sort()
         super().showEvent(event)
 
+
 class ToolbarButton(QPushButton):
     select = pyqtSignal(object)
     close_tab = pyqtSignal(object)
@@ -345,10 +351,12 @@ class ToolbarButton(QPushButton):
         else:
             event.ignore()
 
+
 class TransparentWidget(BaseMoveWidget):
     def __init__(self, parent = None, **kwargs):
         super().__init__(parent, **kwargs)
         self.setAttribute(Qt.WA_TranslucentBackground)
+
 
 class ArrowWindow(TransparentWidget):
     LEFT, RIGHT, TOP, BOTTOM = range(4)
@@ -836,6 +844,7 @@ class GalleryMetaWindow(ArrowWindow):
                         t.setAutoFillBackground(True)
             self.tags_widget.adjustSize()
 
+
 class Spinner(TransparentWidget):
     """
     Spinner widget
@@ -1005,6 +1014,7 @@ class Spinner(TransparentWidget):
 
         self._start_angle = angle
         self.update()
+
 
 class GalleryMenu(QMenu):
     delete_galleries = pyqtSignal(bool)
@@ -1346,6 +1356,7 @@ class GalleryMenu(QMenu):
         ch_widget.CHAPTERS.connect(add_chdb)
         ch_widget.show()
 
+
 class SystemTray(QSystemTrayIcon):
     """
     Pass True to minimized arg in showMessage method to only
@@ -1366,6 +1377,7 @@ class SystemTray(QSystemTrayIcon):
             else:
                 return super().showMessage(title, msg, icon, msecs)
 
+
 class ClickedLabel(QLabel):
     """
     A QLabel which emits clicked signal on click
@@ -1385,6 +1397,7 @@ class ClickedLabel(QLabel):
     def mousePressEvent(self, event):
         self.clicked.emit(self.text())
         return super().mousePressEvent(event)
+
 
 class TagText(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -1409,13 +1422,13 @@ class TagText(QPushButton):
 
         return super().mousePressEvent(ev)
 
-
     def enterEvent(self, event):
         if self.text():
             self.setCursor(Qt.PointingHandCursor)
         else:
             self.setCursor(Qt.ArrowCursor)
         return super().enterEvent(event)
+
 
 class BasePopup(TransparentWidget):
     graphics_blur = None
@@ -1500,6 +1513,7 @@ class BasePopup(TransparentWidget):
             b.append(button)
         return b
 
+
 class AppBubble(BasePopup):
     "For application notifications"
     def __init__(self, parent):
@@ -1541,8 +1555,8 @@ class AppBubble(BasePopup):
             self.close()
         super().mousePressEvent(event)
 
-class AppDialog(BasePopup):
 
+class AppDialog(BasePopup):
     # modes
     PROGRESS, MESSAGE = range(2)
     closing_down = pyqtSignal()
@@ -1693,11 +1707,11 @@ class NotificationOverlay(QWidget):
         self.slide_animation.start()
         return super().showEvent(event)
 
+
 class GalleryShowcaseWidget(QWidget):
     """
     Pass a gallery or set a gallery via -> set_gallery
     """
-
     double_clicked = pyqtSignal(gallerydb.Gallery)
 
     def __init__(self, gallery=None, parent=None, menu=None):
@@ -1781,6 +1795,7 @@ class GalleryShowcaseWidget(QWidget):
         else:
             event.ignore()
 
+
 class SingleGalleryChoices(BasePopup):
     """
     Represent a single gallery with a list of choices below.
@@ -1835,6 +1850,7 @@ class SingleGalleryChoices(BasePopup):
         self.USER_CHOICE.emit(None)
         self.close()
 
+
 class BaseUserChoice(QDialog):
     USER_CHOICE = pyqtSignal(object)
     def __init__(self, parent, **kwargs):
@@ -1850,6 +1866,7 @@ class BaseUserChoice(QDialog):
         self.USER_CHOICE.emit(choice)
         super().accept()
 
+
 class TorrentItem:
     def __init__(self, url, name="", date=None, size=None, seeds=None, peers=None, uploader=None):
         self.url = url
@@ -1859,6 +1876,7 @@ class TorrentItem:
         self.seeds = seeds
         self.peers = peers
         self.uploader = uploader
+
 
 class TorrentUserChoice(BaseUserChoice):
     def __init__(self, parent, torrentitems=[], **kwargs):
@@ -1889,6 +1907,7 @@ class TorrentUserChoice(BaseUserChoice):
         if items:
             item = items[0]
             super().accept(item.item)
+
 
 class LoadingOverlay(QWidget):
     
@@ -1927,6 +1946,7 @@ class LoadingOverlay(QWidget):
         if self.counter == 60:
             self.killTimer(self.timer)
             self.hide()
+
 
 class FileIcon:
     
@@ -2039,6 +2059,8 @@ class FileIcon:
 #		centerparent.setY(sg_rect.bottom() - child_frame.height())
 
 #	child.move(centerparent)
+
+
 class Spacer(QWidget):
     """
     To be used as a spacer.
@@ -2053,8 +2075,8 @@ class Spacer(QWidget):
         else:
             self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-class FlowLayout(QLayout):
 
+class FlowLayout(QLayout):
     def __init__(self, parent=None, margin=0, spacing=-1):
         super(FlowLayout, self).__init__(parent)
 
@@ -2144,6 +2166,7 @@ class FlowLayout(QLayout):
 
         return y + lineHeight - rect.y()
 
+
 class LineEdit(QLineEdit):
     """
     Custom Line Edit which sacrifices contextmenu for selectAll
@@ -2163,6 +2186,7 @@ class LineEdit(QLineEdit):
     def sizeHint(self):
         s = super().sizeHint()
         return QSize(400, s.height())
+
 
 class PathLineEdit(QLineEdit):
     """
@@ -2198,6 +2222,7 @@ class PathLineEdit(QLineEdit):
             self.openExplorer()
             
         super().mousePressEvent(event)
+
 
 class ChapterAddWidget(QWidget):
     CHAPTERS = pyqtSignal(gallerydb.ChaptersContainer)
@@ -2316,10 +2341,12 @@ class CustomListItem(QListWidgetItem):
         super().__init__(txt, parent, type)
         self.item = item
 
+
 class CustomTableItem(QTableWidgetItem):
     def __init__(self, item=None, txt='', type=QTableWidgetItem.Type):
         super().__init__(txt, type)
         self.item = item
+
 
 class GalleryListView(QWidget):
     SERIES = pyqtSignal(list)
@@ -2466,6 +2493,7 @@ class GalleryListView(QWidget):
         if msgbox.exec() == QMessageBox.Yes:
             self.close()
 
+
 class Loading(BasePopup):
     ON = False #to prevent multiple instances
     def __init__(self, parent=None):
@@ -2494,6 +2522,7 @@ class Loading(BasePopup):
     def setText(self, string):
         if string != self.text.text():
             self.text.setText(string)
+
 
 class CompleterTextEdit(QTextEdit):
     """
@@ -2575,6 +2604,7 @@ class CompleterTextEdit(QTextEdit):
         if self._completer:
             self._completer.complete(cr)
 
+
 class GCompleter(QCompleter):
     def __init__(self, parent=None, title=True, artist=True, tags=True):
         self.all_data = []
@@ -2593,6 +2623,7 @@ class GCompleter(QCompleter):
         self.all_data.extend(d)
         super().__init__(self.all_data, parent)
         self.setCaseSensitivity(Qt.CaseInsensitive)
+
 
 class ChapterListItem(QFrame):
     move_pos = pyqtSignal(int, object)
