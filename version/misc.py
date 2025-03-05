@@ -22,7 +22,7 @@ import functools
 import scandir
 from datetime import datetime
 
-from PyQt5.QtCore import (Qt, QDate, QPoint, pyqtSignal, QThread,
+from PyQt5.QtCore import (QModelIndex, Qt, QDate, QPoint, pyqtSignal, QThread,
                           QTimer, QObject, QSize, QRect, QFileInfo,
                           QMargins, QPropertyAnimation, QRectF,
                           QTimeLine, QMargins, QPropertyAnimation, QByteArray,
@@ -368,6 +368,8 @@ class ArrowWindow(TransparentWidget):
         self.direction = self.LEFT
         self._arrow_size = QSizeF(30, 30)
         self.content_margin = 0
+        self.arrow_offset_h = 0
+        self.arrow_offset_v = 0
 
     @property
     def arrow_size(self):
@@ -387,8 +389,7 @@ class ArrowWindow(TransparentWidget):
         self._arrow_size = s
         self.update()
 
-
-    def paintEvent(self, event):
+    def paintEvent(self, event: QPaintEvent):
         assert isinstance(event, QPaintEvent)
 
         opt = QStyleOption()
@@ -403,11 +404,11 @@ class ArrowWindow(TransparentWidget):
         else:
             actual_size = QSizeF(size.width(), size.height() - self.arrow_size.height())
 
-        starting_point = QPointF(0, 0)
-        if self.direction == self.LEFT:
-            starting_point = QPointF(self.arrow_size.width(), 0)
-        elif self.direction == self.TOP:
-            starting_point = QPointF(0, self.arrow_size.height())
+        # starting_point = QPointF(0, 0)
+        # if self.direction == self.LEFT:
+        #     starting_point = QPointF(self.arrow_size.width(), 0)
+        # elif self.direction == self.TOP:
+        #     starting_point = QPointF(0, self.arrow_size.height())
 
         #painter.save()
         #painter.translate(starting_point)
@@ -416,45 +417,39 @@ class ArrowWindow(TransparentWidget):
         painter.setBrush(QBrush(painter.pen().color()))
 
         # draw background
-        background_rect = QRectF(starting_point, actual_size)
+        # background_rect = QRectF(starting_point, actual_size)
         #painter.drawRoundedRect(background_rect, 5, 5)
 
         # calculate the arrow
         arrow_points = []
+        p_offset = QPointF(self.arrow_offset_h, self.arrow_offset_v)
+
         if self.direction == self.LEFT:
             middle_point = QPointF(0, actual_size.height() / 2)
             arrow_1 = QPointF(self.arrow_size.width(), middle_point.y() - self.arrow_size.height() / 2)
             arrow_2 = QPointF(self.arrow_size.width(), middle_point.y() + self.arrow_size.height() / 2)
-            arrow_points.append(arrow_1)
-            arrow_points.append(middle_point)
-            arrow_points.append(arrow_2)
         elif self.direction == self.RIGHT:
             middle_point = QPointF(actual_size.width() + self.arrow_size.width(), actual_size.height() / 2)
             arrow_1 = QPointF(actual_size.width(), middle_point.y() + self.arrow_size.height() / 2)
             arrow_2 = QPointF(actual_size.width(), middle_point.y() - self.arrow_size.height() / 2)
-            arrow_points.append(arrow_1)
-            arrow_points.append(middle_point)
-            arrow_points.append(arrow_2)
         elif self.direction == self.TOP:
             middle_point = QPointF(actual_size.width() / 2, 0)
             arrow_1 = QPointF(actual_size.width() / 2 + self.arrow_size.width() / 2, self.arrow_size.height())
             arrow_2 = QPointF(actual_size.width() / 2 - self.arrow_size.width() / 2, self.arrow_size.height())
-            arrow_points.append(arrow_1)
-            arrow_points.append(middle_point)
-            arrow_points.append(arrow_2)
         elif self.direction == self.BOTTOM:
             middle_point = QPointF(actual_size.width() / 2, actual_size.height() + self.arrow_size.height())
             arrow_1 = QPointF(actual_size.width() / 2 - self.arrow_size.width() / 2, actual_size.height())
             arrow_2 = QPointF(actual_size.width() / 2 + self.arrow_size.width() / 2, actual_size.height())
-            arrow_points.append(arrow_1)
-            arrow_points.append(middle_point)
-            arrow_points.append(arrow_2)
+
+        arrow_points.append(p_offset + arrow_1)
+        arrow_points.append(p_offset + middle_point)
+        arrow_points.append(p_offset + arrow_2)
 
         # draw it!
         painter.drawPolygon(QPolygonF(arrow_points))
 
-class GalleryMetaWindow(ArrowWindow):
 
+class GalleryMetaWindow(ArrowWindow):
     def __init__(self, parent):
         super().__init__(parent)
         # gallery data stuff
@@ -476,6 +471,7 @@ class GalleryMetaWindow(ArrowWindow):
         self.show_animation.setEndValue(1.0)
         self.setFocusPolicy(Qt.NoFocus)
         self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self.g_rect_global : QRect = QRect(0, 0, 0, 0)
 
     def show(self):
         if not self.hide_animation.Running:
@@ -493,12 +489,7 @@ class GalleryMetaWindow(ArrowWindow):
         return super().focusOutEvent(event)
 
     def _mouse_in_gallery(self):
-        mouse_p = QCursor.pos()
-        h = self.idx_top_l.x() <= mouse_p.x() <= self.idx_top_r.x()
-        v = self.idx_top_l.y() <= mouse_p.y() <= self.idx_btm_l.y()
-        if h and v:
-            return True
-        return False
+        return self.g_rect_global.contains(QCursor.pos())
 
     def mouseMoveEvent(self, event):
         if self.isVisible():
@@ -511,94 +502,118 @@ class GalleryMetaWindow(ArrowWindow):
         if not self.underMouse() and not self._mouse_in_gallery():
             self.hide_animation.start()
 
-    def show_gallery(self, index, view):
+    def show_gallery(self, index: QModelIndex, view: QListView):
         self.resize(app_constants.POPUP_WIDTH, app_constants.POPUP_HEIGHT)
         self.view = view
-        desktop_w = QDesktopWidget().width()
-        desktop_h = QDesktopWidget().height()
+
+        # desktop_w = QDesktopWidget().width()
+        # desktop_h = QDesktopWidget().height()
+        view_rect = QRect(view.mapToGlobal(view.rect().topLeft()), view.mapToGlobal(view.rect().bottomRight()))
         
         margin_offset = 20 # should be higher than gallery_touch_offset
         gallery_touch_offset = 10 # How far away the window is from touching gallery
 
-        index_rect = view.visualRect(index)
-        self.idx_top_l = index_top_left = view.mapToGlobal(index_rect.topLeft())
-        self.idx_top_r = index_top_right = view.mapToGlobal(index_rect.topRight())
-        self.idx_btm_l = index_btm_left = view.mapToGlobal(index_rect.bottomLeft())
+        check_width  = self.width() + 2*margin_offset
+        check_height = self.height() + 2*margin_offset
+
+        index_rect      = view.visualRect(index)
+        index_top_left  = view.mapToGlobal(index_rect.topLeft())
+        # index_top_right = view.mapToGlobal(index_rect.topRight())
+        # index_btm_left  = view.mapToGlobal(index_rect.bottomLeft())
         index_btm_right = view.mapToGlobal(index_rect.bottomRight())
+        index_center    = view.mapToGlobal(index_rect.center())
+
+        self.g_rect_global = QRect(index_top_left, index_btm_right)
+        self.arrow_offset_v = 0
+        self.arrow_offset_h = 0
 
         if app_constants.DEBUG:
-            for idx in (index_top_left, index_top_right, index_btm_left, index_btm_right):
-                print(idx.x(), idx.y())
+            print(f'{self.g_rect_global  = }')
 
-        # adjust placement
+        # find the best placement
+        def fits_left():
+            left = self.g_rect_global.left() > view_rect.left()   + check_width         # if the window's width fits to the left of the gallery
+            top  = index_center.y()          > view_rect.top()    + check_height / 2    # if half the window fits above the gallery's center
+            btm  = index_center.y()          < view_rect.bottom() - check_height / 2    # if half the window fits below the gallery's center
 
-        def check_left():
-            middle = (index_top_left.y() + index_btm_left.y()) / 2 # middle of gallery left side
-            left = (index_top_left.x() - self.width() - margin_offset) > 0 # if the width can be there
-            top = (middle - (self.height() / 2) - margin_offset) > 0 # if the top half of window can be there
-            btm = (middle + (self.height() / 2) + margin_offset) < desktop_h # same as above, just for the bottom
             if left and top and btm:
                 self.direction = self.RIGHT
-                x = index_top_left.x() - gallery_touch_offset - self.width()
-                y = middle - (self.height() / 2)
+                x = self.g_rect_global.left() - gallery_touch_offset - self.width()
+                y = index_center.y() - (self.height() / 2)
                 appear_point = QPoint(int(x), int(y))
                 self.move(appear_point)
                 return True
             return False
 
-        def check_right():
-            middle = (index_top_right.y() + index_btm_right.y()) / 2 # middle of gallery right side
-            right = (index_top_right.x() + self.width() + margin_offset) < desktop_w # if the width can be there
-            top = (middle - (self.height() / 2) - margin_offset) > 0 # if the top half of window can be there
-            btm = (middle + (self.height() / 2) + margin_offset) < desktop_h # same as above, just for the bottom
+        def fits_right():
+            right = self.g_rect_global.right() < view_rect.right()  - check_width         # if the window's width fits to the right of the gallery
+            top   = index_center.y()           > view_rect.top()    + check_height / 2    # if half the window fits above the gallery's center
+            btm   = index_center.y()           < view_rect.bottom() - check_height / 2    # if half the window fits below the gallery's center
 
             if right and top and btm:
                 self.direction = self.LEFT
-                x = index_top_right.x() + gallery_touch_offset
-                y = middle - (self.height() / 2)
+                x = self.g_rect_global.right() + gallery_touch_offset
+                y = index_center.y() - (self.height() / 2)
                 appear_point = QPoint(int(x), int(y))
                 self.move(appear_point)
                 return True
             return False
 
-        def check_top():
-            middle = (index_top_left.x() + index_top_right.x()) / 2 # middle of gallery top side
-            top = (index_top_right.y() - self.height() - margin_offset) > 0 # if the height can be there
-            left = (middle - (self.width() / 2) - margin_offset) > 0 # if the left half of window can be there
-            right = (middle + (self.width() / 2) + margin_offset) < desktop_w # same as above, just for the right
+        def fits_above():
+            top   = self.g_rect_global.top() > view_rect.top()   + check_height     # if the window's height fits above the gallery
+            left  = index_center.x()         > view_rect.left()  + check_width / 2  # if half the window fits to the left of the gallery's center
+            right = index_center.x()         < view_rect.right() - check_width / 2  # if half the window fits to the right of the gallery's center
 
             if top and left and right:
                 self.direction = self.BOTTOM
-                x = middle - (self.width() / 2)
-                y = index_top_left.y() - gallery_touch_offset - self.height()
+                x = index_center.x() - (self.width() / 2)
+                y = self.g_rect_global.top() - gallery_touch_offset - self.height()
                 appear_point = QPoint(int(x), int(y))
                 self.move(appear_point)
                 return True
             return False
 
-        def check_bottom(override=False):
-            middle = (index_btm_left.x() + index_btm_right.x()) / 2 # middle of gallery bottom side
-            btm = (index_btm_right.y() + self.height() + margin_offset) < desktop_h # if the height can be there
-            left = (middle - (self.width() / 2) - margin_offset) > 0 # if the left half of window can be there
-            right = (middle + (self.width() / 2) + margin_offset) < desktop_w # same as above, just for the right
+        def fits_below(force=False):
+            btm   = self.g_rect_global.bottom() < view_rect.bottom() - check_height      # if the window's height fits below the gallery
+            left  = index_center.x()            > view_rect.left()  + check_width / 2  # if half the window fits to the left of the gallery's center
+            right = index_center.x()            < view_rect.right() - check_width / 2  # if half the window fits to the right of the gallery's center
 
-            if (btm and left and right) or override:
+            if (btm and left and right) or force:
                 self.direction = self.TOP
-                x = middle - (self.width() / 2)
-                y = index_btm_left.y() + gallery_touch_offset
+                x = index_center.x() - (self.width() / 2)
+                y = self.g_rect_global.bottom() + gallery_touch_offset
+
+                # if the window would be partially outside the parent window, move it back inside
+                # but keep the arrow centered on the gallery
+                # can only happen if this position was forced
+                if force:
+                    self.arrow_offset_v = 0
+                    if not left:
+                        self.arrow_offset_h = x - view_rect.left()
+                        x -= self.arrow_offset_h
+                    elif not right:
+                        self.arrow_offset_h = x + self.width() - view_rect.right()
+                        x -= self.arrow_offset_h
+
                 appear_point = QPoint(int(x), int(y))
                 self.move(appear_point)
                 return True
             return False
 
-        for pos in (check_bottom, check_right, check_left, check_top):
+        for pos in (fits_below, fits_right, fits_left, fits_above):
             if pos():
                 break
         else: # default pos is bottom
-            check_bottom(True)
+            fits_below(True)
+
+        if app_constants.DEBUG:
+            print(f'{self.geometry() = }')
+            print(f'{self.arrow_offset_v = }')
+            print(f'{self.arrow_offset_h = }')
 
         self._set_gallery(index.data(Qt.UserRole + 1))
         self.show()
+        self.update()
 
     def closeEvent(self, ev):
         ev.ignore()
