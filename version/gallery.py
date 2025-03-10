@@ -1454,24 +1454,33 @@ class CommonView:
         CommonView.remove_gallery(view_cls, s_indexes, source)
 
     @staticmethod
-    def remove_gallery(view_cls, index_list, local=False):
+    def remove_gallery(view_cls, index_list: list[QModelIndex], local=False):
         #view_cls.sort_model.setDynamicSortFilter(False)
         msgbox = QMessageBox(view_cls)
         msgbox.setIcon(msgbox.Question)
         msgbox.setStandardButtons(msgbox.Yes | msgbox.No)
+
+        msg = ''
         if len(index_list) > 1:
             if not local:
-                msg = 'Are you sure you want to remove {} selected galleries?'.format(len(index_list))
+                msg = f'Are you sure you want to remove these {len(index_list)} selected galleries?'
             else:
-                msg = 'Are you sure you want to remove {} selected galleries and their files/directories?'.format(len(index_list))
-
-            msgbox.setText(msg)
+                msg = f'Are you sure you want to remove these {len(index_list)} selected galleries and their files/directories?'
         else:
             if not local:
                 msg = 'Are you sure you want to remove this gallery?'
             else:
                 msg = 'Are you sure you want to remove this gallery and its file/directory?'
-            msgbox.setText(msg)
+
+        gallery_lines = list()
+        for i, index in enumerate(index_list):
+            gallery : gallerydb.Gallery = index.data(Qt.UserRole + 1)
+            if i > 0: gallery_lines.append('')
+            gallery_lines.append(f'{gallery.title}')
+            if local: gallery_lines.append(f'  - {gallery.path}')
+
+        msgbox.setText(msg)
+        msgbox.setDetailedText('\n'.join(gallery_lines))
 
         if msgbox.exec() == msgbox.Yes:
             #view_cls.setUpdatesEnabled(False)
