@@ -861,8 +861,7 @@ class AppWindow(QMainWindow):
                 app_constants.OVERRIDE_SUBFOLDER_AS_GALLERY = True
                 self.gallery_populate(path, True)
             def from_arch():
-                path = QFileDialog.getOpenFileName(self, 'Choose an archive containing your galleries',
-                                       filter=utils.FILE_FILTER)
+                path = QFileDialog.getOpenFileName(self, 'Choose an archive containing your galleries', filter=utils.ARCHIVE_FILTER)
                 path = [path[0]]
                 if not all(path) or not path:
                     return

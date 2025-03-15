@@ -1280,11 +1280,11 @@ class GalleryMenu(QMenu):
         log_i('Attempting to change cover of {}'.format(gallery.title.encode(errors='ignore')))
         if gallery.is_archive:
             try:
-                zip = utils.ArchiveFile(gallery.path)
+                arc = utils.ArchiveFile(gallery.path)
             except utils.app_constants.CreateArchiveFail:
                 app_constants.NOTIF_BAR.add_text('Attempt to change cover failed. Could not create archive.')
                 return
-            path = zip.extract_all()
+            path = arc.extract_all()
         else:
             path = gallery.path
 

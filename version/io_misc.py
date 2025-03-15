@@ -538,8 +538,7 @@ class DeletedPopup(misc.BasePopup):
             if msgbox.clickedButton() == dir:
                 new_path = QFileDialog.getExistingDirectory(self, 'Choose directory')
             elif msgbox.clickedButton() == archive:
-                new_path = QFileDialog.getOpenFileName(self, 'Choose archive',
-                                           filter=utils.FILE_FILTER)
+                new_path = QFileDialog.getOpenFileName(self, 'Choose archive', filter=utils.ARCHIVE_FILTER)
                 new_path = new_path[0]
             else: return None
             if new_path:

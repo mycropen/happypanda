@@ -28,9 +28,10 @@ import json
 import send2trash
 import functools
 import time
+import py7zr
 
 from PyQt5.QtGui import QImage, qRgba
-from PIL import Image,ImageChops
+from PIL import Image, ImageChops
 
 try:
     import app_constants
@@ -46,15 +47,29 @@ log_w = log.warning
 log_e = log.error
 log_c = log.critical
 
+
 IMG_FILES = ('.jpg','.bmp','.png','.gif', '.jpeg', '.webp')
-ARCHIVE_FILES = ('.zip', '.cbz', '.rar', '.cbr')
-FILE_FILTER = '*.zip *.cbz *.rar *.cbr'
-IMG_FILTER = '*.jpg *.bmp *.png *.jpeg'
+IMG_FILTER = '*.jpg *.bmp *.png *.gif *.jpeg *.webp'
+
+ZIP_FILES = ('.zip', '.cbz')
+RAR_FILES = ('.rar', '.cbr')
+SEVENZIP_FILES = ('.7z', 'cb7')
+
+ARCHIVE_FILES = ZIP_FILES + SEVENZIP_FILES
+
 rarfile.PATH_SEP = '/'
 rarfile.UNRAR_TOOL = app_constants.unrar_tool_path
-if not app_constants.unrar_tool_path:
-    FILE_FILTER = '*.zip *.cbz'
-    ARCHIVE_FILES = ('.zip', '.cbz')
+if app_constants.unrar_tool_path:
+    if not os.path.isfile(app_constants.unrar_tool_path):
+        SUPPORT_RAR = False
+        log_e(f'Cannot find unrar tool: {app_constants.unrar_tool_path}')
+    else:
+        SUPPORT_RAR = True
+        ARCHIVE_FILES += ('.rar', '.cbr')
+
+# ('.zip', '.rar', ...) -> '*.zip *.rar ...'
+ARCHIVE_FILTER = ' '.join(f'*{ext}' for ext in ARCHIVE_FILES)
+
 
 class GMetafile:
     def __init__(self, path=None, archive=''):
@@ -389,20 +404,27 @@ class ArchiveFile():
     open -> open the given file in archive, returns bytes
     close -> close archive
     """
-    zip, rar = range(2)
+    zip, rar, sevenzip = range(3)
     
-    def __init__(self, filepath):
+    def __init__(self, filepath: str):
         self.type = 0
+        filepath = filepath.lower()
         try:
             if filepath.endswith(ARCHIVE_FILES):
-                if filepath.endswith(ARCHIVE_FILES[:2]):
+                if filepath.endswith(ZIP_FILES):
                     self.archive = zipfile.ZipFile(os.path.normcase(filepath))
                     b_f = self.archive.testzip()
                     self.type = self.zip
-                elif filepath.endswith(ARCHIVE_FILES[2:]):
+
+                elif SUPPORT_RAR and filepath.endswith(RAR_FILES):
                     self.archive = rarfile.RarFile(os.path.normcase(filepath))
                     b_f = self.archive.testrar()
                     self.type = self.rar
+
+                elif filepath.endswith(SEVENZIP_FILES):
+                    self.archive = py7zr.SevenZipFile(os.path.normcase(filepath))
+                    b_f = self.archive.testzip()
+                    self.type = self.sevenzip
 
                 # test for corruption
                 if b_f:
@@ -415,97 +437,121 @@ class ArchiveFile():
             log.exception('Create archive: FAIL')
             raise app_constants.CreateArchiveFail
 
-    def namelist(self):
-        filelist = self.archive.namelist()
-        return filelist
+    def namelist(self) -> list[str]:
+        return self.archive.namelist()
 
-    def is_dir(self, name):
+    def is_dir(self, name: str) -> bool:
         """
         Checks if the provided name in the archive is a directory or not
         """
-        if not name:
-            return False
+        if not name: return False
+        
         if not name in self.namelist():
-            log_e('File {} not found in archive'.format(name))
+            log_e(f'File {name} not found in archive')
             raise app_constants.FileNotFoundInArchive
+        
         if self.type == self.zip:
-            if name.endswith('/'):
-                return True
-        elif self.type == self.rar:
-            info = self.archive.getinfo(name)
-            return info.isdir()
+            return name.endswith('/')
+
+        if self.type == self.rar:
+            return self.archive.getinfo(name).isdir()
+
+        if self.type == self.sevenzip:
+            # py7zr returns directories without a '/' and there's no simpler way that I could find
+            for f in self.archive.files:
+                if f.filename == name:
+                    return f.is_directory
+            return False
+
         return False
 
-    def dir_list(self, only_top_level=False):
+    def dir_list(self, only_top_level: bool = False) -> list[str]:
         """
         Returns a list of all directories found recursively. For directories not in toplevel
         a path in the archive to the diretory will be returned.
         """
-        
         if only_top_level:
             if self.type == self.zip:
-                return [x for x in self.namelist() if x.endswith('/') and x.count('/') == 1]
-            elif self.type == self.rar:
-                potential_dirs = [x for x in self.namelist() if x.count('/') == 0]
-                return [x.filename for x in [self.archive.getinfo(y) for y in potential_dirs] if x.isdir()]
+                return [f for f in self.namelist() if f.endswith('/') and f.count('/') == 1]
+            if self.type == self.rar:
+                potential_dirs = [f for f in self.namelist() if f.count('/') == 0]
+                return [f.filename for f in [self.archive.getinfo(d) for d in potential_dirs] if f.isdir()]
+            if self.type == self.sevenzip:
+                return [f.filename for f in self.archive.files if (f.is_directory and '/' not in f.filename)]
         else:
             if self.type == self.zip:
-                return [x for x in self.namelist() if x.endswith('/') and x.count('/') >= 1]
-            elif self.type == self.rar:
-                return [x.filename for x in self.archive.infolist() if x.isdir()]
+                return [f for f in self.namelist() if f.endswith('/')]
+            if self.type == self.rar:
+                return [f.filename for f in self.archive.infolist() if f.isdir()]
+            if self.type == self.sevenzip:
+                return [f.filename for f in self.archive.files if f.is_directory]
 
-    def dir_contents(self, dir_name):
+    def dir_contents(self, dir_name: str) -> list[str]:
         """
-        Returns a list of contents in the directory
-        An empty string will return the contents of the top folder
+        Returns a list of contents in the directory (files and direct subdirectories).
+        An empty string will return the top-level contents.
         """
         if dir_name and not dir_name in self.namelist():
-            log_e('Directory {} not found in archive'.format(dir_name))
+            log_e(f'Directory {dir_name} not found in archive')
             raise app_constants.FileNotFoundInArchive
+
         if not dir_name:
+            # top-level contents
             if self.type == self.zip:
-                con = [x for x in self.namelist() if x.count('/') == 0 or \
-                    (x.count('/') == 1 and x.endswith('/'))]
-            elif self.type == self.rar:
-                con = [x for x in self.namelist() if x.count('/') == 0]
-            return con
+                return [f for f in self.namelist() if f.count('/') == 0 or (f.count('/') == 1 and f.endswith('/'))]
+            if self.type in (self.rar, self.sevenzip):
+                return [f for f in self.namelist() if f.count('/') == 0]
+
+        # contents of a directory
         if self.type == self.zip:
-            dir_con_start = [x for x in self.namelist() if x.startswith(dir_name)]
-            return [x for x in dir_con_start if x.count('/') == dir_name.count('/') and \
-                (x.count('/') == dir_name.count('/') and not x.endswith('/')) or \
-                (x.count('/') == 1 + dir_name.count('/') and x.endswith('/'))]
-        elif self.type == self.rar:
-            return [x for x in self.namelist() if x.startswith(dir_name) and \
-                x.count('/') == 1 + dir_name.count('/')]
+            dir_con_start = [f for f in self.namelist() if f.startswith(dir_name)]
+            return [f for f in dir_con_start if f.count('/') == dir_name.count('/') and \
+                (f.count('/') == dir_name.count('/') and not f.endswith('/')) or \
+                (f.count('/') == 1 + dir_name.count('/') and f.endswith('/'))]
+
+        if self.type in (self.rar, self.sevenzip):
+            return [f for f in self.namelist() if f.startswith(dir_name) and f.count('/') == 1 + dir_name.count('/')]
+
         return []
 
-    def extract(self, file_to_ext, path=None):
+    def extract(self, file_or_dir: str, path: str = None) -> str:
         """
-        Extracts one file from archive to given path
-        Creates a temp_dir if path is not specified
-        Returns path to the extracted file
+        Extracts one file or directory from archive to given path.
+        Creates a temp_dir if path is not specified.
+        Returns path to the extracted file.
         """
         if not path:
             path = os.path.join(app_constants.temp_dir, str(uuid.uuid4()))
             os.mkdir(path)
 
-        if not file_to_ext:
+        if not file_or_dir:
             return self.extract_all(path)
-        else:
-            if self.type == self.zip:
-                membs = []
-                for name in self.namelist():
-                    if name.startswith(file_to_ext) and name != file_to_ext:
-                        membs.append(name)
-                temp_p = self.archive.extract(file_to_ext, path)
-                for m in membs:
-                    self.archive.extract(m, path)
-            elif self.type == self.rar:
-                temp_p = os.path.join(path, file_to_ext)
-                self.archive.extract(file_to_ext, path)
-            return temp_p
+    
+        if self.type == self.zip:
+            # if it's a directory: get all members of that directory
+            membs = [name for name in self.namelist() if (name.startswith(file_or_dir) and name != file_or_dir)]
+            # but make sure to extract the directory itself first
+            temp_p = self.archive.extract(file_or_dir, path)
+            for m in membs:
+                self.archive.extract(m, path)
 
-    def extract_all(self, path=None, member=None):
+        elif self.type == self.rar:
+            temp_p = os.path.join(path, file_or_dir)
+            self.archive.extract(file_or_dir, path)
+
+        elif self.type == self.sevenzip:
+            # if it's a directory: get all members of that directory
+            membs = [name for name in self.namelist() if (name.startswith(file_or_dir) and name != file_or_dir)]
+            # but make sure to extract the directory itself first
+            log_d(f'extract: {file_or_dir}')
+            temp_p = self.archive.extract(path, [file_or_dir])
+            log_d(f'extract: {membs}')
+            self.archive.extract(path, membs)
+            log_d(f'extract: done')
+
+        return temp_p
+
+    def extract_all(self, path: str = None, member: str = None) -> str:
         """
         Extracts all files to given path, and returns path
         If path is not specified, a temp dir will be created
@@ -513,9 +559,14 @@ class ArchiveFile():
         if not path:
             path = os.path.join(app_constants.temp_dir, str(uuid.uuid4()))
             os.mkdir(path)
-        if member:
+
+        if member and self.type != self.sevenzip:
+            log_d(f'extract_all: {member}')
             self.archive.extractall(path, member)
+        log_d(f'extract_all: all')
         self.archive.extractall(path)
+        log_d(f'extract_all: done')
+
         return path
 
     def open(self, file_to_open, fp=False):
