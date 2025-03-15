@@ -346,9 +346,14 @@ TOOLTIP_TIMES_READ = get(True, 'Visual', 'tooltip times read', bool)
 TOOLTIP_PUB_DATE = get(False, 'Visual', 'tooltip pub date', bool)
 TOOLTIP_DATE_ADDED = get(True, 'Visual', 'tooltip date added', bool)
 
-GALLERY_ADDITION_DATA = []
-GALLERY_DATA = [] # contains the most up to date gallery data
-GALLERY_LISTS = set() # contains the most up to dat gallery lists
+GALLERY_DATA : list[gallerydb.Gallery] = list()
+"The current list of galleries in the main library"
+
+GALLERY_ADDITION_DATA : list[gallerydb.Gallery] = list()
+"The current list of galleries in the inbox"
+
+GALLERY_LISTS : set[gallerydb.GalleryList] = set()
+"A set of all gallery lists"
 
 # Exceptions
 class MetadataFetchFail(Exception): pass
