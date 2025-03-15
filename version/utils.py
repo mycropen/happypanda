@@ -67,11 +67,11 @@ class GMetafile:
             "pub_date":'',
             "link":'',
             "info":'',
+        }
 
-            }
         self.files = []
-        if path is None:
-            return
+        if path is None: return
+
         if archive:
             zip = ArchiveFile(archive)
             c = zip.dir_contents(path)
@@ -82,36 +82,45 @@ class GMetafile:
             for p in scandir.scandir(path):
                 if p.name in app_constants.GALLERY_METAFILE_KEYWORDS:
                     self.files.append(open(p.path, encoding='utf-8'))
+
         if self.files:
             self.detect()
         else:
             log_d('No metafile found...')
 
     def _eze(self, fp):
-        if not fp.name.endswith('.json'):
-            return
+        if not fp.name.endswith('.json'): return
+
         j = json.load(fp)
         eze = ['gallery_info', 'image_api_key', 'image_info']
+
         # eze
         if all(x in j for x in eze):
             log_i('Detected metafile: eze')
             ezedata = j['gallery_info']
             t_parser = title_parser(ezedata['title'])
+            
             self.metadata['title'] = t_parser['title']
             self.metadata['type'] = ezedata['category']
-            for ns in ezedata['tags']:
-                self.metadata['tags'][ns.capitalize()] = ezedata['tags'][ns]
-            self.metadata['tags']['default'] = self.metadata['tags'].pop('Misc', [])
-            self.metadata['artist'] = self.metadata['tags']['Artist'][0].capitalize()\
-                if 'Artist' in self.metadata['tags'] else t_parser['artist']
             self.metadata['language'] = ezedata['language']
+
+            for ns in ezedata['tags']: self.metadata['tags'][ns.capitalize()] = ezedata['tags'][ns]
+            self.metadata['tags']['default'] = self.metadata['tags'].pop('Misc', [])
+
+            if 'Artist' in self.metadata['tags']:
+                self.metadata['artist'] = self.metadata['tags']['Artist'][0].capitalize()
+            else:
+                self.metadata['artist'] = t_parser['artist']
+
             d = ezedata['upload_date']
             # should be zero padded
-            d[1] = int("0" + str(d[1])) if len(str(d[1])) == 1 else d[1]
-            d[3] = int("0" + str(d[1])) if len(str(d[1])) == 1 else d[1] 
-            self.metadata['pub_date'] = datetime.datetime.strptime("{} {} {}".format(d[0], d[1], d[3]), "%Y %m %d")
+            # d[1] = int("0" + str(d[1])) if len(str(d[1])) == 1 else d[1]
+            # d[3] = int("0" + str(d[1])) if len(str(d[1])) == 1 else d[1]
+            self.metadata['pub_date'] = datetime.datetime.strptime(f'{d[0]} {d[1]} {d[3]}', "%Y %m %d")
+
             l = ezedata['source']
             self.metadata['link'] = 'http://' + l['site'] + '.org/g/' + str(l['gid']) + '/' + l['token']
+
             return True
 
     def _hdoujindler(self, fp):
@@ -208,19 +217,19 @@ class GMetafile:
         return gallery
 
 def backup_database(db_path=db_constants.DB_PATH):
-    log_i("Perfoming database backup")
-    date = "{}".format(datetime.datetime.today()).split(' ')[0]
+    log_i('Perfoming database backup')
+    date = f'{datetime.datetime.today()}'.split(' ')[0]
     base_path, name = os.path.split(db_path)
     backup_dir = os.path.join(base_path, 'backup')
     if not os.path.isdir(backup_dir):
         os.mkdir(backup_dir)
-    db_name = "{}-{}".format(date, name)
+    db_name = f'{date}-{name}'
 
     current_try = 0
     orig_db_name = db_name
     while current_try < 50:
         if current_try:
-            db_name = "{}({})-{}".format(date, current_try, orig_db_name)
+            db_name = f'{date}({current_try})-{orig_db_name}'
         try:
             dst_path = os.path.join(backup_dir, db_name)
             if os.path.exists(dst_path):
@@ -229,7 +238,7 @@ def backup_database(db_path=db_constants.DB_PATH):
             break
         except ValueError:
             current_try += 1
-    log_i("Database backup perfomed: {}".format(db_name))
+    log_i(f'Database backup perfomed: {db_name}')
     return True
 
 def get_date_age(date):
@@ -245,14 +254,9 @@ def get_date_age(date):
         '''Add "s" if it's plural'''
 
         if n == 1:
-            return "1 %s" % s
+            return f'1 {s}'
         elif n > 1:
-            return "%d %ss" % (n, s)
-
-    def q_n_r(a, b):
-        '''Return quotient and remaining'''
-
-        return a / b, a % b
+            return f'{n} {s}s'
 
     class PrettyDelta:
         def __init__(self, dt):
@@ -262,10 +266,10 @@ def get_date_age(date):
             self.day = delta.days
             self.second = delta.seconds
 
-            self.year, self.day = q_n_r(self.day, 365)
-            self.month, self.day = q_n_r(self.day, 30)
-            self.hour, self.second = q_n_r(self.second, 3600)
-            self.minute, self.second = q_n_r(self.second, 60)
+            self.year, self.day = divmod(self.day, 365)
+            self.month, self.day = divmod(self.day, 30)
+            self.hour, self.second = divmod(self.second, 3600)
+            self.minute, self.second = divmod(self.second, 60)
 
         def format(self):
             for period in ['year', 'month', 'day', 'hour', 'minute', 'second']:
@@ -308,7 +312,7 @@ def move_files(path, dest='', only_path=False):
     f = os.path.split(path)[1]
     new_path = os.path.join(dest, f)
     if not only_path:
-        log_i("Moving to: {}".format(new_path))
+        log_i(f'Moving to: {new_path}')
     if new_path == os.path.join(*os.path.split(path)): # need to unpack to make sure we get the corrct sep
         return path
     if not os.path.exists(new_path):
@@ -406,7 +410,7 @@ class ArchiveFile():
 
                 # test for corruption
                 if b_f:
-                    log_w('Bad file found in archive {}'.format(filepath.encode(errors='ignore')))
+                    log_w(f'Bad file found in archive {filepath}: {b_f}')
                     raise app_constants.CreateArchiveFail
             else:
                 log_e('Archive: Unsupported file format')
@@ -600,7 +604,7 @@ def recursive_gallery_check(path):
                 if gallery_probability >= (len(files) * 0.8):
                     found_paths += 1
                     gallery_dirs.append(root)
-    log_i('Found {} in {}'.format(found_paths, path).encode(errors='ignore'))
+    log_i(f'Found {found_paths} in {path}')
     return gallery_dirs, gallery_arch
 
 def today():
@@ -681,7 +685,7 @@ def open_chapter(chapterpath, archive=None):
                 con = zip.dir_contents('')
                 f_img = [x for x in sorted(con) if x.lower().endswith(IMG_FILES) and not x.startswith('.')]
                 if not f_img:
-                    log_w('Extracting archive.. There are no images in the top-folder. ({})'.format(archive))
+                    log_w(f'Extracting archive.. There are no images in the top-folder. ({archive})')
                     return find_f_img_archive()
                 filepath = os.path.normpath(archive)
             else:
@@ -703,11 +707,11 @@ def open_chapter(chapterpath, archive=None):
                 app_constants.NOTIF_BAR.add_text('Could not open chapter. Check happypanda.log for more details.')
                 return
     except FileNotFoundError:
-        log.exception('Could not find chapter {}'.format(chapterpath))
+        log.exception(f'Could not find chapter {chapterpath}')
         app_constants.NOTIF_BAR.add_text("Chapter does no longer exist!")
         return
     except IndexError:
-        log.exception('No images found: {}'.format(chapterpath))
+        log.exception(f'No images found: {chapterpath}')
         app_constants.NOTIF_BAR.add_text("No images found in chapter!")
         return
 
@@ -745,7 +749,7 @@ def open_chapter(chapterpath, archive=None):
         log.exception('Could not open chapter. Invalid external viewer.')
     except:
         app_constants.NOTIF_BAR.add_text("Could not open chapter for unknown reasons. Check happypanda.log!")
-        log_e('Could not open chapter {}'.format(os.path.split(chapterpath)[1]))
+        log_e(f'Could not open chapter {os.path.split(chapterpath)[1]}')
 
 def get_gallery_img(gallery_or_path, chap_number=0):
     """
@@ -770,15 +774,19 @@ def get_gallery_img(gallery_or_path, chap_number=0):
     if is_archive:
         try:
             log_i('Getting image from archive')
-            zip = ArchiveFile(real_path)
+            arc = ArchiveFile(real_path)
+            log_d(f'{arc = }')
             temp_path = os.path.join(app_constants.temp_dir, str(uuid.uuid4()))
             os.mkdir(temp_path)
+            log_d(f'{temp_path = }')
             if not archive:
-                f_img_name = sorted([img for img in zip.namelist() if img.lower().endswith(IMG_FILES) and not img.startswith('.')])[0]
+                f_img_name = sorted([img for img in arc.namelist() if img.lower().endswith(IMG_FILES) and not img.startswith('.')])[0]
             else:
-                f_img_name = sorted([img for img in zip.dir_contents(path) if img.lower().endswith(IMG_FILES) and not img.startswith('.')])[0]
-            img_path = zip.extract(f_img_name, temp_path)
-            zip.close()
+                f_img_name = sorted([img for img in arc.dir_contents(path) if img.lower().endswith(IMG_FILES) and not img.startswith('.')])[0]
+            log_d(f'{f_img_name = }')
+            img_path = arc.extract(f_img_name, temp_path)
+            log_d(f'{img_path = }')
+            arc.close()
         except app_constants.CreateArchiveFail:
             img_path = app_constants.NO_IMAGE_PATH
     elif os.path.isdir(real_path):
@@ -925,7 +933,7 @@ def tag_to_dict(string, ns_capitalize=True):
 
 def title_parser(title):
     "Receives a title to parse. Returns dict with 'title', 'artist' and language"
-    log_d("Parsing title: {}".format(title))
+    log_d(f'Parsing title: {title}')
 
     #If title is not absolute, then it's not a pathname and we allow a "/" inside it
     if (os.path.isabs(title)): title = os.path.basename(title)
@@ -1023,7 +1031,7 @@ def open_path(path, select=''):
             subprocess.Popen(['open', path])
         elif os.name == 'nt':
             if select:
-                subprocess.Popen(r'explorer.exe /select,"{}"'.format(os.path.normcase(select)), shell=True)
+                subprocess.Popen(f'explorer.exe /select,"{os.path.normcase(select)}"', shell=True)
             else:
                 os.startfile(path)
         elif os.name == 'posix':
@@ -1065,8 +1073,8 @@ def delete_path(path):
 
         if error:
             p = os.path.split(path)[1]
-            log_e('Failed to delete: {}:{}'.format(error, p))
-            app_constants.NOTIF_BAR.add_text('An error occured while trying to delete: {}'.format(error))
+            log_e(f'Failed to delete: {error}:{p}')
+            app_constants.NOTIF_BAR.add_text(f'An error occured while trying to delete: {error}')
             s = False
     return s
 
@@ -1178,7 +1186,7 @@ def image_greyscale(filepath):
     """
     Check if image is monochrome (1 channel or 3 identical channels)
     """
-    log_d("Checking if img is monochrome: {}".format(filepath))
+    log_d(f'Checking if img is monochrome: {filepath}')
     im = Image.open(filepath).convert("RGB")
     if im.mode not in ("L", "RGB"):
         return False
@@ -1327,8 +1335,7 @@ def timeit(func):
         startTime = time.time()
         func(*args, **kwargs)
         elapsedTime = time.time() - startTime
-        print('function [{}] finished in {} ms'.format(
-            func.__name__, int(elapsedTime * 1000)))
+        print(f'function [{func.__name__}] finished in {int(elapsedTime * 1000)} ms')
     return newfunc
 
 
