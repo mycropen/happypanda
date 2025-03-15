@@ -12,7 +12,13 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
-import sys, logging, logging.handlers, os, argparse, platform, scandir
+import sys
+import logging
+import logging.handlers
+import os
+import argparse
+import platform
+import scandir
 import traceback
 
 from PyQt5.QtWidgets import QApplication
