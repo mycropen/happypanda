@@ -13,51 +13,26 @@
 #"""
 import os
 import threading
-import queue
 import time
 import logging
 import math
-import random
 import functools
 import scandir
-from datetime import datetime
 
-from PyQt5.QtCore import (QModelIndex, Qt, QDate, QPoint, pyqtSignal, QThread,
-                          QTimer, QObject, QSize, QRect, QFileInfo,
-                          QMargins, QPropertyAnimation, QRectF,
-                          QTimeLine, QMargins, QPropertyAnimation, QByteArray,
-                          QPointF, QSizeF, QProcess, qRound)
-from PyQt5.QtGui import (QTextCursor, QIcon, QMouseEvent, QFont,
-                         QPixmapCache, QPalette, QPainter, QBrush,
-                         QColor, QPen, QPixmap, QMovie, QPaintEvent, QFontMetrics,
-                         QPolygonF, QRegion, QCursor, QTextOption, QTextLayout,
-                         QPalette)
-from PyQt5.QtWidgets import (QWidget, QProgressBar, QLabel,
-                             QVBoxLayout, QHBoxLayout,
-                             QDialog, QGridLayout, QLineEdit,
-                             QFormLayout, QPushButton, QTextEdit,
-                             QComboBox, QDateEdit, QGroupBox,
-                             QDesktopWidget, QMessageBox, QFileDialog,
-                             QCompleter, QListWidgetItem,
-                             QListWidget, QApplication, QSizePolicy,
-                             QCheckBox, QFrame, QListView,
-                             QAbstractItemView, QTreeView, QSpinBox,
-                             QAction, QStackedLayout, QTabWidget,
-                             QGridLayout, QScrollArea, QLayout, QButtonGroup,
-                             QRadioButton, QFileIconProvider, QFontDialog,
-                             QColorDialog, QScrollArea, QSystemTrayIcon,
-                             QMenu, QGraphicsBlurEffect, QActionGroup,
-                             QCommonStyle, QApplication, QTableWidget,
-                             QTableWidgetItem, QTableView, QSplitter,
-                             QSplitterHandle, QStyledItemDelegate, QStyleOption)
+from PyQt5.QtCore import (QModelIndex, Qt, QPoint, pyqtSignal, QTimer, QSize, QRect, QFileInfo, QPropertyAnimation,
+                          QRectF, QPropertyAnimation, QByteArray, QPointF, QSizeF, qRound)
+from PyQt5.QtGui import (QTextCursor, QIcon, QMouseEvent, QFont, QPalette, QPainter, QBrush, QColor, QPen, QPixmap,
+                         QPaintEvent, QFontMetrics, QPolygonF, QCursor, QTextOption, QTextLayout, QPalette)
+from PyQt5.QtWidgets import (QWidget, QProgressBar, QLabel, QVBoxLayout, QHBoxLayout, QDialog, QLineEdit, QFormLayout,
+                             QPushButton, QTextEdit, QDesktopWidget, QMessageBox, QFileDialog, QCompleter, QListWidgetItem,
+                             QListWidget, QSizePolicy, QCheckBox, QFrame, QListView, QAbstractItemView, QTreeView, QSpinBox,
+                             QAction, QStackedLayout, QScrollArea, QLayout, QFileIconProvider, QScrollArea, QSystemTrayIcon,
+                             QMenu, QActionGroup, QCommonStyle, QTableWidget, QTableWidgetItem, QTableView, QStyleOption)
 
-from utils import (tag_to_string, tag_to_dict, title_parser, ARCHIVE_FILES,
-                     ArchiveFile, IMG_FILES)
-from executors import Executors
+import executors
 import utils
 import app_constants
 import gallerydb
-import fetch
 import settings
 
 log = logging.getLogger(__name__)
@@ -1319,7 +1294,7 @@ class GalleryMenu(QMenu):
                             directory=path)[0]
         if new_cover and new_cover.lower().endswith(utils.IMG_FILES):
             gallerydb.GalleryDB.clear_thumb(gallery.profile)
-            Executors.generate_thumbnail(gallery, img=new_cover, on_method=gallery.set_profile)
+            executors.Executors.generate_thumbnail(gallery, img=new_cover, on_method=gallery.set_profile)
             gallery.reset_profile()
             log_i('Changed cover successfully!')
 
@@ -2006,13 +1981,13 @@ class FileIcon:
             if not gallery:
                 return False
             file = ""
-            if gallery.path.endswith(tuple(ARCHIVE_FILES)):
+            if gallery.path.endswith(tuple(utils.ARCHIVE_FILES)):
                 try:
-                    zip = ArchiveFile(gallery.path)
+                    zip = utils.ArchiveFile(gallery.path)
                 except utils.app_constants.CreateArchiveFail:
                     return False
                 for name in zip.namelist():
-                    if name.lower().endswith(tuple(IMG_FILES)):
+                    if name.lower().endswith(tuple(utils.IMG_FILES)):
                         folder = os.path.join(app_constants.temp_dir,
                             '{}{}'.format(name, n))
                         zip.extract(name, folder)
@@ -2020,7 +1995,7 @@ class FileIcon:
                         break
             else:
                 for p in scandir.scandir(gallery.chapters[0].path):
-                    if p.name.lower().endswith(tuple(IMG_FILES)):
+                    if p.name.lower().endswith(tuple(utils.IMG_FILES)):
                         file = p.path
                         break
             return file
@@ -2208,7 +2183,7 @@ class PathLineEdit(QLineEdit):
     A lineedit which open a filedialog on right/left click
     Set dir to false if you want files.
     """
-    def __init__(self, parent=None, dir=True, filters=utils.FILE_FILTER):
+    def __init__(self, parent=None, dir=True, filters=utils.ARCHIVE_FILTER):
         super().__init__(parent)
         self.folder = dir
         self.filters = filters
@@ -2493,7 +2468,7 @@ class GalleryListView(QWidget):
     def from_files(self):
         gallery_list = QFileDialog.getOpenFileNames(self,
                                              'Select 1 or more gallery to add',
-                                             filter='Archives ({})'.format(utils.FILE_FILTER))
+                                             filter='Archives ({})'.format(utils.ARCHIVE_FILTER))
         for path in gallery_list[0]:
             #Warning: will break when you add more filters
             if len(path) != 0:
