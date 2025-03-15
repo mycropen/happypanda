@@ -28,15 +28,13 @@ from dataclasses import dataclass, field
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTime
 
-from utils import (today, ArchiveFile, generate_img_hash, delete_path,
-                     ARCHIVE_FILES, get_gallery_img, IMG_FILES)
 from database import db_constants
 from database import db
 from database.db import DBBase
-from executors import Executors
 
 import app_constants
 import utils
+import executors
 
 log = logging.getLogger(__name__)
 log_i = log.info
@@ -256,7 +254,7 @@ class GalleryDB(DBBase):
             log_i('Recreating thumb {}'.format(gallery.title.encode(errors='ignore')))
             if gallery.profile:
                 GalleryDB.clear_thumb(gallery.profile)
-            gallery.profile = Executors.generate_thumbnail(gallery, blocking=True)
+            gallery.profile = executors.Executors.generate_thumbnail(gallery, blocking=True)
             GalleryDB.modify_gallery(gallery.id,
                 profile=gallery.profile)
         except:
@@ -462,7 +460,7 @@ class GalleryDB(DBBase):
         series_id = cursor.lastrowid
         object.id = series_id
         if not object.profile:
-            Executors.generate_thumbnail(object, on_method=object.set_profile)
+            executors.Executors.generate_thumbnail(object, on_method=object.set_profile)
         if object.tags:
             TagDB.add_tags(object)
         ChapterDB.add_chapters(object)
@@ -483,17 +481,17 @@ class GalleryDB(DBBase):
             if local:
                 app_constants.TEMP_PATH_IGNORE.append(os.path.normcase(gallery.path))
                 if gallery.is_archive:
-                    s = delete_path(gallery.path)
+                    s = utils.delete_path(gallery.path)
                 else:
                     paths = [x.path for x in gallery.chapters]
                     [app_constants.TEMP_PATH_IGNORE.append(os.path.normcase(x)) for x in paths] # to avoid data race?
                     for path in paths:
-                        s = delete_path(path)
+                        s = utils.delete_path(path)
                         if not s:
                             log_e('Failed to delete chapter {}:{}, {}'.format(chap,
                                                             gallery.id, gallery.title.encode('utf-8', 'ignore')))
                             continue
-                    s = delete_path(gallery.path)
+                    s = utils.delete_path(gallery.path)
 
                 if not s:
                     log_e('Failed to delete gallery:{}, {}'.format(gallery.id,
@@ -1221,22 +1219,22 @@ class HashDB(DBBase):
                         h = look_exists(p)
                         if not h:
                             with open(pages[p], 'rb') as f:
-                                h = generate_img_hash(f)
+                                h = utils.generate_img_hash(f)
                             executing.append((h, gallery.id, chap_id, p,))
                         hashes[p] = h
                 else:
                     for i in pages:
                         with open(pages[i], 'rb') as f:
-                            hashes[i] = generate_img_hash(f)
+                            hashes[i] = utils.generate_img_hash(f)
 
             except (NotADirectoryError, OSError):
                 temp_dir = os.path.join(app_constants.temp_dir, str(uuid.uuid4()))
                 is_archive = gallery.is_archive
                 try:
                     if is_archive:
-                        zip = ArchiveFile(gallery.path)
+                        zip = utils.ArchiveFile(gallery.path)
                     else:
-                        zip = ArchiveFile(chap.path)
+                        zip = utils.ArchiveFile(chap.path)
                 except app_constants.CreateArchiveFail:
                     log_e('Could not generate hash: CreateZipFail')
                     return {}
@@ -1275,12 +1273,12 @@ class HashDB(DBBase):
                     for p in pages:
                         h = look_exists(p)
                         if not h:
-                            h = generate_img_hash(pages[p])
+                            h = utils.generate_img_hash(pages[p])
                             executing.append((h, gallery.id, chap_id, p,))
                         hashes[p] = h
                 else:
                     for i in pages:
-                        hashes[i] = generate_img_hash(pages[i])
+                        hashes[i] = utils.generate_img_hash(pages[i])
 
             if executing:
                 cls.executemany(cls, 'INSERT INTO hashes(hash, series_id, chapter_id, page) VALUES(?, ?, ?, ?)',
@@ -1556,7 +1554,7 @@ class Gallery:
                 return f.result()
         img = self._profile_load_status.get(ptype)
         if not img:
-            self._profile_qimage[ptype] = Executors.load_thumbnail(self.profile, psize,
+            self._profile_qimage[ptype] = executors.Executors.load_thumbnail(self.profile, psize,
                 on_method=self._profile_loaded,
                 ptype=ptype, method=on_method)
 
@@ -1962,10 +1960,10 @@ class ChaptersContainer:
         chap = self[number]
         if chap.in_archive:
             _archive = utils.ArchiveFile(chap.gallery.path)
-            chap.pages = len([x for x in _archive.dir_contents(chap.path) if x.lower().endswith(IMG_FILES)])
+            chap.pages = len([x for x in _archive.dir_contents(chap.path) if x.lower().endswith(utils.IMG_FILES)])
             _archive.close()
         else:
-            chap.pages = len([x for x in scandir.scandir(chap.path) if x.path.lower().endswith(IMG_FILES)])
+            chap.pages = len([x for x in scandir.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
 
         execute(ChapterDB.update_chapter, True, self, [chap.number])
         return True
