@@ -1651,12 +1651,12 @@ class NotificationOverlay(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._main_layout = QHBoxLayout(self)
-        self._default_height = 20
+        self._default_height = 25
         self._dynamic_height = 0
         self._lbl = QLabel()
         self._main_layout.addWidget(self._lbl)
         self._lbl.setAlignment(Qt.AlignCenter)
-        self.setContentsMargins(-10,-10,-10,-10)
+        self._main_layout.setContentsMargins(10, 5, 10, 5)
         self._click = False
         self._override_hide = False
         self.text_queue = []
@@ -1674,17 +1674,17 @@ class NotificationOverlay(QWidget):
     def set_dynamic_height(self, h):
         self._dynamic_height = h
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent):
         if self._click:
             self.clicked.emit()
         return super().mousePressEvent(event)
 
-    def set_clickable(self, d=True):
-        self._click = d
+    def set_clickable(self, value=True):
+        self._click = value
         self._set_cursor.emit(Qt.PointingHandCursor)
 
-    def resize(self, x, y=0):
-        return super().resize(x, self._dynamic_height)
+    def resize(self, w, h=0):
+        return super().resize(w, self._dynamic_height)
 
     def add_text(self, text, autohide=True):
         """
