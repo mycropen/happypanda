@@ -502,9 +502,6 @@ class GalleryMetaWindow(ArrowWindow):
         self.arrow_offset_v = 0
         self.arrow_offset_h = 0
 
-        if app_constants.DEBUG:
-            print(f'{self.g_rect_global  = }')
-
         # find the best placement
         def fits_left():
             left = self.g_rect_global.left() > view_rect.left()   + check_width         # if the window's width fits to the left of the gallery
@@ -580,11 +577,6 @@ class GalleryMetaWindow(ArrowWindow):
                 break
         else: # default pos is bottom
             fits_below(True)
-
-        if app_constants.DEBUG:
-            print(f'{self.geometry() = }')
-            print(f'{self.arrow_offset_v = }')
-            print(f'{self.arrow_offset_h = }')
 
         self._set_gallery(index.data(Qt.UserRole + 1))
         self.show()
