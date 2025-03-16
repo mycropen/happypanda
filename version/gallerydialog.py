@@ -479,8 +479,7 @@ class GalleryDialog(QWidget):
         self.done.show()
         self.file_exists_lbl.hide()
         if mode == 'a':
-            name = QFileDialog.getOpenFileName(self, 'Choose archive',
-                                              filter=utils.FILE_FILTER)
+            name = QFileDialog.getOpenFileName(self, 'Choose archive', filter=utils.ARCHIVE_FILTER)
             name = name[0]
         elif mode == 'f':
             name = QFileDialog.getExistingDirectory(self, 'Choose folder')
