@@ -15,29 +15,18 @@
 import sys
 import logging
 import os
-import threading
-import re
 import requests
 import scandir
-import random
 import traceback
+import time
 
-from PyQt5.QtCore import (Qt, QSize, pyqtSignal, QThread, QEvent, QTimer,
-                          QObject, QPoint, QPropertyAnimation)
-from PyQt5.QtGui import (QPixmap, QIcon, QMoveEvent, QCursor,
-                         QKeySequence)
-from PyQt5.QtWidgets import (QMainWindow, QListView,
-                             QHBoxLayout, QFrame, QWidget, QVBoxLayout,
-                             QLabel, QStackedLayout, QToolBar, QMenuBar,
-                             QSizePolicy, QMenu, QAction, QLineEdit,
-                             QSplitter, QMessageBox, QFileDialog,
-                             QDesktopWidget, QPushButton, QCompleter,
-                             QListWidget, QListWidgetItem, QToolTip,
-                             QProgressBar, QToolButton, QSystemTrayIcon,
-                             QShortcut, QGraphicsBlurEffect, QTableWidget,
-                             QTableWidgetItem, QActionGroup)
-
-from executors import Executors
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QThread, QTimer, QObject
+from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QWidget, QVBoxLayout, QLabel,
+                             QToolBar, QSizePolicy, QMenu, QAction, QLineEdit,
+                             QMessageBox, QFileDialog, QCompleter, QToolButton,
+                             QSystemTrayIcon, QShortcut, QGraphicsBlurEffect,
+                             QTableWidget, QTableWidgetItem)
 
 import app_constants
 import misc
@@ -293,8 +282,6 @@ class AppWindow(QMainWindow):
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
             def fetch_vs(self):
-                import requests
-                import time
                 log_d('Checking Update')
                 time.sleep(1.5)
                 try:
