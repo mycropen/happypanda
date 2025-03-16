@@ -670,7 +670,7 @@ ABOUT =\
 <p>License: <a href="https://www.gnu.org/licenses/gpl-2.0.txt"> GENERAL PUBLIC LICENSE, Version 2</a></p>
 <p>Happypanda was created using:</p>
 <ul>
-<li>Python 3.8</li>
+<li>Python 3.13</li>
 <li>The Qt5 Framework</li>
 <li>Various python libraries (see github repo)</li>
 </ul>
