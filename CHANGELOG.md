@@ -1,3 +1,21 @@
+## Happypanda v1.6
+
+- upgraded the Python version to 3.13
+- upgraded the PyQt version to 5.15
+
+- Changes & New Features
+    - New setting for the gallery edit window default width: `Visual / General / Gallery Edit Dialog` or `galleryedit.w` value in the `[Visual]` section of the settings.ini. This is to account for high DPI screens and window scaling.
+    - Gallery edit dialog is no longer scrollable and instead just adjusts itself to its contents.
+    - Archives with less than 4 pages and a non-image file can now be added as galleries.
+    - A new option that lets you send every archive you drag & drop into Happypanda to the inbox, even if it's only one: `Application / General / Send every new gallery to the inbox` or `always send to inbox` in the `[Application]` section of the settings ini.
+    - The gallery meta window that appears when you click on a gallery is now confined horizontally to the main window borders.
+    - Support for .7z and .cb7 archives.
+
+- Fixes
+    - Pressing Ctrl or Enter in a multi-gallery edit dialog shouldn't give you an error message anymore.
+    - The table view no longer tries to hide the nonexistent popup window.
+    - If the notification bar didn't show correctly for you, it should be visible again now.
+
 ## Happypanda v1.5.1
 
 - Changes
