@@ -15,12 +15,8 @@
 import os, sys, enum
 import qtawesome as qta
 
-try:
-    import settings
-    from database import db_constants
-except ImportError:
-    from . import settings
-    from .database import db_constants
+import settings
+import database
 
 # Version number
 vs  = '1.6'
