@@ -545,6 +545,32 @@ class GalleryMetaWindow(ArrowWindow):
                 return True
             return False
 
+        def fits_above_with_lease():
+            # check if window fits above vertically
+            # move it to the left or right if it doesn't fit horizontally
+            top   = self.g_rect_global.top() > view_rect.top()   + check_height     # if the window's height fits above the gallery
+            left  = index_center.x()         > view_rect.left()  + check_width / 2  # if half the window fits to the left of the gallery's center
+            right = index_center.x()         < view_rect.right() - check_width / 2  # if half the window fits to the right of the gallery's center
+
+            if top:
+                self.direction = self.BOTTOM
+                x = index_center.x() - (self.width() / 2)
+                y = self.g_rect_global.top() - gallery_touch_offset - self.height()
+
+                # if the window would be partially outside the parent window, move it back inside
+                # but keep the arrow centered on the gallery
+                self.arrow_offset_v = 0
+                if not left:
+                    self.arrow_offset_h = x - view_rect.left()
+                    x -= self.arrow_offset_h
+                elif not right:
+                    self.arrow_offset_h = x + self.width() - view_rect.right()
+                    x -= self.arrow_offset_h
+                appear_point = QPoint(int(x), int(y))
+                self.move(appear_point)
+                return True
+            return False
+
         def fits_below(force=False):
             btm   = self.g_rect_global.bottom() < view_rect.bottom() - check_height      # if the window's height fits below the gallery
             left  = index_center.x()            > view_rect.left()  + check_width / 2  # if half the window fits to the left of the gallery's center
@@ -572,7 +598,7 @@ class GalleryMetaWindow(ArrowWindow):
                 return True
             return False
 
-        for pos in (fits_below, fits_right, fits_left, fits_above):
+        for pos in (fits_below, fits_right, fits_left, fits_above, fits_above_with_lease):
             if pos():
                 break
         else: # default pos is bottom
