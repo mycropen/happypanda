@@ -1738,8 +1738,8 @@ class GalleryShowcaseWidget(QWidget):
 
     def set_gallery(self, gallery, size=app_constants.THUMB_SMALL):
         assert isinstance(size, (list, tuple))
-        self.w = size[0]
-        self.h = size[1]
+        self.w = int(size[0])
+        self.h = int(size[1])
         self.gallery = gallery
         img = gallery.get_profile(app_constants.ProfileType.Small, self.set_pixmap)
         if img:
