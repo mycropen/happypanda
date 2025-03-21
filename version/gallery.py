@@ -13,43 +13,27 @@
 #"""
 
 import logging
-import os
 import math
-import functools
 import random
-import datetime
 import pickle
 import enum
-import time
-import re as regex
 
-from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex, QVariant,
-                          QSize, QRect, QEvent, pyqtSignal, QThread,
+from PyQt5.QtCore import (Qt, QModelIndex, QVariant, QSize, QRect, pyqtSignal,
                           QTimer, QPointF, QSortFilterProxyModel,
-                          QAbstractTableModel, QItemSelectionModel,
-                          QPoint, QRectF, QDate, QDateTime, QObject,
-                          QEvent, QSizeF, QMimeData, QByteArray, QTime)
-from PyQt5.QtGui import (QPixmap, QBrush, QColor, QPainter, 
-                         QPen, QTextDocument,
-                         QMouseEvent, QHelpEvent,
-                         QPixmapCache, QCursor, QPalette, QKeyEvent,
-                         QFont, QTextOption, QFontMetrics, QFontMetricsF,
-                         QTextLayout, QPainterPath, QScrollPrepareEvent,
-                         QWheelEvent, QPolygonF, QLinearGradient)
-from PyQt5.QtWidgets import (QListView, QFrame, QLabel,
-                             QStyledItemDelegate, QStyle,
-                             QMenu, QAction, QToolTip, QVBoxLayout,
-                             QSizePolicy, QTableWidget, QScrollArea,
-                             QHBoxLayout, QFormLayout, QDesktopWidget,
-                             QWidget, QHeaderView, QTableView, QApplication,
-                             QMessageBox, QActionGroup, QScroller, QStackedLayout)
+                          QAbstractTableModel, QPoint, QRectF, QDateTime, QObject,
+                          QMimeData, QByteArray, QTime)
+from PyQt5.QtGui import (QPixmap, QBrush, QColor, QPainter, QPen, QTextDocument,
+                         QPixmapCache, QFont, QTextOption, QFontMetrics,
+                         QPainterPath, QPolygonF, QLinearGradient)
+from PyQt5.QtWidgets import (QListView, QStyledItemDelegate, QStyle, QWidget,
+                             QHeaderView, QTableView, QMessageBox, QScroller,
+                             QStackedLayout)
 
-from executors import Executors
+import executors
 import gallerydb
 import app_constants
 import misc
 import gallerydialog
-import io_misc
 import utils
 
 log = logging.getLogger(__name__)
@@ -1685,7 +1669,7 @@ class MangaViews:
                     gallerydb.execute(gallerydb.GalleryDB.add_gallery, True, g)
                 else:
                     if not g.profile:
-                        Executors.generate_thumbnail(g, on_method=g.set_profile)
+                        executors.Executors.generate_thumbnail(g, on_method=g.set_profile)
             rows = len(gallery)
             self.list_view.gallery_model._gallery_to_add.extend(gallery)
             if record_time:
@@ -1702,7 +1686,7 @@ class MangaViews:
                 gallerydb.execute(gallerydb.GalleryDB.add_gallery, True, gallery)
             else:
                 if not gallery.profile:
-                    Executors.generate_thumbnail(gallery, on_method=gallery.set_profile)
+                    executors.Executors.generate_thumbnail(gallery, on_method=gallery.set_profile)
         self.list_view.gallery_model.insertRows(self.list_view.gallery_model.rowCount(), rows)
         self.list_view.sort_model.refresh()
         
