@@ -587,13 +587,6 @@ class SettingsDialog(QWidget):
 
     def init_right_panel(self):
 
-        #def title_def(title):
-        #	title_lbl = QLabel(title)
-        #	f = QFont()
-        #	f.setPixelSize(16)
-        #	title_lbl.setFont(f)
-        #	return title_lbl
-
         def groupbox(name, layout, parent, add_groupbox_in_layout=None):
             """
             Makes a groupbox and a layout for you

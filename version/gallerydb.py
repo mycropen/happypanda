@@ -1593,8 +1593,8 @@ class Gallery:
         status = False
 
         #if not self.hashes:
-        #	HashDB.gen_gallery_hashes(self)
-        #	self.hashes = HashDB.get_gallery_hashes(self.id)
+        #   HashDB.gen_gallery_hashes(self)
+        #   self.hashes = HashDB.get_gallery_hashes(self.id)
 
         if all(validity):
             status = True

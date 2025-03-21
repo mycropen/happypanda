@@ -2020,27 +2020,27 @@ class FileIcon:
         else: return None
 
 #def center_parent(parent, child):
-#	"centers child window in parent"
-#	centerparent = QPoint(
-#			parent.x() + (parent.frameGeometry().width() -
-#					 child.frameGeometry().width())//2,
-#					parent.y() + (parent.frameGeometry().width() -
-#					   child.frameGeometry().width())//2)
-#	desktop = QApplication.desktop()
-#	sg_rect = desktop.screenGeometry(desktop.screenNumber(parent))
-#	child_frame = child.frameGeometry()
+#   "centers child window in parent"
+#   centerparent = QPoint(
+#           parent.x() + (parent.frameGeometry().width() -
+#                    child.frameGeometry().width())//2,
+#                   parent.y() + (parent.frameGeometry().width() -
+#                      child.frameGeometry().width())//2)
+#   desktop = QApplication.desktop()
+#   sg_rect = desktop.screenGeometry(desktop.screenNumber(parent))
+#   child_frame = child.frameGeometry()
 
-#	if centerparent.x() < sg_rect.left():
-#		centerparent.setX(sg_rect.left())
-#	elif (centerparent.x() + child_frame.width()) > sg_rect.right():
-#		centerparent.setX(sg_rect.right() - child_frame.width())
+#   if centerparent.x() < sg_rect.left():
+#       centerparent.setX(sg_rect.left())
+#   elif (centerparent.x() + child_frame.width()) > sg_rect.right():
+#       centerparent.setX(sg_rect.right() - child_frame.width())
 
-#	if centerparent.y() < sg_rect.top():
-#		centerparent.setY(sg_rect.top())
-#	elif (centerparent.y() + child_frame.height()) > sg_rect.bottom():
-#		centerparent.setY(sg_rect.bottom() - child_frame.height())
+#   if centerparent.y() < sg_rect.top():
+#       centerparent.setY(sg_rect.top())
+#   elif (centerparent.y() + child_frame.height()) > sg_rect.bottom():
+#       centerparent.setY(sg_rect.bottom() - child_frame.height())
 
-#	child.move(centerparent)
+#   child.move(centerparent)
 
 
 class Spacer(QWidget):
@@ -2493,8 +2493,8 @@ class Loading(BasePopup):
         #frect = self.frameGeometry()
         #frect.moveCenter(QDesktopWidget().availableGeometry().center())
         #self.move(parent.window().frameGeometry().topLeft() +
-        #	parent.window().rect().center() -
-        #	self.rect().center() - QPoint(self.rect().width(),0))
+        #   parent.window().rect().center() -
+        #   self.rect().center() - QPoint(self.rect().width(),0))
         #self.setAttribute(Qt.WA_DeleteOnClose)
         #self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 

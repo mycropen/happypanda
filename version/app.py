@@ -981,20 +981,20 @@ class AppWindow(QMainWindow):
                         self.fetch_inst.local()
                         #contents = []
                         #for g in self.scanned_data:
-                        #	contents.append(g)
+                        #   contents.append(g)
 
                         #paths = sorted(paths)
                         #new_galleries = []
                         #for x in contents:
-                        #	y = utils.b_search(paths, os.path.normcase(x.path))
-                        #	if not y:
-                        #		new_galleries.append(x)
+                        #   y = utils.b_search(paths, os.path.normcase(x.path))
+                        #   if not y:
+                        #       new_galleries.append(x)
                         self.finished.emit()
                         self.deleteLater()
                     #if app_constants.LOOK_NEW_GALLERY_AUTOADD:
-                    #	QTimer.singleShot(10000,
-                    #	self.gallery_populate(final_paths))
-                    #	return
+                    #   QTimer.singleShot(10000,
+                    #   self.gallery_populate(final_paths))
+                    #   return
 
 
                 def finished(): app_constants.SCANNING_FOR_GALLERIES = False

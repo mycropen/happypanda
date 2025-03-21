@@ -61,47 +61,48 @@ log_c = log.critical
 
 # attempt at implementing treemodel
 #class TreeNode:
-#	def __init__(self, parent, row):
-#		self.parent = parent
-#		self.row = row
-#		self.subnodes = self._get_children()
+#   def __init__(self, parent, row):
+#       self.parent = parent
+#       self.row = row
+#       self.subnodes = self._get_children()
 
-#	def _get_children(self):
-#		raise NotImplementedError()
+#   def _get_children(self):
+#       raise NotImplementedError()
 
 #class GalleryInfoModel(QAbstractItemModel):
-#	def __init__(self, parent=None):
-#		super().__init__(parent)
-#		self.root_nodes = self._get_root_nodes()
+#   def __init__(self, parent=None):
+#       super().__init__(parent)
+#       self.root_nodes = self._get_root_nodes()
 
-#	def _get_root_nodes(self):
-#		raise NotImplementedError()
+#   def _get_root_nodes(self):
+#       raise NotImplementedError()
 
-#	def index(self, row, column, parent):
-#		if not parent.isValid():
-#			return self.createIndex(row, column, self.root_nodes[row])
-#		parent_node = parent.internalPointer()
-#		return self.createIndex(row, column, parent_node[row])
+#   def index(self, row, column, parent):
+#       if not parent.isValid():
+#           return self.createIndex(row, column, self.root_nodes[row])
+#       parent_node = parent.internalPointer()
+#       return self.createIndex(row, column, parent_node[row])
 
-#	def parent(self, index):
-#		if not index.isValid():
-#			return QModelIndex()
+#   def parent(self, index):
+#       if not index.isValid():
+#           return QModelIndex()
 
-#		node = index.internalPointer()
-#		if not node.parent:
-#			return QModelIndex()
-#		else:
-#			return self.createIndex(node.parent.row, 0, node.parent)
+#       node = index.internalPointer()
+#       if not node.parent:
+#           return QModelIndex()
+#       else:
+#           return self.createIndex(node.parent.row, 0, node.parent)
 
-#	def reset(self):
-#		self.root_nodes = self._get_root_nodes()
-#		super().resetInternalData()
+#   def reset(self):
+#       self.root_nodes = self._get_root_nodes()
+#       super().resetInternalData()
 
-#	def rowCount(self, parent = QModelIndex()):
-#		if not parent.isValid():
-#			return len(self.root_nodes)
-#		node = parent.internalPointer()
-#		return len(node.subnodes)
+#   def rowCount(self, parent = QModelIndex()):
+#       if not parent.isValid():
+#           return len(self.root_nodes)
+#       node = parent.internalPointer()
+#       return len(node.subnodes)
+
 class GallerySearch(QObject):
     FINISHED = pyqtSignal()
     def __init__(self, data):
@@ -748,7 +749,7 @@ class GridDelegate(QStyledItemDelegate):
         h = rec[3]
         if self._paint_level:
             #if app_constants.HIGH_QUALITY_THUMBS:
-            #	painter.setRenderHint(QPainter.SmoothPixmapTransform)
+            #   painter.setRenderHint(QPainter.SmoothPixmapTransform)
             painter.setRenderHint(QPainter.Antialiasing)
             gallery = index.data(Qt.UserRole + 1)
             star_rating = index.data(GalleryModel.RATING_ROLE)
@@ -1395,18 +1396,18 @@ class MangaTableView(QTableView):
 
     # display tooltip only for elided text
     #def viewportEvent(self, event):
-    #	if event.type() == QEvent.ToolTip:
-    #		h_event = QHelpEvent(event)
-    #		index = self.indexAt(h_event.pos())
-    #		if index.isValid():
-    #			size_hint = self.itemDelegate(index).sizeHint(self.viewOptions(),
-    #											  index)
-    #			rect = QRect(0, 0, size_hint.width(), size_hint.height())
-    #			rect_visual = self.visualRect(index)
-    #			if rect.width() <= rect_visual.width():
-    #				QToolTip.hideText()
-    #				return True
-    #	return super().viewportEvent(event)
+    #   if event.type() == QEvent.ToolTip:
+    #       h_event = QHelpEvent(event)
+    #       index = self.indexAt(h_event.pos())
+    #       if index.isValid():
+    #           size_hint = self.itemDelegate(index).sizeHint(self.viewOptions(),
+    #                                             index)
+    #           rect = QRect(0, 0, size_hint.width(), size_hint.height())
+    #           rect_visual = self.visualRect(index)
+    #           if rect.width() <= rect_visual.width():
+    #               QToolTip.hideText()
+    #               return True
+    #   return super().viewportEvent(event)
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):

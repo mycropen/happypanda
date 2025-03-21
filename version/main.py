@@ -23,7 +23,6 @@ import traceback
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QCoreApplication, QFile, Qt
-from PyQt5.QtGui import QFontDatabase
 
 from database import db, db_constants
 import app
@@ -164,37 +163,37 @@ def start(test=False):
     def start_main_window(conn):
         db.DBBase._DB_CONN = conn
         #if args.test:
-        #	import threading, time
-        #	ser_list = []
-        #	for x in range(5000):
-        #		s = gallerydb.gallery()
-        #		s.profile = app_constants.NO_IMAGE_PATH
-        #		s.title = 'Test {}'.format(x)
-        #		s.artist = 'Author {}'.format(x)
-        #		s.path = app_constants.static_dir
-        #		s.type = 'Test'
-        #		s.language = 'English'
-        #		s.info = 'I am number {}'.format(x)
-        #		ser_list.append(s)
+        #   import threading, time
+        #   ser_list = []
+        #   for x in range(5000):
+        #       s = gallerydb.gallery()
+        #       s.profile = app_constants.NO_IMAGE_PATH
+        #       s.title = 'Test {}'.format(x)
+        #       s.artist = 'Author {}'.format(x)
+        #       s.path = app_constants.static_dir
+        #       s.type = 'Test'
+        #       s.language = 'English'
+        #       s.info = 'I am number {}'.format(x)
+        #       ser_list.append(s)
 
-        #	done = False
-        #	thread_list = []
-        #	i = 0
-        #	while not done:
-        #		try:
-        #			if threading.active_count() > 5000:
-        #    				thread_list = []
-        #				done = True
-        #			else:
-        #				thread_list.append(
-        #					threading.Thread(target=gallerydb.galleryDB.add_gallery,
-        #					  args=(ser_list[i],)))
-        #				thread_list[i].start()
-        #				i += 1
-        #				print(i)
-        #				print('Threads running: {}'.format(threading.activeCount()))
-        #		except IndexError:
-        #			done = True
+        #   done = False
+        #   thread_list = []
+        #   i = 0
+        #   while not done:
+        #       try:
+        #           if threading.active_count() > 5000:
+        #                   thread_list = []
+        #               done = True
+        #           else:
+        #               thread_list.append(
+        #                   threading.Thread(target=gallerydb.galleryDB.add_gallery,
+        #                     args=(ser_list[i],)))
+        #               thread_list[i].start()
+        #               i += 1
+        #               print(i)
+        #               print('Threads running: {}'.format(threading.activeCount()))
+        #       except IndexError:
+        #           done = True
 
         WINDOW = app.AppWindow(args.exceptions)
 
