@@ -1594,6 +1594,30 @@ class CommonView:
 
     @staticmethod
     def spawn_dialog(app_inst, gallery=None, new_gallery=False):
+        """
+        Spawn a new ``GalleryDialog`` for a gallery or list of galleries; or
+        re-activate the one that's already open for the given gallery.
+        """
+        if isinstance(gallery, (list, tuple)):
+            # filter all the ones that don't have an already open edit dialog
+            new_galleries = [g for g in gallery if app_inst.gallery_dialog_group.get_open_dialog(g) is None]
+            if len(gallery) != len(new_galleries):
+                log_d(f'Ignoring galleries that already have open dialogs.')
+                log_d(f'    gallery: {[g.title for g in gallery]}')
+                log_d(f'    new_galleries: {[g.title for g in new_galleries]}')
+            
+            if len(new_galleries) == 0: return
+
+            log_d(f'Opening dialog for galleries: {[g.title for g in new_galleries]}')
+            if len(new_galleries) == 1: gallery = new_galleries[0]
+            else:                       gallery = new_galleries
+
+        elif gallery is not None:
+            open_dialog = app_inst.gallery_dialog_group.get_open_dialog(gallery)
+            if open_dialog:
+                log_d(f'Gallery {gallery.title} already has an open GalleryDialog.')
+                return
+
         dialog = gallerydialog.GalleryDialog(app_inst, gallery, new_gallery)
         dialog.show()
 

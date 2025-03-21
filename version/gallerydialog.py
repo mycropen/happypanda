@@ -1,5 +1,6 @@
 import os, threading, logging
 from datetime import datetime
+from typing import Any
 
 from PyQt5.QtWidgets import (QFrame, QGridLayout, QLayout, QStyle, QWidget, QVBoxLayout, QDesktopWidget, QGroupBox,
                              QHBoxLayout, QLabel, QLineEdit, QPushButton, QProgressBar, QTextEdit, QComboBox,
@@ -29,7 +30,7 @@ class GalleryDialog(QWidget):
     Pass a list of QModelIndexes to edit their data
     or pass a path to preset path
     """
-    def __init__(self, parent, arg=None, is_new_gallery=False):
+    def __init__(self, parent, arg: str | gallerydb.Gallery | list[gallerydb.Gallery] = None, is_new_gallery=False):
         super().__init__(parent, Qt.Dialog)
 
         self.setAttribute(Qt.WA_DeleteOnClose)
@@ -106,7 +107,7 @@ class GalleryDialog(QWidget):
         frect = self.frameGeometry()
         frect.moveCenter(QDesktopWidget().availableGeometry().center())
         self.move(frect.topLeft())
-        self.parent_widget.gallery_dialog_group.register(self)
+        self.parent_widget.gallery_dialog_group.register(self, arg)
         self._fetch_thread = None
 
     def commonUI(self):
@@ -792,35 +793,65 @@ class GalleryDialogGroup(QObject):
     def __init__(self, parent):
         super(GalleryDialogGroup, self).__init__()
         self.parent_widget = parent
-        self.gds: set[GalleryDialog] = set()
-        self.fetch_insts: set[fetch.Fetch] = set()
+        self.gds : set[tuple[GalleryDialog, Any]] = set()
+        self.fetch_insts : set[fetch.Fetch] = set()
 
-    def register(self, gd: GalleryDialog):
-        self.gds.add(gd)
+    def register(self, gd: GalleryDialog, arg: Any | list[Any] = None):
+        """
+        Add a reference to ``gd`` with its spawn argument (Gallery, list of
+        Galleries or file system path).
+        """
+        if arg is None: return
+
+        if isinstance(arg, (list, tuple)):
+            for el in arg:
+                self.gds.add((gd, el))
+        else:
+            self.gds.add((gd, arg))
 
     def unregister(self, gd: GalleryDialog):
-        try:
-            self.gds.remove(gd)
-        except KeyError:
-            pass
+        """
+        Remove all registered references to ``gd``.
+        """
+        for el in self.gds.copy():
+            reg_gd, *_ = el
+            if gd is reg_gd:
+                self.gds.remove(el)
 
     def remove_fetch(self, fetch_inst):
+        """
+        Remove a ``fetch.Fetch`` instance if it was active.
+        """
         try:
             self.fetch_insts.remove(fetch_inst)
         except KeyError:
             pass
 
+    def get_open_dialog(self, arg: Any) -> GalleryDialog | None:
+        """
+        Get the open ``GalleryDialog`` that registered itself with ``arg`` or
+        ``None`` if no such dialog is registered.
+        """
+        for (reg_gd, reg_arg) in self.gds:
+            if arg == reg_arg:
+                return reg_gd
+        return None
+
     def all_metadata(self):
-        # make a Fetch instance (and thread) that collects the gallery URLs from all registered GalleryDialogs
-        # then start the thread here
-        # make a new Fetch instance and thread when the API limit for a single request is reached
+        """
+        Make a Fetch instance (and thread) that collects the gallery URLs from
+        all registered GalleryDialogs, then start the thread here.
+
+        Make a new Fetch instance and thread when the API limit for a single
+        request is reached.
+        """
         if len(self.gds) == 0: return
 
         fetch_inst = None
         fetch_thread = None
         g_counter = 0
 
-        for i, gd in enumerate(self.gds):
+        for i, (gd, _) in enumerate(self.gds):
             if i % pewnet.CommonHen._QUEUE_LIMIT == 0:
                 if fetch_thread is not None:
                     fetch_thread.start()
