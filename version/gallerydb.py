@@ -14,27 +14,22 @@
 
 import datetime
 import os
-import enum
 import scandir
 import threading
 import logging
 import queue
 import io
 import uuid
-import functools
-import re as regex
 from dateutil import parser as dateparser
 from dataclasses import dataclass, field
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTime
 
-from database import db_constants
-from database import db
-from database.db import DBBase
-
 import app_constants
+import database
 import utils
 import executors
+
 
 log = logging.getLogger(__name__)
 log_i = log.info
@@ -46,8 +41,8 @@ log_c = log.critical
 
 method_queue = queue.PriorityQueue()
 method_return = queue.Queue()
-db_constants.METHOD_QUEUE = method_queue
-db_constants.METHOD_RETURN = method_return
+database.db_constants.METHOD_QUEUE = method_queue
+database.db_constants.METHOD_RETURN = method_return
 
 @dataclass(order=True, repr=False)
 class PriorityObject:
@@ -221,13 +216,13 @@ def default_exec(object):
                 'last_read':check(object.last_read),
                 'link':str.encode(object.link),
                 'times_read':check(object.times_read),
-                'db_v':check(db_constants.REAL_DB_VERSION),
+                'db_v':check(database.db_constants.REAL_DB_VERSION),
                 'exed':check(object.exed),
                 'view':check(object.view)
                 }]
     return executing
 
-class GalleryDB(DBBase):
+class GalleryDB(database.db.DBBase):
     """
     Provides the following s methods:
         rebuild_thumb -> Rebuilds gallery thumbnail
@@ -281,8 +276,8 @@ class GalleryDB(DBBase):
     @staticmethod
     def clear_thumb_dir():
         "Deletes everything in the thumbnail directory"
-        if os.path.exists(db_constants.THUMBNAIL_PATH):
-            for thumbfile in scandir.scandir(db_constants.THUMBNAIL_PATH):
+        if os.path.exists(database.db_constants.THUMBNAIL_PATH):
+            for thumbfile in scandir.scandir(database.db_constants.THUMBNAIL_PATH):
                 GalleryDB.clear_thumb(thumbfile.path)
 
     @staticmethod
@@ -306,7 +301,7 @@ class GalleryDB(DBBase):
                 link=gallery.link,
                 times_read=gallery.times_read,
                 last_read=gallery.last_read,
-                _db_v=db_constants.CURRENT_DB_VERSION,
+                _db_v=database.db_constants.CURRENT_DB_VERSION,
                 exed=gallery.exed,
                 is_archive=gallery.is_archive,
                 path_in_archive=gallery.path_in_archive,
@@ -488,8 +483,7 @@ class GalleryDB(DBBase):
                     for path in paths:
                         s = utils.delete_path(path)
                         if not s:
-                            log_e('Failed to delete chapter {}:{}, {}'.format(chap,
-                                                            gallery.id, gallery.title.encode('utf-8', 'ignore')))
+                            log_e('Failed to delete chapter {}:{}, {}'.format(path, gallery.id, gallery.title.encode('utf-8', 'ignore')))
                             continue
                     s = utils.delete_path(gallery.path)
 
@@ -539,7 +533,7 @@ class GalleryDB(DBBase):
 
         return binary_search(os.path.normcase(name))
 
-class ChapterDB(DBBase):
+class ChapterDB(database.db.DBBase):
     """
     Provides the following database methods:
         update_chapter -> Updates an existing chapter in DB
@@ -675,7 +669,7 @@ class ChapterDB(DBBase):
         cls.execute(cls, 'DELETE FROM chapters WHERE series_id=? AND chapter_number=?',
                 (series_id, chap_number,))
 
-class TagDB(DBBase):
+class TagDB(database.db.DBBase):
     """
     Tags are returned in a dict where {"namespace":["tag1","tag2"]}
     The namespace "default" will be used for tags without namespaces.
@@ -910,7 +904,7 @@ class TagDB(DBBase):
         ns = [n['namespace'] for n in cursor.fetchall()]
         return ns
 
-class ListDB(DBBase):
+class ListDB(database.db.DBBase):
     """
     """
 
@@ -1017,7 +1011,7 @@ class ListDB(DBBase):
             values = [(gallery_list._id, x) for x in g_ids]
             cls.executemany(cls, 'DELETE FROM series_list_map WHERE list_id=? AND series_id=?', values)
 
-class HashDB(DBBase):
+class HashDB(database.db.DBBase):
     """
     Contains the following methods:
 
@@ -2030,11 +2024,11 @@ class AdminDB(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def from_v021_to_v022(self, old_db_path=db_constants.DB_PATH):
+    def from_v021_to_v022(self, old_db_path=database.db_constants.DB_PATH):
         log_i("Started rebuilding database")
-        if DBBase._DB_CONN:
-            DBBase._DB_CONN.close()
-        DBBase._DB_CONN = db.init_db(old_db_path)
+        if database.db.DBBase._DB_CONN:
+            database.db.DBBase._DB_CONN.close()
+        database.db.DBBase._DB_CONN = database.db.init_db(old_db_path)
         db_galleries = execute(GalleryDB.get_all_gallery, False, False, True, True)
         galleries = []
         for g in db_galleries:
@@ -2046,7 +2040,7 @@ class AdminDB(QObject):
         n_galleries = []
         # get all chapters
         log_i("Getting chapters...")
-        chap_rows = DBBase().execute("SELECT * FROM chapters").fetchall()
+        chap_rows = database.db.DBBase().execute("SELECT * FROM chapters").fetchall()
         data_count = len(chap_rows) * 2
         self.DATA_COUNT.emit(data_count)
         for n, chap_row in enumerate(chap_rows, -1):
@@ -2079,18 +2073,18 @@ class AdminDB(QObject):
             self.PROGRESS.emit(n)
         log_d("G: {} C:{}".format(len(n_galleries), data_count - 1))
         log_i("Database magic...")
-        if os.path.exists(db_constants.THUMBNAIL_PATH):
-            for root, dirs, files in scandir.walk(db_constants.THUMBNAIL_PATH, topdown=False):
+        if os.path.exists(database.db_constants.THUMBNAIL_PATH):
+            for root, dirs, files in scandir.walk(database.db_constants.THUMBNAIL_PATH, topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:
                     os.rmdir(os.path.join(root, name))
 
         head = os.path.split(old_db_path)[0]
-        DBBase._DB_CONN.close()
+        database.db.DBBase._DB_CONN.close()
         t_db_path = os.path.join(head, 'temp.db')
-        conn = db.init_db(t_db_path)
-        DBBase._DB_CONN = conn
+        conn = database.db.init_db(t_db_path)
+        database.db.DBBase._DB_CONN = conn
         for n, g in enumerate(n_galleries, len(chap_rows) - 1):
             log_d('Adding new gallery')
             GalleryDB.add_gallery(g)
@@ -2103,10 +2097,10 @@ class AdminDB(QObject):
         if os.path.exists(old_db_path):
             utils.backup_database(old_db_path)
             os.remove(old_db_path)
-        if os.path.exists(db_constants.DB_PATH):
-            os.remove(db_constants.DB_PATH)
+        if os.path.exists(database.db_constants.DB_PATH):
+            os.remove(database.db_constants.DB_PATH)
 
-        os.rename(t_db_path, db_constants.DB_PATH)
+        os.rename(t_db_path, database.db_constants.DB_PATH)
         self.PROGRESS.emit(data_count)
         log_i("Finished rebuilding database")
         self.DONE.emit(True)
@@ -2119,14 +2113,14 @@ class AdminDB(QObject):
         log_i("Getting galleries...")
         galleries = GalleryDB.get_all_gallery()
         self.DATA_COUNT.emit(len(galleries))
-        db.DBBase._DB_CONN.close()
+        database.db.DBBase._DB_CONN.close()
         log_i("Removing old database...")
         log_i("Creating new database...")
-        temp_db = os.path.join(db_constants.DB_ROOT, "happypanda_temp.db")
+        temp_db = os.path.join(database.db_constants.DB_ROOT, "happypanda_temp.db")
         if os.path.exists(temp_db):
             os.remove(temp_db)
-        db.DBBase._DB_CONN = db.init_db(temp_db)
-        DBBase.begin()
+        database.db.DBBase._DB_CONN = database.db.init_db(temp_db)
+        database.db.DBBase.begin()
         log_i("Adding galleries...")
         GalleryDB.clear_thumb_dir()
         for n, g in enumerate(galleries):
@@ -2135,11 +2129,11 @@ class AdminDB(QObject):
             else:
                 GalleryDB.add_gallery(g)
             self.PROGRESS.emit(n)
-        DBBase.end()
-        DBBase._DB_CONN.close()
-        os.remove(db_constants.DB_PATH)
-        os.rename(temp_db, db_constants.DB_PATH)
-        db.DBBase._DB_CONN = db.init_db(db_constants.DB_PATH)
+        database.db.DBBase.end()
+        database.db.DBBase._DB_CONN.close()
+        os.remove(database.db_constants.DB_PATH)
+        os.rename(temp_db, database.db_constants.DB_PATH)
+        database.db.DBBase._DB_CONN = database.db.init_db(database.db_constants.DB_PATH)
         self.PROGRESS.emit(len(galleries))
         log_i("Succesfully rebuilt database")
         self.DONE.emit(True)
@@ -2180,7 +2174,7 @@ class DatabaseStartup(QObject):
     START = pyqtSignal()
     DONE = pyqtSignal()
     PROGRESS = pyqtSignal(str)
-    _DB = DBBase()
+    _DB = database.db.DBBase()
 
     def __init__(self):
         super().__init__()
