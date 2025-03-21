@@ -370,7 +370,7 @@ class AppWindow(QMainWindow):
                             if index:
                                 gallery.CommonView.scroll_to_index(self.app_instance.get_current_view(), index)
 
-                    g_popup = io_misc.GalleryPopup(('Fecthing metadata for these galleries failed.' + ' Check happypanda.log for details.', galleries), self, menu=GalleryContextMenu)
+                    g_popup = io_misc.GalleryPopup(('Fetching metadata for these galleries failed. Check happypanda.log for details.', galleries), self, menu=GalleryContextMenu)
                     errors = {g[0].id: g[1] for g in status}
                     for g_item in g_popup.get_all_items():
                         g_item.extra_text.setText("<font color='red'>{}</font>".format(errors[g_item.gallery.id]))
