@@ -2632,6 +2632,17 @@ class GCompleter(QCompleter):
         super().__init__(self.all_data, parent)
         self.setCaseSensitivity(Qt.CaseInsensitive)
 
+    def complete(self, rect: QRect) -> None:
+        # If the only suggestion matches the string that prompted this completion:
+        #   - do not offer a suggestion
+        #   - hide the popup if it was already visible 
+        if self.completionCount() == 1:
+            if self.currentCompletion().lower() == self.completionPrefix().lower():
+                if self.popup().isVisible():
+                    self.popup().hide()
+                return
+        return super().complete(rect)
+
 
 class ChapterListItem(QFrame):
     move_pos = pyqtSignal(int, object)
