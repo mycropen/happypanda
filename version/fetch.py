@@ -12,12 +12,11 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
-import os, time, logging, uuid, random, queue, scandir
-import re as regex
+import os, time, logging, random, queue, scandir
 
 from PyQt5.QtCore import QObject, pyqtSignal # need this for interaction with main thread
 
-from gallerydb import Gallery, GalleryDB, HashDB, execute
+import gallerydb
 import app_constants
 import pewnet
 import settings
@@ -42,14 +41,14 @@ class Fetch(QObject):
     """
 
     # local signals
-    LOCAL_EMITTER = pyqtSignal(Gallery)
+    LOCAL_EMITTER = pyqtSignal(gallerydb.Gallery)
     FINISHED = pyqtSignal(object)
     DATA_COUNT = pyqtSignal(int)
     PROGRESS = pyqtSignal(int)
     SKIPPED = pyqtSignal(list)
 
     # WEB signals
-    GALLERY_EMITTER = pyqtSignal(Gallery, object, object)
+    GALLERY_EMITTER = pyqtSignal(gallerydb.Gallery, object, object)
     AUTO_METADATA_PROGRESS = pyqtSignal(str)
     GALLERY_PICKER = pyqtSignal(object, list, queue.Queue)
     GALLERY_PICKER_QUEUE = queue.Queue()
@@ -88,9 +87,9 @@ class Fetch(QObject):
         is_archive = True if archive else False
         temp_p = archive if is_archive else path
         folder_name = folder_name or path if folder_name or path else os.path.split(archive)[1]
-        if utils.check_ignore_list(temp_p) and not GalleryDB.check_exists(temp_p, self.galleries_from_db, False):
+        if utils.check_ignore_list(temp_p) and not gallerydb.GalleryDB.check_exists(temp_p, self.galleries_from_db, False):
             log_i('Creating gallery: {}'.format(folder_name.encode('utf-8', 'ignore')))
-            new_gallery = Gallery()
+            new_gallery = gallerydb.Gallery()
             images_paths = []
             metafile = utils.GMetafile()
             if os.path.isdir(temp_p):
@@ -281,7 +280,7 @@ class Fetch(QObject):
 
     def _return_gallery_metadata(self, gallery):
         "Emits galleries"
-        assert isinstance(gallery, Gallery)
+        assert isinstance(gallery, gallerydb.Gallery)
         if gallery:
             gallery.exed = 1
             self.GALLERY_EMITTER.emit(gallery, None, False)
@@ -373,7 +372,7 @@ class Fetch(QObject):
             try:
                 if not gallery.hashes:
                     color_img = kwargs['color'] if 'color' in kwargs else False # used for similarity search on EH
-                    hash_dict = execute(HashDB.gen_gallery_hash, False, gallery, 0, 'mid', color_img)
+                    hash_dict = gallerydb.execute(gallerydb.HashDB.gen_gallery_hash, False, gallery, 0, 'mid', color_img)
                     if color_img and 'color' in hash_dict:
                         custom_args['color'] = hash_dict['color'] # will be path to filename
                         g_hash = hash_dict['color']

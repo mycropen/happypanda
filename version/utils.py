@@ -32,16 +32,12 @@ import traceback
 import enum
 
 import py7zr
-
-from PyQt5.QtGui import QImage, qRgba
 from PIL import Image, ImageChops
 
-try:
-    import app_constants
-    from database import db_constants
-except:
-    from . import app_constants
-    from .database import db_constants
+from PyQt5.QtGui import QImage, qRgba
+
+import app_constants
+import database
 
 log = logging.getLogger(__name__)
 log_i = log.info
@@ -51,27 +47,37 @@ log_e = log.error
 log_c = log.critical
 
 
-IMG_FILES = ('.jpg','.bmp','.png','.gif', '.jpeg', '.webp')
-IMG_FILTER = '*.jpg *.bmp *.png *.gif *.jpeg *.webp'
+def init_utils():
+    global IMG_FILES
+    global IMG_FILTER
+    global ZIP_FILES
+    global RAR_FILES
+    global SEVENZIP_FILES
+    global ARCHIVE_FILES
+    global ARCHIVE_FILTER
+    global SUPPORT_RAR
 
-ZIP_FILES = ('.zip', '.cbz')
-RAR_FILES = ('.rar', '.cbr')
-SEVENZIP_FILES = ('.7z', 'cb7')
+    IMG_FILES = ('.jpg','.bmp','.png','.gif', '.jpeg', '.webp')
+    IMG_FILTER = '*.jpg *.bmp *.png *.gif *.jpeg *.webp'
 
-ARCHIVE_FILES = ZIP_FILES + SEVENZIP_FILES
+    ZIP_FILES = ('.zip', '.cbz')
+    RAR_FILES = ('.rar', '.cbr')
+    SEVENZIP_FILES = ('.7z', 'cb7')
 
-rarfile.PATH_SEP = '/'
-rarfile.UNRAR_TOOL = app_constants.unrar_tool_path
-if app_constants.unrar_tool_path:
-    if not os.path.isfile(app_constants.unrar_tool_path):
-        SUPPORT_RAR = False
-        log_e(f'Cannot find unrar tool: {app_constants.unrar_tool_path}')
-    else:
-        SUPPORT_RAR = True
-        ARCHIVE_FILES += ('.rar', '.cbr')
+    ARCHIVE_FILES = ZIP_FILES + SEVENZIP_FILES
 
-# ('.zip', '.rar', ...) -> '*.zip *.rar ...'
-ARCHIVE_FILTER = ' '.join(f'*{ext}' for ext in ARCHIVE_FILES)
+    rarfile.PATH_SEP = '/'
+    rarfile.UNRAR_TOOL = app_constants.unrar_tool_path
+    if app_constants.unrar_tool_path:
+        if not os.path.isfile(app_constants.unrar_tool_path):
+            SUPPORT_RAR = False
+            log_e(f'Cannot find unrar tool: {app_constants.unrar_tool_path}')
+        else:
+            SUPPORT_RAR = True
+            ARCHIVE_FILES += RAR_FILES
+
+    # ('.zip', '.rar', ...) -> '*.zip *.rar ...'
+    ARCHIVE_FILTER = ' '.join(f'*{ext}' for ext in ARCHIVE_FILES)
 
 
 class GMetafile:
@@ -234,7 +240,9 @@ class GMetafile:
             gallery.info = self.metadata['info']
         return gallery
 
-def backup_database(db_path=db_constants.DB_PATH):
+def backup_database(db_path: str = None):
+    if db_path is None: db_path = database.db_constants.DB_PATH
+
     log_i('Perfoming database backup')
     date = f'{datetime.datetime.today()}'.split(' ')[0]
     base_path, name = os.path.split(db_path)

@@ -13,17 +13,15 @@ import pickle
 import logging
 
 from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, QWidget,
-                             QVBoxLayout, QTabWidget, QAction, QGraphicsScene,
-                             QSizePolicy, QMenu, QAction, QApplication,
+                             QVBoxLayout, QTabWidget,
+                             QSizePolicy, QMenu, QApplication,
                              QListWidget, QHBoxLayout, QPushButton, QStackedLayout,
                              QFrame, QSizePolicy, QListView, QFormLayout, QLineEdit,
-                             QLabel, QStyledItemDelegate, QStyleOptionViewItem,
+                             QStyledItemDelegate,
                              QCheckBox, QButtonGroup, QPlainTextEdit)
-from PyQt5.QtCore import (Qt, QTimer, pyqtSignal, QRect, QSize, QEasingCurve,
-                          QSortFilterProxyModel, QIdentityProxyModel, QModelIndex,
-                          QPointF, QRectF, QObject)
-from PyQt5.QtGui import (QIcon, QStandardItem, QFont, QPainter, QColor, QBrush,
-                         QPixmap, QPalette)
+from PyQt5.QtCore import (Qt, pyqtSignal, QSize, QEasingCurve,
+                          QSortFilterProxyModel, QIdentityProxyModel, QObject)
+from PyQt5.QtGui import (QIcon, QFont)
 
 import gallerydb
 import app_constants

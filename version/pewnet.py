@@ -43,7 +43,6 @@ from PyQt5.QtCore import QObject, pyqtSignal
 import app_constants
 import utils
 import settings
-from utils import makedirs_if_not_exists
 
 log = logging.getLogger(__name__)
 log_i = log.info
@@ -455,7 +454,7 @@ class Downloader(QObject):
         total_known_filesize = []
         download_url_len = len(download_url)
 
-        makedirs_if_not_exists(folder)
+        utils.makedirs_if_not_exists(folder)
         for single_url in download_url:
             # response
             r = self._get_response(url=single_url)

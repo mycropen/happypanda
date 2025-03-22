@@ -2,12 +2,9 @@
 import logging
 from pprint import pformat
 
-from app_constants import DOWNLOAD_TYPE_OTHER, VALID_GALLERY_CATEGORY
-from pewnet import (
-    DLManager as DLManagerObject,
-    Downloader as DownloaderObject,
-    HenItem,
-)
+import app_constants
+import pewnet
+
 
 log = logging.getLogger(__name__)
 """:class:`logging.Logger`: Logger for module."""
@@ -23,7 +20,7 @@ log_c = log.critical
 """:meth:`logging.Logger.critical`: Critical logger func"""
 
 
-class AsmManager(DLManagerObject):
+class AsmManager(pewnet.DLManager):
     """asmhentai manager.
 
     Attributes:
@@ -189,9 +186,9 @@ class AsmManager(DLManagerObject):
                 h_item.update_metadata(key=key, value=value)
         # for hitem gallery value
         catg_val = dict_metadata.get('category', None)
-        category_dict = {vcatg.lower(): vcatg for vcatg in VALID_GALLERY_CATEGORY}
+        category_dict = {vcatg.lower(): vcatg for vcatg in app_constants.VALID_GALLERY_CATEGORY}
         category_value = category_dict.get(catg_val, catg_val)
-        if category_value and category_value in VALID_GALLERY_CATEGORY:
+        if category_value and category_value in app_constants.VALID_GALLERY_CATEGORY:
             h_item.update_metadata(key='category', value=category_value)
         elif category_value:
             log_w('Unknown manga category:{}'.format(category_value))
@@ -207,8 +204,8 @@ class AsmManager(DLManagerObject):
         Returns:
             Download item
         """
-        h_item = HenItem(self._browser.session)
-        h_item.download_type = DOWNLOAD_TYPE_OTHER
+        h_item = pewnet.HenItem(self._browser.session)
+        h_item.download_type = app_constants.DOWNLOAD_TYPE_OTHER
         h_item.gallery_url = g_url
         # ex/g.e
         log_d("Opening {}".format(g_url))
@@ -235,5 +232,5 @@ class AsmManager(DLManagerObject):
             pformat(h_item.metadata)
         ))
 
-        DownloaderObject.add_to_queue(h_item, self._browser.session)
+        pewnet.Downloader.add_to_queue(h_item, self._browser.session)
         return h_item

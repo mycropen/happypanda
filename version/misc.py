@@ -2201,10 +2201,10 @@ class PathLineEdit(QLineEdit):
     A lineedit which open a filedialog on right/left click
     Set dir to false if you want files.
     """
-    def __init__(self, parent=None, dir=True, filters=utils.ARCHIVE_FILTER):
+    def __init__(self, parent=None, dir=True, filters=None):
         super().__init__(parent)
         self.folder = dir
-        self.filters = filters
+        self.filters = filters if filters is not None else utils.ARCHIVE_FILTER
         self.setPlaceholderText('Right/Left-click to open folder explorer.')
         self.setToolTip('Right/Left-click to open folder explorer.')
 

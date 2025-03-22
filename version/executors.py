@@ -29,10 +29,13 @@ def _rounded_qimage(qimg, radius):
     p.end()
     return r_image
 
-def _task_thumbnail(gallery_or_path, img=None, width=app_constants.THUMB_W_SIZE,
-                        height=app_constants.THUMB_H_SIZE):
+def _task_thumbnail(gallery_or_path, img: str = None, width: int = None, height: int = None):
     """
     """
+    if img is None: img = utils.get_gallery_img(gallery_or_path)
+    if width is None: width = app_constants.THUMB_W_SIZE
+    if height is None: height = app_constants.THUMB_H_SIZE
+
     log_i("Generating thumbnail")
     # generate a cache dir if required
     if not os.path.isdir(db_constants.THUMBNAIL_PATH):
@@ -92,8 +95,10 @@ class Executors:
     _profile_exec = futures.ThreadPoolExecutor(2)
     
     @classmethod
-    def generate_thumbnail(cls, gallery_or_path, img=None, width=app_constants.THUMB_W_SIZE,
-                           height=app_constants.THUMB_H_SIZE, on_method=None, blocking=False):
+    def generate_thumbnail(cls, gallery_or_path, img: str = None, width: int = None, height: int = None, on_method = None, blocking = False):
+        if width is None: width = app_constants.THUMB_W_SIZE
+        if height is None: height = app_constants.THUMB_H_SIZE
+
         log_i("Generating thumbnail")
         f = cls._thumbnail_exec.submit(_task_thumbnail, gallery_or_path, img=img, width=width, height=height)
         if on_method:
@@ -103,11 +108,11 @@ class Executors:
         if not on_method:
             return f
 
-        log_d("Returning future")
-
     @classmethod
-    def load_thumbnail(cls, ppath, thumb_size=app_constants.THUMB_DEFAULT, on_method=None, **kwargs):
+    def load_thumbnail(cls, ppath, thumb_size: tuple[int, int] = None, on_method=None, **kwargs):
         "**kwargs will be passed to on_method"
+        if thumb_size is None: thumb_size = app_constants.THUMB_DEFAULT
+
         f = cls._profile_exec.submit(_task_load_thumbnail, ppath, thumb_size, on_method, **kwargs)
         return f
 

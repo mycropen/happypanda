@@ -24,10 +24,10 @@ import traceback
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QCoreApplication, QFile, Qt
 
-from database import db, db_constants
+import database
 import app
 import app_constants
-import gallerydb
+# import gallerydb
 import utils
 
 #IMPORTANT STUFF
@@ -138,9 +138,9 @@ def start(test=False):
     log_i('OS: {} {}\n'.format(platform.system(), platform.release()))
     conn = None
     try:
-        conn = db.init_db()
+        conn = database.db.init_db()
         log_d('Init DB Conn: OK')
-        log_i("DB Version: {}".format(db_constants.REAL_DB_VERSION))
+        log_i("DB Version: {}".format(database.db_constants.REAL_DB_VERSION))
     except:
         log_c('Invalid database')
         log.exception('Database connection failed!')
@@ -161,7 +161,7 @@ def start(test=False):
             sys.exit()
 
     def start_main_window(conn):
-        db.DBBase._DB_CONN = conn
+        database.db.DBBase._DB_CONN = conn
         #if args.test:
         #   import threading, time
         #   ser_list = []
@@ -248,9 +248,9 @@ def start(test=False):
         if msg_box.exec() == QMessageBox.Yes:
             utils.backup_database()
             import threading
-            db_p = db_constants.DB_PATH
-            db.add_db_revisions(db_p)
-            conn = db.init_db()
+            db_p = database.db_constants.DB_PATH
+            database.db.add_db_revisions(db_p)
+            conn = database.db.init_db()
             return start_main_window(conn)
         else:
             application.exit()

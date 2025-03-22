@@ -1,17 +1,20 @@
-import logging, os, json, datetime, random, re, queue
+import logging
+import os
+import json
+import datetime
+import re
+import queue
 
-from watchdog.events import FileSystemEventHandler, DirDeletedEvent
+from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from threading import Timer
 
-from PyQt5.QtCore import (Qt, QObject, pyqtSignal, QTimer, QSize, QThread)
-from PyQt5.QtGui import (QPixmap, QIcon, QColor, QTextOption, QKeySequence)
+from PyQt5.QtCore import (Qt, QObject, pyqtSignal, QTimer, QSize)
+from PyQt5.QtGui import (QPixmap, QIcon, QColor, QTextOption)
 from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout,
-                             QLabel, QFrame, QPushButton, QMessageBox,
+                             QLabel, QPushButton, QMessageBox,
                              QFileDialog, QScrollArea, QLineEdit,
-                             QFormLayout, QGroupBox, QSizePolicy,
                              QTableWidget, QTableWidgetItem, QPlainTextEdit,
-                             QShortcut, QMenu, qApp)
+                             QMenu, qApp)
 
 import app_constants
 import misc

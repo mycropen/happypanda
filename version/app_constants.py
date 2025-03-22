@@ -17,6 +17,7 @@ import qtawesome as qta
 
 import settings
 import database
+import gallerydb
 
 # Version number
 vs  = '1.6'
