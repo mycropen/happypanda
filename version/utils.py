@@ -457,13 +457,22 @@ class ArchiveFile():
                 # test for corruption
                 if b_f:
                     log_w(f'Bad file found in archive {filepath}: {b_f}')
+                    self.close()
                     raise app_constants.CreateArchiveFail
             else:
                 log_e('Archive: Unsupported file format')
+                self.close()
                 raise app_constants.CreateArchiveFail
         except:
             log.exception('Create archive: FAIL')
+            self.close()
             raise app_constants.CreateArchiveFail
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.close()
 
     def namelist(self) -> list[str]:
         if self.type == ArchiveType.SEVENZIP:
@@ -642,7 +651,9 @@ class ArchiveFile():
 
     def close(self):
         try:
-            self.archive.close()
+            if self.archive:
+                self.archive.close()
+                self.archive = None
         except:
             # log_e(f'Exception while closing ArchiveFile({self.filepath}):')
             # log_e(traceback.format_exc())
@@ -661,7 +672,7 @@ class ArchiveFile():
             self.archive = rarfile.RarFile(self.filepath)
 
         elif self.type == ArchiveType.SEVENZIP:
-            # SevenZipFile delets its 'files' attribute when it's closed
+            # SevenZipFile deletes its 'files' attribute when it's closed
             if self.archive and hasattr(self.archive, 'files'):
                 # must have come from a nested with-statement
                 # return a new instance of the SevenZipFile

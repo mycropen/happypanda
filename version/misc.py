@@ -1303,6 +1303,7 @@ class GalleryMenu(QMenu):
                 app_constants.NOTIF_BAR.add_text('Attempt to change cover failed. Could not create archive.')
                 return
             path = arc.extract_all()
+            arc.close()
         else:
             path = gallery.path
 
@@ -1990,7 +1991,6 @@ class FileIcon:
 
     @staticmethod
     def refresh_default_icon():
-
         if os.path.exists(app_constants.GALLERY_DEF_ICO_PATH):
             os.remove(app_constants.GALLERY_DEF_ICO_PATH)
 
@@ -2001,16 +2001,17 @@ class FileIcon:
             file = ""
             if gallery.path.endswith(tuple(utils.ARCHIVE_FILES)):
                 try:
-                    zip = utils.ArchiveFile(gallery.path)
+                    arch = utils.ArchiveFile(gallery.path)
                 except utils.app_constants.CreateArchiveFail:
                     return False
-                for name in zip.namelist():
+                for name in arch.namelist():
                     if name.lower().endswith(tuple(utils.IMG_FILES)):
                         folder = os.path.join(app_constants.temp_dir,
                             '{}{}'.format(name, n))
-                        zip.extract(name, folder)
+                        arch.extract(name, folder)
                         file = os.path.join(folder, name)
                         break
+                arch.close()
             else:
                 for p in scandir.scandir(gallery.chapters[0].path):
                     if p.name.lower().endswith(tuple(utils.IMG_FILES)):
@@ -2336,9 +2337,8 @@ class ChapterAddWidget(QWidget):
                     chap.pages = len(list(scandir.scandir(p)))
                 elif p.endswith(utils.ARCHIVE_FILES):
                     chap.in_archive = 1
-                    arch = utils.ArchiveFile(p)
-                    chap.pages = len(arch.dir_contents(''))
-                    arch.close()
+                    with utils.ArchiveFile(p) as arch:
+                        chap.pages = len(arch.dir_contents(''))
 
         self.CHAPTERS.emit(chapters)
         self.close()

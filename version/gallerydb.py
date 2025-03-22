@@ -1226,41 +1226,40 @@ class HashDB(database.db.DBBase):
                 is_archive = gallery.is_archive
                 try:
                     if is_archive:
-                        zip = utils.ArchiveFile(gallery.path)
+                        arch = utils.ArchiveFile(gallery.path)
                     else:
-                        zip = utils.ArchiveFile(chap.path)
+                        arch = utils.ArchiveFile(chap.path)
                 except app_constants.CreateArchiveFail:
                     log_e('Could not generate hash: CreateZipFail')
                     return {}
 
-                pages = {}
-                if page != None:
-                    p = 0
-                    con = sorted(zip.dir_contents(chap.path))
-                    if color_img:
-                        # if first img is colored, then return hash of that
-                        f_bytes = io.BytesIO(zip.open(con[0], False))
-                        if not utils.image_greyscale(f_bytes):
-                            return {'color':zip.extract(con[0])}
-                        f_bytes.close()
-                    if page == 'mid':
-                        p = len(con) // 2
-                        img = con[p]
-                        pages = {p:zip.open(img, True)}
-                    elif isinstance(page, list):
-                        for x in page:
-                            pages[x] = zip.open(con[x], True)
+                try:
+                    pages = {}
+                    if page != None:
+                        p = 0
+                        con = sorted(arch.dir_contents(chap.path))
+                        if color_img:
+                            # if first img is colored, then return hash of that
+                            with io.BytesIO(arch.open(con[0], False)) as f_bytes:
+                                if not utils.image_greyscale(f_bytes):
+                                    return {'color': arch.extract(con[0])}
+                        if page == 'mid':
+                            p = len(con) // 2
+                            img = con[p]
+                            pages = {p: arch.open(img, True)}
+                        elif isinstance(page, list):
+                            for x in page:
+                                pages[x] = arch.open(con[x], True)
+                        else:
+                            p = page
+                            img = con[p]
+                            pages = {p: arch.open(img, True)}
                     else:
-                        p = page
-                        img = con[p]
-                        pages = {p:zip.open(img, True)}
-
-
-                else:
-                    imgs = sorted(zip.dir_contents(chap.path))
-                    for n, img in enumerate(imgs):
-                        pages[n] = zip.open(img, True)
-                zip.close()
+                        imgs = sorted(arch.dir_contents(chap.path))
+                        for n, img in enumerate(imgs):
+                            pages[n] = arch.open(img, True)
+                finally:
+                    arch.close()
 
                 hashes = {}
                 if gallery.id != None:
@@ -1277,7 +1276,6 @@ class HashDB(database.db.DBBase):
             if executing:
                 cls.executemany(cls, 'INSERT INTO hashes(hash, series_id, chapter_id, page) VALUES(?, ?, ?, ?)',
                        executing)
-
 
         if page == 'mid':
             r_hash = {'mid':list(hashes.values())[0]}
@@ -1953,9 +1951,8 @@ class ChaptersContainer:
         execute(HashDB.del_gallery_hashes, True, self.parent.id)
         chap = self[number]
         if chap.in_archive:
-            _archive = utils.ArchiveFile(chap.gallery.path)
-            chap.pages = len([x for x in _archive.dir_contents(chap.path) if x.lower().endswith(utils.IMG_FILES)])
-            _archive.close()
+            with utils.ArchiveFile(chap.gallery.path) as arch:
+                chap.pages = len([x for x in arch.dir_contents(chap.path) if x.lower().endswith(utils.IMG_FILES)])
         else:
             chap.pages = len([x for x in scandir.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
 
@@ -2062,9 +2059,8 @@ class AdminDB(QObject):
                     chap.path = c_path
                     chap.in_archive = chap_row['in_archive']
                     if gallery.is_archive:
-                        zip = utils.ArchiveFile(gallery.path)
-                        chap.pages = len(zip.dir_contents(chap.path))
-                        zip.close()
+                        with utils.ArchiveFile(gallery.path) as arch:
+                            chap.pages = len(arch.dir_contents(chap.path))
                     else:
                         chap.pages = len(list(scandir.scandir(gallery.path)))
                     n_galleries.append(gallery)

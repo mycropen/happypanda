@@ -148,18 +148,16 @@ class Fetch(QObject):
                                     chap.title = parsed['title'] if not g else utils.title_parser(g.replace('/', ''))['title']
                                     chap.path = g
                                     metafile.update(utils.GMetafile(g, temp_p))
-                                    arch = utils.ArchiveFile(temp_p)
-                                    chap.pages = len([x for x in arch.dir_contents(g) if x.lower().endswith(utils.IMG_FILES)])
-                                    arch.close()
+                                    with utils.ArchiveFile(temp_p) as arch:
+                                        chap.pages = len([x for x in arch.dir_contents(g) if x.lower().endswith(utils.IMG_FILES)])
                             else:
                                 chap = new_gallery.chapters.create_chapter()
                                 chap.title = utils.title_parser(os.path.split(path)[1])['title']
                                 chap.in_archive = 1
                                 chap.path = path
                                 metafile.update(utils.GMetafile(path, temp_p))
-                                arch = utils.ArchiveFile(temp_p)
-                                chap.pages = len(arch.dir_contents(''))
-                                arch.close()
+                                with utils.ArchiveFile(temp_p) as arch:
+                                    chap.pages = len(arch.dir_contents(''))
                         else:
                             raise ValueError
                     else:
