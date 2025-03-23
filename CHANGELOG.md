@@ -6,7 +6,8 @@
 
 - Changes
     - You can no longer open multiple gallery edit dialogs for the same existing gallery. That includes single-gallery dialogs (F2) and multi-gallery dialogs (Shift+F2). You can still open as many dialogs to make new galleries (Ctrl+N) as you want.
-    - The gallery meta window (that appears when you click on a gallery) can now appear above galleries even at the bottom left or right edge of the view when until now the fallback option was to put it below those gallries and likely completely out of view.
+    - When editing tags in the gallery edit dialog, the auto completer will now disappear if its only possible suggestion is the same string that prompted it.
+    - The gallery meta window (that appears when you click on a gallery) can now appear above galleries even at the bottom left or right edge of the view when until now the fallback option was to put it below those galleries and likely completely out of view.
     - Removed dependency on scandir as all of that is in the standard library nowadays.
 
 
