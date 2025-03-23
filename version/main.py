@@ -87,7 +87,7 @@ def start(test=False):
         except FileExistsError:
             pass
 
-        log_handlers.append(logging.handlers.RotatingFileHandler(log_path, maxBytes=1000000*10, encoding='utf-8', backupCount=2))
+        log_handlers.append(logging.handlers.RotatingFileHandler(log_path, maxBytes=10*1024*1024, encoding='utf-8', backupCount=2))
 
     # Fix for logging not working
     # clear the handlers first before adding these custom handler
