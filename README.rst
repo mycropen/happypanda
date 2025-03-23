@@ -103,7 +103,6 @@ Dependencies
 -  requests (pip)
 -  beautifulsoup4 (pip)
 -  watchdog (pip)
--  scandir (pip)
 -  rarfile (pip)
 -  robobrowser (pip)
 -  Send2Trash (pip)
