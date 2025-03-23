@@ -30,6 +30,12 @@ import app_constants
 # import gallerydb
 import utils
 
+
+# Initialize modules right after import.
+# This is code that used to be module-level but made cross-imports a mess if not impossible.
+utils.init_utils()
+
+
 #IMPORTANT STUFF
 def start(test=False):
     app_constants.APP_RESTART_CODE = -123456789

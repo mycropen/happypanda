@@ -42,11 +42,6 @@ import utils
 import misc_db
 import database
 
-
-# Initialize modules right after import.
-# This is code that used to be module-level but made cross-imports a mess if not impossible.
-utils.init_utils()
-
 log = logging.getLogger(__name__)
 log_i = log.info
 log_d = log.debug
