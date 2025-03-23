@@ -1,3 +1,15 @@
+## Happypanda v1.6.1
+
+- Fixes
+    - Fix for https://github.com/mycropen/happypanda/issues/2 (Crash after failed metadata fetch).
+    - Directory monitoring can be enabled again. The watchdog observer API had changed.
+
+- Changes
+    - You can no longer open multiple gallery edit dialogs for the same existing gallery. That includes single-gallery dialogs (F2) and multi-gallery dialogs (Shift+F2). You can still open as many dialogs to make new galleries (Ctrl+N) as you want.
+    - The gallery meta window (that appears when you click on a gallery) can now appear above galleries even at the bottom left or right edge of the view when until now the fallback option was to put it below those gallries and likely completely out of view.
+    - Removed dependency on scandir as all of that is in the standard library nowadays.
+
+
 ## Happypanda v1.6
 
 - upgraded the Python version to 3.13
@@ -16,6 +28,7 @@
     - The table view no longer tries to hide the nonexistent popup window.
     - If the notification bar didn't show correctly for you, it should be visible again now.
 
+
 ## Happypanda v1.5.1
 
 - Changes
@@ -23,7 +36,6 @@
 
 - Fixes
     - Separating titles that have parentheses before the "|" should no longer cause the app to freeze.
-
 
 
 ## Happypanda v1.5
