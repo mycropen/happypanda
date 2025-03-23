@@ -50,16 +50,18 @@ def start(test=False):
         os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), "cacert.pem")
 
     parser = argparse.ArgumentParser(prog='Happypanda', description='A manga/doujinshi manager with tagging support')
-    parser.add_argument('-d', '--debug', action='store_true', help='happypanda_debug_log.log will be created in main directory')
-    parser.add_argument('-v', '--version', action='version', version='Happypanda v{}'.format(app_constants.vs))
+    parser.add_argument('-v', '--version',    action='version',    version='Happypanda v{}'.format(app_constants.vs))
+    parser.add_argument('-d', '--debug',      action='store_true', help='Output more detailed logs to happypanda_debug.log')
     parser.add_argument('-e', '--exceptions', action='store_true', help='Disable custom excepthook')
-    parser.add_argument('-x', '--dev', action='store_true', help='Development Switch')
+    parser.add_argument('-x', '--dev',        action='store_true', help='Output all log messages to stdout as well')
 
     args = parser.parse_args()
     log_handlers = []
     log_level = logging.INFO
+
     if args.dev:
         log_handlers.append(logging.StreamHandler())
+
     if args.debug:
         print("happypanda_debug.log created at {}".format(os.getcwd()))
         # create log
