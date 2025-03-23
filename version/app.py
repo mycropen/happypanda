@@ -16,7 +16,6 @@ import sys
 import logging
 import os
 import requests
-import scandir
 import traceback
 import time
 
@@ -134,10 +133,12 @@ class AppWindow(QMainWindow):
 
         def modified(path, gallery):
             mod_popup = io_misc.ModifiedPopup(path, gallery, self)
+
         def deleted(path, gallery):
             d_popup = io_misc.DeletedPopup(path, gallery, self)
             d_popup.UPDATE_SIGNAL.connect(update_gallery)
             d_popup.REMOVE_SIGNAL.connect(remove_gallery)
+
         def moved(new_path, gallery):
             mov_popup = io_misc.MovedPopup(new_path, gallery, self)
             mov_popup.UPDATE_SIGNAL.connect(update_gallery)
@@ -944,8 +945,7 @@ class AppWindow(QMainWindow):
         log_i('Populating DB from directory/archive')
 
     def scan_for_new_galleries(self):
-        available_folders = app_constants.ENABLE_MONITOR and \
-                                    app_constants.MONITOR_PATHS and all(app_constants.MONITOR_PATHS)
+        available_folders = app_constants.ENABLE_MONITOR and app_constants.MONITOR_PATHS and all(app_constants.MONITOR_PATHS)
         if available_folders and not app_constants.SCANNING_FOR_GALLERIES:
             app_constants.SCANNING_FOR_GALLERIES = True
             self.notification_bar.add_text("Scanning for new galleries...")
@@ -969,11 +969,11 @@ class AppWindow(QMainWindow):
                         paths = []
                         for p in app_constants.MONITOR_PATHS:
                             if os.path.exists(p):
-                                dir_content = scandir.scandir(p)
+                                dir_content = os.scandir(p)
                                 for d in dir_content:
                                     paths.append(d.path)
                             else:
-                                log_e("Monitored path does not exists: {}".format(p.encode(errors='ignore')))
+                                log_e("Monitored path does not exist: {}".format(p.encode(errors='ignore')))
 
                         self.fetch_inst.series_path = paths
                         self.fetch_inst.LOCAL_EMITTER.connect(lambda g:self.addition_view.add_gallery(g, app_constants.KEEP_ADDED_GALLERIES))
@@ -1102,7 +1102,7 @@ class AppWindow(QMainWindow):
 
         # temp dir
         try:
-            for root, dirs, files in scandir.walk('temp', topdown=False):
+            for root, dirs, files in os.walk('temp', topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:

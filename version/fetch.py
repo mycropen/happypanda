@@ -12,7 +12,11 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
-import os, time, logging, random, queue, scandir
+import os
+import time
+import logging
+import random
+import queue
 
 from PyQt5.QtCore import QObject, pyqtSignal # need this for interaction with main thread
 
@@ -87,25 +91,24 @@ class Fetch(QObject):
         is_archive = True if archive else False
         temp_p = archive if is_archive else path
         folder_name = folder_name or path if folder_name or path else os.path.split(archive)[1]
+
         if utils.check_ignore_list(temp_p) and not gallerydb.GalleryDB.check_exists(temp_p, self.galleries_from_db, False):
             log_i('Creating gallery: {}'.format(folder_name.encode('utf-8', 'ignore')))
             new_gallery = gallerydb.Gallery()
-            images_paths = []
             metafile = utils.GMetafile()
             if os.path.isdir(temp_p):
-                con = scandir.scandir(temp_p) #all of content in the gallery folder
+                con = os.scandir(temp_p) #all of content in the gallery folder
                 log_i('Gallery source is a directory')
                 chapters = sorted([sub.path for sub in con if sub.is_dir() or sub.name.endswith(utils.ARCHIVE_FILES)])\
                     if do_chapters else [] #subfolders
                 # if gallery has chapters divided into sub folders
-                numb_of_chapters = len(chapters)
-                if numb_of_chapters != 0:
-                    log_i('Gallery has {} chapters'.format(numb_of_chapters))
+                if len(chapters) != 0:
+                    log_i('Gallery has {} chapters'.format(len(chapters)))
                     for ch in chapters:
                         chap = new_gallery.chapters.create_chapter()
                         chap.title = utils.title_parser(ch)['title']
                         chap.path = os.path.join(path, ch)
-                        chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.lower().endswith(utils.IMG_FILES)])
+                        chap.pages = len([x for x in os.scandir(chap.path) if x.name.lower().endswith(utils.IMG_FILES)])
                         metafile.update(utils.GMetafile(chap.path))
 
                 else: #else assume that all images are in gallery folder
@@ -113,7 +116,7 @@ class Fetch(QObject):
                     chap.title = utils.title_parser(os.path.split(path)[1])['title']
                     chap.path = path
                     metafile.update(utils.GMetafile(chap.path))
-                    chap.pages = len(list(scandir.scandir(path)))
+                    chap.pages = len(list(os.scandir(path)))
                 
                 parsed = utils.title_parser(folder_name)
             else:
@@ -203,7 +206,7 @@ class Fetch(QObject):
         if s_path:
             self.series_path = s_path
         try:
-            gallery_l = sorted([p.name for p in scandir.scandir(self.series_path)]) #list of folders in the "Gallery" folder
+            gallery_l = sorted([p.name for p in os.scandir(self.series_path)]) #list of folders in the "Gallery" folder
             mixed = False
         except TypeError:
             gallery_l = self.series_path
@@ -233,7 +236,6 @@ class Fetch(QObject):
                                 self.create_gallery(gs, os.path.split(gs)[1], False)
                         p_saving = {}
                         for gs in gallery_archives:
-                                    
                                 self.create_gallery(gs[0], os.path.split(gs[0])[1], False, archive=gs[1])
                     elif path.endswith(utils.ARCHIVE_FILES):
                         for g in utils.check_archive(path):
@@ -241,7 +243,7 @@ class Fetch(QObject):
                 else:
                     try:
                         if os.path.isdir(path):
-                            if not list(scandir.scandir(path)):
+                            if not list(os.scandir(path)):
                                 raise ValueError
                         elif not path.endswith(utils.ARCHIVE_FILES):
                             raise NotADirectoryError

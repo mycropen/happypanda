@@ -22,7 +22,6 @@ import hashlib
 import shutil
 import uuid
 import re
-import scandir
 import rarfile
 import json
 import send2trash
@@ -103,7 +102,7 @@ class GMetafile:
                 if x.endswith(app_constants.GALLERY_METAFILE_KEYWORDS):
                     self.files.append(open(zip.extract(x), encoding='utf-8'))
         else:
-            for p in scandir.scandir(path):
+            for p in os.scandir(path):
                 if p.name in app_constants.GALLERY_METAFILE_KEYWORDS:
                     self.files.append(open(p.path, encoding='utf-8'))
 
@@ -732,7 +731,7 @@ def recursive_gallery_check(path):
     gallery_dirs = []
     gallery_arch = []
     found_paths = 0
-    for root, subfolders, files in scandir.walk(path):
+    for root, subfolders, files in os.walk(path):
         if files:
             for f in files:
                 if f.endswith(ARCHIVE_FILES):
@@ -796,7 +795,7 @@ def open_chapter(chapterpath, archive=None):
             send_folder = False
 
     def find_f_img_folder():
-        filepath = os.path.join(temp_p, [x for x in sorted([y.name for y in scandir.scandir(temp_p)])\
+        filepath = os.path.join(temp_p, [x for x in sorted([y.name for y in os.scandir(temp_p)])\
             if x.lower().endswith(IMG_FILES) and not x.startswith('.')][0]) # Find first page
         return temp_p if send_folder else filepath
 
@@ -824,7 +823,7 @@ def open_chapter(chapterpath, archive=None):
             if send_folder:
                 filepath = t_p
             else:
-                filepath = os.path.join(t_p, [x for x in sorted([y.name for y in scandir.scandir(t_p)])\
+                filepath = os.path.join(t_p, [x for x in sorted([y.name for y in os.scandir(t_p)])\
                     if x.lower().endswith(IMG_FILES) and not x.startswith('.')][0]) # Find first page
                 filepath = os.path.abspath(filepath)
         else:
@@ -938,7 +937,7 @@ def get_gallery_img(gallery_or_path, chap_number=0):
             img_path = app_constants.NO_IMAGE_PATH
     elif os.path.isdir(real_path):
         log_i('Getting image from folder')
-        first_img = sorted([img.name for img in scandir.scandir(real_path) if img.name.lower().endswith(tuple(IMG_FILES)) and not img.name.startswith('.')])
+        first_img = sorted([img.name for img in os.scandir(real_path) if img.name.lower().endswith(tuple(IMG_FILES)) and not img.name.startswith('.')])
         if first_img:
             img_path = os.path.join(real_path, first_img[0])
 
@@ -1439,7 +1438,7 @@ def make_chapters(gallery_object):
     metafile = GMetafile()
     if os.path.isdir(path):
         log_d('Listing dir...')
-        con = scandir.scandir(path) # list all folders in gallery dir
+        con = os.scandir(path) # list all folders in gallery dir
         log_i('Gallery source is a directory')
         log_d('Sorting')
         chapters = sorted([sub.path for sub in con if sub.is_dir() or sub.name.endswith(ARCHIVE_FILES)]) #subfolders
@@ -1451,14 +1450,14 @@ def make_chapters(gallery_object):
                 chap.title = title_parser(ch)['title']
                 chap.path = os.path.join(path, ch)
                 metafile.update(GMetafile(chap.path))
-                chap.pages = len([x for x in scandir.scandir(chap.path) if x.name.lower().endswith(IMG_FILES)])
+                chap.pages = len([x for x in os.scandir(chap.path) if x.name.lower().endswith(IMG_FILES)])
 
         else: #else assume that all images are in gallery folder
             chap = chap_container.create_chapter()
             chap.title = title_parser(os.path.split(path)[1])['title']
             chap.path = path
             metafile.update(GMetafile(path))
-            chap.pages = len([x for x in scandir.scandir(path) if x.name.lower().endswith(IMG_FILES)])
+            chap.pages = len([x for x in os.scandir(path) if x.name.lower().endswith(IMG_FILES)])
 
     else:
         if path.endswith(ARCHIVE_FILES):

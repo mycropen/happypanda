@@ -14,7 +14,6 @@
 
 import datetime
 import os
-import scandir
 import threading
 import logging
 import queue
@@ -277,7 +276,7 @@ class GalleryDB(database.db.DBBase):
     def clear_thumb_dir():
         "Deletes everything in the thumbnail directory"
         if os.path.exists(database.db_constants.THUMBNAIL_PATH):
-            for thumbfile in scandir.scandir(database.db_constants.THUMBNAIL_PATH):
+            for thumbfile in os.scandir(database.db_constants.THUMBNAIL_PATH):
                 GalleryDB.clear_thumb(thumbfile.path)
 
     @staticmethod
@@ -1183,7 +1182,7 @@ class HashDB(database.db.DBBase):
             try:
                 if gallery.is_archive:
                     raise NotADirectoryError
-                imgs = sorted([x.path for x in scandir.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
+                imgs = sorted([x.path for x in os.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
                 pages = {}
                 for n, i in enumerate(imgs):
                     pages[n] = i
@@ -1954,7 +1953,7 @@ class ChaptersContainer:
             with utils.ArchiveFile(chap.gallery.path) as arch:
                 chap.pages = len([x for x in arch.dir_contents(chap.path) if x.lower().endswith(utils.IMG_FILES)])
         else:
-            chap.pages = len([x for x in scandir.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
+            chap.pages = len([x for x in os.scandir(chap.path) if x.path.lower().endswith(utils.IMG_FILES)])
 
         execute(ChapterDB.update_chapter, True, self, [chap.number])
         return True
@@ -2062,7 +2061,7 @@ class AdminDB(QObject):
                         with utils.ArchiveFile(gallery.path) as arch:
                             chap.pages = len(arch.dir_contents(chap.path))
                     else:
-                        chap.pages = len(list(scandir.scandir(gallery.path)))
+                        chap.pages = len(list(os.scandir(gallery.path)))
                     n_galleries.append(gallery)
                     galleries.remove(gallery)
                     break
@@ -2070,7 +2069,7 @@ class AdminDB(QObject):
         log_d("G: {} C:{}".format(len(n_galleries), data_count - 1))
         log_i("Database magic...")
         if os.path.exists(database.db_constants.THUMBNAIL_PATH):
-            for root, dirs, files in scandir.walk(database.db_constants.THUMBNAIL_PATH, topdown=False):
+            for root, dirs, files in os.walk(database.db_constants.THUMBNAIL_PATH, topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:

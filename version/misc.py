@@ -17,7 +17,6 @@ import time
 import logging
 import math
 import functools
-import scandir
 
 from PyQt5.QtCore import (QModelIndex, Qt, QPoint, pyqtSignal, QTimer, QSize, QRect, QFileInfo, QPropertyAnimation,
                           QRectF, QPropertyAnimation, QByteArray, QPointF, QSizeF, qRound)
@@ -2013,7 +2012,7 @@ class FileIcon:
                         break
                 arch.close()
             else:
-                for p in scandir.scandir(gallery.chapters[0].path):
+                for p in os.scandir(gallery.chapters[0].path):
                     if p.name.lower().endswith(tuple(utils.IMG_FILES)):
                         file = p.path
                         break
@@ -2334,7 +2333,7 @@ class ChapterAddWidget(QWidget):
                 chap.title = utils.title_parser(os.path.split(p)[1])['title']
                 chap.path = p
                 if os.path.isdir(p):
-                    chap.pages = len(list(scandir.scandir(p)))
+                    chap.pages = len(list(os.scandir(p)))
                 elif p.endswith(utils.ARCHIVE_FILES):
                     chap.in_archive = 1
                     with utils.ArchiveFile(p) as arch:
