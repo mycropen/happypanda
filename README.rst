@@ -95,6 +95,7 @@ For general documentation (how to add galleries and usage of the search), check 
 
 People wanting to import galleries from the Pururin database torrent should find `this <https://github.com/Exedge/Convertor>`__ useful.
 
+
 Dependencies
 ============
 
@@ -109,7 +110,8 @@ Dependencies
 -  Pillow (pip) or PIL
 -  python-dateutil (pip)
 -  QtAwesome (pip)
--  appdirs (pip)
+-  py7zr (pip)
+
 
 Contributing
 ============
