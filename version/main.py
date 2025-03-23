@@ -49,16 +49,11 @@ def start(test=False):
     if os.path.exists('cacert.pem'):
         os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), "cacert.pem")
 
-    parser = argparse.ArgumentParser(prog='Happypanda',
-                                  description='A manga/doujinshi manager with tagging support')
-    parser.add_argument('-d', '--debug', action='store_true',
-                     help='happypanda_debug_log.log will be created in main directory')
-    parser.add_argument('-v', '--version', action='version',
-                     version='Happypanda v{}'.format(app_constants.vs))
-    parser.add_argument('-e', '--exceptions', action='store_true',
-                     help='Disable custom excepthook')
-    parser.add_argument('-x', '--dev', action='store_true',
-                     help='Development Switch')
+    parser = argparse.ArgumentParser(prog='Happypanda', description='A manga/doujinshi manager with tagging support')
+    parser.add_argument('-d', '--debug', action='store_true', help='happypanda_debug_log.log will be created in main directory')
+    parser.add_argument('-v', '--version', action='version', version='Happypanda v{}'.format(app_constants.vs))
+    parser.add_argument('-e', '--exceptions', action='store_true', help='Disable custom excepthook')
+    parser.add_argument('-x', '--dev', action='store_true', help='Development Switch')
 
     args = parser.parse_args()
     log_handlers = []
@@ -115,8 +110,6 @@ def start(test=False):
 
     if app_constants.FORCE_HIGH_DPI_SUPPORT:
         log_i("Enabling high DPI display support")
-        # os.putenv("QT_DEVICE_PIXEL_RATIO", "auto")
-        # os.putenv("QT_ENABLE_HIGHDPI_SCALING", "1")
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
 
     effects = [Qt.UI_AnimateCombo, Qt.UI_FadeMenu, Qt.UI_AnimateMenu,
@@ -252,7 +245,6 @@ def start(test=False):
         msg_box.setDefaultButton(QMessageBox.Yes)
         if msg_box.exec() == QMessageBox.Yes:
             utils.backup_database()
-            import threading
             db_p = database.db_constants.DB_PATH
             database.db.add_db_revisions(db_p)
             conn = database.db.init_db()
