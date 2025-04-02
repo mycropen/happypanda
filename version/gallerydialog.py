@@ -214,9 +214,10 @@ class GalleryDialog(QWidget):
         self.tags_edit.setPlaceholderText("Press Tab to autocomplete (Ctrl + E to show popup)")
         self.tags_edit.setMinimumHeight(60)
         self.tags_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
+        if self._multiple_galleries:
+            self.tags_edit.g_check.setChecked(True)
 
         self.tags_append = QCheckBox("Append tags", self)
-        self.tags_append.setChecked(True)
         self.tags_append.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         if not self._multiple_galleries:
             self.tags_append.hide()
