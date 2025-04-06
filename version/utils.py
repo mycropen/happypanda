@@ -854,7 +854,7 @@ def open_chapter(chapterpath, archive=None):
                 return
     except FileNotFoundError:
         log.exception(f'Could not find chapter {chapterpath}')
-        app_constants.NOTIF_BAR.add_text("Chapter does no longer exist!")
+        app_constants.NOTIF_BAR.add_text("Chapter no longer exists!")
         return
     except IndexError:
         log.exception(f'No images found: {chapterpath}')
@@ -872,22 +872,22 @@ def open_chapter(chapterpath, archive=None):
         app_constants.NOTIF_BAR.add_text('Opening chapter...')
         if not app_constants.USE_EXTERNAL_VIEWER:
             if sys.platform.startswith('darwin'):
-                subprocess.call(('open', custom_args))
+                subprocess.Popen(('open', custom_args))
             elif os.name == 'nt':
                 os.startfile(custom_args)
             elif os.name == 'posix':
-                subprocess.call(('xdg-open', custom_args))
+                subprocess.Popen(('xdg-open', custom_args))
         else:
             ext_path = app_constants.EXTERNAL_VIEWER_PATH
             viewer = external_viewer_checker(ext_path)
             if viewer == 'honeyview':
                 if app_constants.OPEN_GALLERIES_SEQUENTIALLY:
-                    subprocess.call((ext_path, custom_args))
+                    subprocess.run((ext_path, custom_args))
                 else:
                     subprocess.Popen((ext_path, custom_args))
             else:
                 if app_constants.OPEN_GALLERIES_SEQUENTIALLY:
-                    subprocess.check_call((ext_path, custom_args))
+                    subprocess.run((ext_path, custom_args), check=True)
                 else:
                     subprocess.Popen((ext_path, custom_args))
     except subprocess.CalledProcessError:
