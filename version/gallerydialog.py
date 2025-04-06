@@ -2,12 +2,13 @@ import os, threading, logging
 from datetime import datetime
 from typing import Any
 
-from PyQt5.QtWidgets import (QFrame, QGridLayout, QLayout, QStyle, QWidget, QVBoxLayout, QDesktopWidget, QGroupBox,
+from PyQt5.QtWidgets import (QFrame, QGridLayout, QLayout, QStyle, QWidget, QVBoxLayout, QGroupBox,
                              QHBoxLayout, QLabel, QLineEdit, QPushButton, QProgressBar, QTextEdit, QComboBox,
                              QDateEdit, QFileDialog, QMessageBox, QCheckBox, QSizePolicy, QSpinBox)
 from PyQt5.QtCore import (QPoint, QRect, Qt, QDate, QThread, QTimer, QObject)
 from PyQt5.QtGui import QShowEvent
 
+import app
 import app_constants
 import utils
 import gallerydb
@@ -30,12 +31,11 @@ class GalleryDialog(QWidget):
     Pass a list of QModelIndexes to edit their data
     or pass a path to preset path
     """
-    def __init__(self, parent, arg: str | gallerydb.Gallery | list[gallerydb.Gallery] = None, is_new_gallery=False):
+    def __init__(self, parent: 'app.AppWindow', arg: str | gallerydb.Gallery | list[gallerydb.Gallery] = None, is_new_gallery=False):
         super().__init__(parent, Qt.Dialog)
 
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setAutoFillBackground(True)
-        self.parent_widget = parent
         m_l = QVBoxLayout()
 
         self.frame = QFrame()
@@ -59,7 +59,7 @@ class GalleryDialog(QWidget):
         self._gallery_dialog_type = 0
 
         # single: single url, single fetch thread
-        #    all: make parent_widget do it
+        #    all: make parent do it
         self.get_metadata_type = 'single'
 
         # for comparison in set_web_metadata()
@@ -105,9 +105,9 @@ class GalleryDialog(QWidget):
         log_d('GalleryDialog: Create UI: successful')
         self.setLayout(m_l)
         frect = self.frameGeometry()
-        frect.moveCenter(QDesktopWidget().availableGeometry().center())
+        frect.moveCenter(self.parent().geometry().center())
         self.move(frect.topLeft())
-        self.parent_widget.gallery_dialog_group.register(self, arg)
+        self.parent().gallery_dialog_group.register(self, arg)
         self._fetch_thread = None
 
     def commonUI(self):
@@ -357,7 +357,7 @@ class GalleryDialog(QWidget):
         if self.get_metadata_type == 'single':
             self.web_metadata()
         elif self.get_metadata_type == 'all':
-            self.parent_widget.gallery_dialog_group.all_metadata()
+            self.parent().gallery_dialog_group.all_metadata()
 
     # def resizeEvent(self, event):
         # self.tags_edit.setFixedHeight(int(event.size().height()//8))
@@ -546,7 +546,7 @@ class GalleryDialog(QWidget):
             msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msgbox.setDefaultButton(QMessageBox.No)
             if msgbox.exec() == QMessageBox.Yes:
-                self.parent_widget.gallery_dialog_group.unregister(self)
+                self.parent().gallery_dialog_group.unregister(self)
                 self.delayed_close()
         else:
             self.delayed_close()
@@ -579,7 +579,7 @@ class GalleryDialog(QWidget):
                 QTimer.singleShot(3000, do_hide)
 
         def gallery_picker(gallery, title_url_list, q):
-            self.parent_widget._web_metadata_picker(gallery, title_url_list, q, self)
+            self.parent()._web_metadata_picker(gallery, title_url_list, q, self)
 
         try:
             dummy_gallery = self.make_gallery(self.gallery, False)
@@ -602,7 +602,7 @@ class GalleryDialog(QWidget):
             # single GalleryDialog metadata fetch
             self._fetch_inst = fetch.Fetch()
             # self._fetch_thread = QThread(self)
-            self._fetch_thread = QThread(self.parent_widget)
+            self._fetch_thread = QThread(self.parent())
             self._fetch_thread.setObjectName("GalleryDialog metadata thread")
             self._fetch_inst.moveToThread(self._fetch_thread)
             self._fetch_thread.started.connect(self._fetch_inst.auto_web_metadata)
@@ -691,11 +691,11 @@ class GalleryDialog(QWidget):
                         app_constants.OVERRIDE_MONITOR = True
                         new_gallery.move_gallery()
                 if add_to_model:
-                    self.parent_widget.default_manga_view.add_gallery(new_gallery, True)
+                    self.parent().default_manga_view.add_gallery(new_gallery, True)
                     log_i('Sent gallery to model')
             else:
                 if add_to_model:
-                    self.parent_widget.default_manga_view.replace_gallery([new_gallery], False)
+                    self.parent().default_manga_view.replace_gallery([new_gallery], False)
             return new_gallery
 
     def link_set(self):
@@ -723,7 +723,7 @@ class GalleryDialog(QWidget):
             pass
 
     def delayed_close(self):
-        self.parent_widget.gallery_dialog_group.unregister(self)
+        self.parent().gallery_dialog_group.unregister(self)
         if isinstance(self._fetch_thread, QThread) and self._fetch_thread.isRunning():
             self._fetch_thread.finished.connect(self.close)
             self.hide()
@@ -771,7 +771,7 @@ class GalleryDialog(QWidget):
         return super().keyReleaseEvent(event)
 
     def closeEvent(self, event):
-        self.parent_widget.gallery_dialog_group.unregister(self)
+        self.parent().gallery_dialog_group.unregister(self)
 
     def showEvent(self, a0: QShowEvent) -> None:
         if self.parentWidget():
@@ -792,8 +792,7 @@ class GalleryDialogGroup(QObject):
     Facilitates the fetching of multiple galleries' metadata at once.
     """
     def __init__(self, parent):
-        super(GalleryDialogGroup, self).__init__()
-        self.parent_widget = parent
+        super(GalleryDialogGroup, self).__init__(parent)
         self.gds : set[tuple[GalleryDialog, Any]] = set()
         self.fetch_insts : set[fetch.Fetch] = set()
 
@@ -861,7 +860,7 @@ class GalleryDialogGroup(QObject):
 
                 fetch_inst = fetch.Fetch()
                 self.fetch_insts.add(fetch_inst)
-                fetch_thread = QThread(self.parent_widget)
+                fetch_thread = QThread(self.parent())
                 fetch_thread.setObjectName("GalleryDialog metadata thread")
                 fetch_inst.moveToThread(fetch_thread)
                 fetch_inst.FINISHED.connect(lambda: self.remove_fetch(fetch_inst))
