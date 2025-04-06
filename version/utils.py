@@ -806,44 +806,44 @@ def open_chapter(chapterpath, archive=None):
         raise IndexError
 
     def find_f_img_archive(extract=True):
-        zip = ArchiveFile(temp_p)
-        if extract:
-            app_constants.NOTIF_BAR.add_text('Extracting...')
-            t_p = os.path.join('temp', str(uuid.uuid4()))
-            os.mkdir(t_p)
-            if is_archive or chapterpath.endswith(ARCHIVE_FILES):
-                if os.path.isdir(chapterpath):
-                    t_p = chapterpath
-                elif chapterpath.endswith(ARCHIVE_FILES):
-                    zip2 = ArchiveFile(chapterpath)
-                    f_d = sorted(zip2.dir_list(True))
-                    if f_d:
-                        f_d = f_d[0]
-                        t_p = zip2.extract(f_d, t_p)
+        with ArchiveFile(temp_p) as arch:
+            if extract:
+                app_constants.NOTIF_BAR.add_text('Extracting...')
+                t_p = os.path.join('temp', str(uuid.uuid4()))
+                os.mkdir(t_p)
+                if is_archive or chapterpath.endswith(ARCHIVE_FILES):
+                    if os.path.isdir(chapterpath):
+                        t_p = chapterpath
+                    elif chapterpath.endswith(ARCHIVE_FILES):
+                        with ArchiveFile(chapterpath) as arch2:
+                            f_d = sorted(arch2.dir_list(True))
+                            if f_d:
+                                f_d = f_d[0]
+                                t_p = arch2.extract(f_d, t_p)
+                            else:
+                                t_p = arch2.extract('', t_p)
                     else:
-                        t_p = zip2.extract('', t_p)
+                        t_p = arch.extract(chapterpath, t_p)
                 else:
-                    t_p = zip.extract(chapterpath, t_p)
+                    arch.extract_all(t_p) # Compatibility reasons..  TODO: REMOVE IN BETA
+                if send_folder:
+                    filepath = t_p
+                else:
+                    filepath = os.path.join(t_p, [x for x in sorted([y.name for y in os.scandir(t_p)])\
+                        if x.lower().endswith(IMG_FILES) and not x.startswith('.')][0]) # Find first page
+                    filepath = os.path.abspath(filepath)
             else:
-                zip.extract_all(t_p) # Compatibility reasons..  TODO: REMOVE IN BETA
-            if send_folder:
-                filepath = t_p
-            else:
-                filepath = os.path.join(t_p, [x for x in sorted([y.name for y in os.scandir(t_p)])\
-                    if x.lower().endswith(IMG_FILES) and not x.startswith('.')][0]) # Find first page
-                filepath = os.path.abspath(filepath)
-        else:
-            if is_archive or chapterpath.endswith(ARCHIVE_FILES):
-                con = zip.dir_contents('')
-                f_img = [x for x in sorted(con) if x.lower().endswith(IMG_FILES) and not x.startswith('.')]
-                if not f_img:
-                    log_w(f'Extracting archive.. There are no images in the top-folder. ({archive})')
-                    return find_f_img_archive()
-                filepath = os.path.normpath(archive)
-            else:
-                app_constants.NOTIF_BAR.add_text("Fatal error: Unsupported gallery!")
-                raise ValueError("Unsupported gallery version")
-        return filepath
+                if is_archive or chapterpath.endswith(ARCHIVE_FILES):
+                    con = arch.dir_contents('')
+                    f_img = [x for x in sorted(con) if x.lower().endswith(IMG_FILES) and not x.startswith('.')]
+                    if not f_img:
+                        log_w(f'Extracting archive.. There are no images in the top-folder. ({archive})')
+                        return find_f_img_archive()
+                    filepath = os.path.normpath(archive)
+                else:
+                    app_constants.NOTIF_BAR.add_text("Fatal error: Unsupported gallery!")
+                    raise ValueError("Unsupported gallery version")
+            return filepath
 
     try:
         if os.path.isdir(temp_p):
