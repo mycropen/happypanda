@@ -12,6 +12,7 @@
 #along with Happypanda.  If not, see <http://www.gnu.org/licenses/>.
 #"""
 
+from collections.abc import Sequence
 import logging
 import math
 import random
@@ -29,6 +30,7 @@ from PyQt5.QtWidgets import (QListView, QStyledItemDelegate, QStyle, QWidget,
                              QHeaderView, QTableView, QMessageBox, QScroller,
                              QStackedLayout)
 
+import app
 import executors
 import gallerydb
 import app_constants
@@ -1593,22 +1595,25 @@ class CommonView:
             event.ignore()
 
     @staticmethod
-    def spawn_dialog(app_inst, gallery=None, new_gallery=False):
+    def spawn_dialog(app_inst: 'app.AppWindow', gallery: gallerydb.Gallery | Sequence[gallerydb.Gallery] = None, new_gallery: bool = False):
         """
         Spawn a new ``GalleryDialog`` for a gallery or list of galleries; or
         re-activate the one that's already open for the given gallery.
         """
-        if isinstance(gallery, (list, tuple)):
+        if isinstance(gallery, Sequence):
             # filter all the ones that don't have an already open edit dialog
-            new_galleries = [g for g in gallery if app_inst.gallery_dialog_group.get_open_dialog(g) is None]
-            if len(gallery) != len(new_galleries):
-                log_d(f'Ignoring galleries that already have open dialogs.')
-                log_d(f'    gallery: {[g.title for g in gallery]}')
-                log_d(f'    new_galleries: {[g.title for g in new_galleries]}')
+            # re-raise the dialogs of the ones that already have one open
+            new_galleries : list[gallerydb.Gallery] = list()
+            for g in gallery:
+                open_dialog = app_inst.gallery_dialog_group.get_open_dialog(g)
+                if open_dialog is None:
+                    new_galleries.append(g)
+                else:
+                    log_d(f'Gallery {g.title} already has an open GalleryDialog.')
+                    open_dialog.toTheTop()
+                    # open_dialog.recenter()
             
             if len(new_galleries) == 0: return
-
-            log_d(f'Opening dialog for galleries: {[g.title for g in new_galleries]}')
             if len(new_galleries) == 1: gallery = new_galleries[0]
             else:                       gallery = new_galleries
 
@@ -1616,6 +1621,8 @@ class CommonView:
             open_dialog = app_inst.gallery_dialog_group.get_open_dialog(gallery)
             if open_dialog:
                 log_d(f'Gallery {gallery.title} already has an open GalleryDialog.')
+                open_dialog.toTheTop()
+                # open_dialog.recenter()
                 return
 
         dialog = gallerydialog.GalleryDialog(app_inst, gallery, new_gallery)

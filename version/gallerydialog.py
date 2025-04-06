@@ -104,9 +104,7 @@ class GalleryDialog(QWidget):
 
         log_d('GalleryDialog: Create UI: successful')
         self.setLayout(m_l)
-        frect = self.frameGeometry()
-        frect.moveCenter(self.parent().geometry().center())
-        self.move(frect.topLeft())
+        self.recenter()
         self.parent().gallery_dialog_group.register(self, arg)
         self._fetch_thread = None
 
@@ -784,6 +782,23 @@ class GalleryDialog(QWidget):
             self.url_edit.setFocus()
         
         return super().showEvent(a0)
+
+    def toTheTop(self):
+        """
+        Bring this dialog to the top.
+        """
+        # every OS handles these differently, but together they should be enough                
+        self.setWindowState(self.windowState() | Qt.WindowState.WindowActive)
+        self.activateWindow()
+        self.raise_()
+
+    def recenter(self):
+        """
+        Recenter the dialog in the 
+        """
+        frect = self.frameGeometry()
+        frect.moveCenter(self.parent().geometry().center())
+        self.move(frect.topLeft())
 
 
 class GalleryDialogGroup(QObject):
