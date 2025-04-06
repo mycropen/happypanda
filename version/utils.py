@@ -795,9 +795,15 @@ def open_chapter(chapterpath, archive=None):
             send_folder = False
 
     def find_f_img_folder():
-        filepath = os.path.join(temp_p, [x for x in sorted([y.name for y in os.scandir(temp_p)])\
-            if x.lower().endswith(IMG_FILES) and not x.startswith('.')][0]) # Find first page
-        return temp_p if send_folder else filepath
+        if send_folder:
+            return temp_p
+        root, _, files = next(os.walk(temp_p))
+        for f in files:
+            if f.startswith('.'):
+                continue
+            if f.lower().endswith(IMG_FILES):
+                return os.path.join(root, f)
+        raise IndexError
 
     def find_f_img_archive(extract=True):
         zip = ArchiveFile(temp_p)
