@@ -2174,7 +2174,7 @@ class DatabaseStartup(QObject):
     def __init__(self):
         super().__init__()
         ListDB.init_lists()
-        self._fetch_count = 500
+        self._fetch_count = app_constants.DATABASE_STARTUP_FETCH_LIMIT
         self._offset = 0
         self._fetching = False
         self.count = 0
@@ -2183,32 +2183,41 @@ class DatabaseStartup(QObject):
 
     def startup(self, manga_views):
         self.START.emit()
-        self._fetching = True
-        self.count = GalleryDB.gallery_count()
-        remaining = self.count
-        while remaining > 0:
-            self.PROGRESS.emit("Loading galleries: {}".format(remaining))
-            rec_to_fetch = min(remaining, self._fetch_count)
-            self.fetch_galleries(self._offset, rec_to_fetch, manga_views)
-            self._offset += rec_to_fetch
-            remaining = self.count - self._offset
-        [v.list_view.manga_delegate._increment_paint_level() for v in manga_views]
-        self.PROGRESS.emit("Loading chapters...")
-        self.fetch_chapters()
-        self.PROGRESS.emit("Loading tags...")
-        self.fetch_tags()
-        [v.list_view.manga_delegate._increment_paint_level() for v in manga_views]
-        self.PROGRESS.emit("Loading hashes...")
-        self.fetch_hashes()
+
+        with utils.Stopwatch('DatabaseStartup.startup (Loading galleries)', lambda msg: log_i(msg)):
+            self._fetching = True
+            self.count = GalleryDB.gallery_count()
+            remaining = self.count
+            while remaining > 0:
+                self.PROGRESS.emit("Loading galleries: {}".format(remaining))
+                fetch_limit = min(remaining, self._fetch_count) if self._fetch_count > 0 else self.count
+                self.fetch_galleries(self._offset, fetch_limit, manga_views)
+                self._offset += fetch_limit
+                remaining = self.count - self._offset
+            [v.list_view.manga_delegate._increment_paint_level() for v in manga_views]
+
+        with utils.Stopwatch('DatabaseStartup.startup (Loading chapters)', lambda msg: log_i(msg)):
+            self.PROGRESS.emit("Loading chapters...")
+            self.fetch_chapters()
+
+        with utils.Stopwatch('DatabaseStartup.startup (Loading tags)', lambda msg: log_i(msg)):
+            self.PROGRESS.emit("Loading tags...")
+            self.fetch_tags()
+            [v.list_view.manga_delegate._increment_paint_level() for v in manga_views]
+
+        with utils.Stopwatch('DatabaseStartup.startup (Loading hashes)', lambda msg: log_i(msg)):
+            self.PROGRESS.emit("Loading hashes...")
+            self.fetch_hashes()
+
         self._fetching = False
         self.DONE.emit()
 
-    def fetch_galleries(self, f, t, manga_views):
-        c = execute(self._DB.execute, False, 'SELECT * FROM series LIMIT {}, {}'.format(f, t))
+    def fetch_galleries(self, offset, limit, manga_views):
+        # instead of "LIMIT 1, 2" you can also write "LIMIT 2 OFFSET 1"
+        c = execute(self._DB.execute, False, '''SELECT * FROM series LIMIT {}, {}'''.format(offset, limit))
         if c:
             new_data = c.fetchall()
             gallery_list = execute(GalleryDB.gen_galleries, False, new_data, {"chapters":False, "tags":False, "hashes":False})
-            #self._current_data.extend(gallery_list)
             if gallery_list:
                 self._loaded_galleries.extend(gallery_list)
                 for view in manga_views:

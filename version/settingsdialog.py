@@ -580,6 +580,10 @@ class SettingsDialog(QWidget):
         app_constants.GALLERY_DATA_FIX_REPLACE = self.g_data_replace_fix_edit.text()
         set(app_constants.GALLERY_DATA_FIX_REPLACE, 'Advanced', 'gallery data fix replace')
 
+        # Advanced / Database
+        app_constants.DATABASE_STARTUP_FETCH_LIMIT = self.advanced_dbstartup_fetch_limit_spinbox.value()
+        set(app_constants.DATABASE_STARTUP_FETCH_LIMIT, 'Application', 'db startup fetch limit')
+
         # About / DB Overview
 
         settings.save()
@@ -1347,8 +1351,7 @@ class SettingsDialog(QWidget):
 
         # Advanced / Database / Import/Export
         def init_export():
-            confirm_msg = QMessageBox(QMessageBox.Question, '', 'Are you sure you want to export your database?',
-                             QMessageBox.Yes | QMessageBox.No, self)
+            confirm_msg = QMessageBox(QMessageBox.Question, '', 'Are you sure you want to export your database?', QMessageBox.Yes | QMessageBox.No, self)
             if confirm_msg.exec() == QMessageBox.Yes:
                 app_popup = AppDialog(self.parent_widget)
                 app_popup.info_lbl.setText("Exporting database...")
@@ -1365,8 +1368,7 @@ class SettingsDialog(QWidget):
                 self.close()
 
         def init_import():
-            path = QFileDialog.getOpenFileName(self,
-                                      'Choose happypanda database file', filter='*.hpdb')
+            path = QFileDialog.getOpenFileName(self, 'Choose happypanda database file', filter='*.hpdb')
             path = path[0]
             if len(path) != 0:
                 app_popup = AppDialog(self.parent_widget)
@@ -1388,6 +1390,7 @@ class SettingsDialog(QWidget):
 
         advanced_impexp, advanced_impexp_l = groupbox('Import/Export', QFormLayout, advanced_db_page)
         advanced_db_page_l.addRow(advanced_impexp)
+
         self.export_format = QComboBox(advanced_db_page)
         #self.export_format.addItem('Text File', 0)
         self.export_format.addItem('HPDB', 1)
@@ -1404,6 +1407,20 @@ class SettingsDialog(QWidget):
         ex_imp_btn_l.addWidget(import_btn)
         ex_imp_btn_l.addWidget(export_btn)
         advanced_impexp_l.addRow(ex_imp_btn_l)
+
+
+        # Advanced / Database / Startup
+        advanced_dbstartup, advanced_dbstartup_l = groupbox('Startup', QFormLayout, advanced_db_page)
+        advanced_db_page_l.addRow(advanced_dbstartup)
+
+        self.advanced_dbstartup_fetch_limit_spinbox = QSpinBox(advanced_db_page)
+        self.advanced_dbstartup_fetch_limit_spinbox.setMinimum(0)
+        self.advanced_dbstartup_fetch_limit_spinbox.setMaximum(1_000_000)
+        self.advanced_dbstartup_fetch_limit_spinbox.setValue(app_constants.DATABASE_STARTUP_FETCH_LIMIT)
+        self.advanced_dbstartup_fetch_limit_spinbox.setToolTip('Batch size of galleries that is fetched from the database upon startup.\n' \
+                                                          'Higher number means faster loading. 0 means no limit, but the app may appear stuck for a few seconds.\n' \
+                                                          'DEFAULT: 1000')
+        advanced_dbstartup_l.addRow('Startup gallery fetch limit:', self.advanced_dbstartup_fetch_limit_spinbox)
 
 
         # About
