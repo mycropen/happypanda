@@ -88,8 +88,7 @@ def process_methods():
             method_return.put(r)
         method_queue.task_done()
 
-method_queue_thread = threading.Thread(name='Method Queue Thread', target=process_methods,
-                                       daemon=True)
+method_queue_thread = threading.Thread(name='Method Queue Thread', target=process_methods, daemon=True)
 method_queue_thread.start()
 
 def execute(method, no_return, *args, **kwargs):
@@ -708,8 +707,7 @@ class TagDB(database.db.DBBase):
         "Returns all tags and namespaces found for the given series_id"
         if not isinstance(series_id, int):
             return {}
-        cursor = cls.execute(cls, 'SELECT tags_mappings_id FROM series_tags_map WHERE series_id=?',
-                (series_id,))
+        cursor = cls.execute(cls, 'SELECT tags_mappings_id FROM series_tags_map WHERE series_id=?', (series_id,))
         tags = {}
         result = cursor.fetchall()
         for tag_map_row in result: # iterate all tag_mappings_ids
@@ -717,12 +715,10 @@ class TagDB(database.db.DBBase):
                 if not tag_map_row:
                     continue
                 # get tag and namespace
-                c = cls.execute(cls, 'SELECT namespace_id, tag_id FROM tags_mappings WHERE tags_mappings_id=?',
-                  (tag_map_row['tags_mappings_id'],))
+                c = cls.execute(cls, 'SELECT namespace_id, tag_id FROM tags_mappings WHERE tags_mappings_id=?', (tag_map_row['tags_mappings_id'],))
                 for row in c.fetchall(): # iterate all rows
                     # get namespace
-                    c = cls.execute(cls, 'SELECT namespace FROM namespaces WHERE namespace_id=?',
-                        (row['namespace_id'],))
+                    c = cls.execute(cls, 'SELECT namespace FROM namespaces WHERE namespace_id=?', (row['namespace_id'],))
                     try:
                         namespace = c.fetchone()['namespace']
                     except TypeError:
@@ -2011,7 +2007,6 @@ class ChaptersContainer:
         if key.gallery == self.parent and key in [self.data[c] for c in self._data]:
             return True
         return False
-
 
 class AdminDB(QObject):
     DONE = pyqtSignal(bool)
