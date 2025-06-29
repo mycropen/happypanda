@@ -220,7 +220,7 @@ class GalleryDialog(QWidget):
         if not self._multiple_galleries:
             self.tags_append.hide()
         if self._multiple_galleries:
-            self.tags_append.setChecked(app_constants.APPEND_TAGS_GALLERIES)
+            self.tags_append.setChecked(True)
             tags_ml = QVBoxLayout()
             tags_ml.addWidget(self.tags_append)
             tags_ml.addLayout(checkbox_layout(self.tags_edit), 5)
