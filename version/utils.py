@@ -17,6 +17,7 @@ import os
 import subprocess
 import sys
 import logging
+from typing import Callable
 import zipfile
 import hashlib
 import shutil
@@ -1514,3 +1515,20 @@ def lookup_tag(tag):
     url += 'tag/' + tag
 
     open_web_link(url)
+
+
+class Stopwatch(object):
+    def __init__(self, name: str, out_func: Callable, ns: bool = False):
+        super(Stopwatch, self).__init__()
+        self.name      : str      = name
+        self._start    : float    = None
+        self._out_func : Callable = out_func
+        self._ns       : bool     = ns
+        self._unit = 'ns' if ns else 's'
+
+    def __enter__(self):
+        self._start = time.perf_counter_ns() if self._ns else time.perf_counter()
+
+    def __exit__(self, *args, **kwargs):
+        end = time.perf_counter_ns() if self._ns else time.perf_counter()
+        self._out_func(f'{self.name}: {round(end - self._start, 6)}{self._unit}')
