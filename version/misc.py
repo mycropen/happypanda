@@ -1118,7 +1118,7 @@ class GalleryMenu(QMenu):
             web_menu.addSeparator()
 
 
-        artist_lookup = web_menu.addAction("Lookup Artists" if self.selected else "Lookup Artist", lambda: self.lookup_web("artist"))
+        artist_lookup = web_menu.addAction("Look up Artists" if self.selected else "Look up Artist", lambda: self.lookup_web("artist"))
 
         self.addSeparator()
 
