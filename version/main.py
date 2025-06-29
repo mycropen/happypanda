@@ -19,6 +19,8 @@ import os
 import argparse
 import platform
 import traceback
+import datetime
+import faulthandler
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QCoreApplication, QFile, Qt
@@ -50,10 +52,11 @@ def start(test=False):
         os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), "cacert.pem")
 
     parser = argparse.ArgumentParser(prog='Happypanda', description='A manga/doujinshi manager with tagging support')
-    parser.add_argument('-v', '--version',    action='version',    version='Happypanda v{}'.format(app_constants.vs))
-    parser.add_argument('-d', '--debug',      action='store_true', help='Output more detailed logs to happypanda_debug.log')
-    parser.add_argument('-e', '--exceptions', action='store_true', help='Disable custom excepthook')
-    parser.add_argument('-x', '--dev',        action='store_true', help='Output all log messages to stdout as well')
+    parser.add_argument('-v', '--version',      action='version',    version='Happypanda v{}'.format(app_constants.vs))
+    parser.add_argument('-d', '--debug',        action='store_true', help='Output more detailed logs to happypanda_debug.log')
+    parser.add_argument('-e', '--exceptions',   action='store_true', help='Disable custom excepthook')
+    parser.add_argument('-x', '--dev',          action='store_true', help='Output all log messages to stdout as well')
+    parser.add_argument('-f', '--faulthandler', action='store_true', help='Enable a faulthandler log file in case of unexplanable crashes')
 
     args = parser.parse_args()
     log_handlers = []
@@ -109,6 +112,15 @@ def start(test=False):
             traceback.print_exception(ex_type, ex, tb)
 
         sys.excepthook = uncaught_exceptions
+
+    if args.faulthandler:
+        hp_dir = os.path.dirname(os.path.abspath(__file__))
+        fault_log_dir = os.path.join(hp_dir, 'fault_logs')
+        fault_log_file = os.path.join(fault_log_dir, f'fault_{datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")}.log')
+        if not os.path.isdir(fault_log_dir): os.makedirs(fault_log_dir, exist_ok=True)
+
+        fault_log = open(fault_log_file, 'a')
+        faulthandler.enable(fault_log, all_threads=True)
 
     if app_constants.FORCE_HIGH_DPI_SUPPORT:
         log_i("Enabling high DPI display support")
