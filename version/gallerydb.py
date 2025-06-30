@@ -21,6 +21,7 @@ import io
 import uuid
 from dateutil import parser as dateparser
 from dataclasses import dataclass, field
+from collections import defaultdict
 
 from PyQt5.QtCore import QObject, pyqtSignal, QTime
 
@@ -703,43 +704,34 @@ class TagDB(database.db.DBBase):
         cls.execute(cls, 'DELETE FROM series_tags_map WHERE series_id=?', [series_id])
 
     @classmethod
-    def get_gallery_tags(cls, series_id):
+    def get_gallery_tags(cls, series_id: int):
         "Returns all tags and namespaces found for the given series_id"
-        if not isinstance(series_id, int):
-            return {}
-        cursor = cls.execute(cls, 'SELECT tags_mappings_id FROM series_tags_map WHERE series_id=?', (series_id,))
-        tags = {}
-        result = cursor.fetchall()
-        for tag_map_row in result: # iterate all tag_mappings_ids
-            try:
-                if not tag_map_row:
-                    continue
-                # get tag and namespace
-                c = cls.execute(cls, 'SELECT namespace_id, tag_id FROM tags_mappings WHERE tags_mappings_id=?', (tag_map_row['tags_mappings_id'],))
-                for row in c.fetchall(): # iterate all rows
-                    # get namespace
-                    c = cls.execute(cls, 'SELECT namespace FROM namespaces WHERE namespace_id=?', (row['namespace_id'],))
-                    try:
-                        namespace = c.fetchone()['namespace']
-                    except TypeError:
-                        continue
+        if not isinstance(series_id, int): return {}
 
-                    # get tag
-                    c = cls.execute(cls, 'SELECT tag FROM tags WHERE tag_id=?', (row['tag_id'],))
-                    try:
-                        tag = c.fetchone()['tag']
-                    except TypeError:
-                        continue
+        # series_id to a list of (namespace, tag) rows:
+        #   +-----------------+----------------------------------------------------------------+
+        #   | table           | content                                                        |
+        #   +=================+================================================================+
+        #   | series_tags_map | (series_id, tags_mappings_id) with multiple rows per series_id |
+        #   +-----------------+----------------------------------------------------------------+
+        #   | tags_mappings   | (tags_mappings_id, namespace_id, tag_id)                       |
+        #   +-----------------+----------------------------------------------------------------+
+        #   | namespaces      | (namespace_id, namespace)                                      |
+        #   +-----------------+----------------------------------------------------------------+
+        #   | tags            | (tag_id, tag)                                                  |
+        #   +-----------------+----------------------------------------------------------------+
+        cursor = cls.execute(cls, 'SELECT namespaces.namespace, tags.tag FROM series_tags_map \
+                                    INNER JOIN tags_mappings ON tags_mappings.tags_mappings_id=series_tags_map.tags_mappings_id \
+                                    INNER JOIN namespaces ON tags_mappings.namespace_id=namespaces.namespace_id \
+                                    INNER JOIN tags ON tags_mappings.tag_id=tags.tag_id \
+                                    WHERE series_tags_map.series_id=?',
+                                  (series_id,))
+        result : list[dict[str: Any]] = cursor.fetchall()
 
-                    # add them to dict
-                    if not namespace in tags:
-                        tags[namespace] = [tag]
-                    else:
-                        # namespace already exists in dict
-                        tags[namespace].append(tag)
-            except IndexError:
-                continue
-        return tags
+        tags = defaultdict(list)
+        for row in result: tags[row['namespace']].append(row['tag'])
+
+        return dict(tags)
 
     @classmethod
     def add_tags(cls, object):
@@ -750,8 +742,7 @@ class TagDB(database.db.DBBase):
         dict_of_tags = object.tags
 
         def look_exists(tag_or_ns, what):
-            """check if tag or namespace already exists in base
-            returns id, else returns None"""
+            """Check if tag or namespace already exists in base. Return id if it does else None."""
             c = cls.execute(cls, 'SELECT {}_id FROM {}s WHERE {} = ?'.format(what, what, what),
                 (tag_or_ns,))
             try: # exists
