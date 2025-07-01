@@ -539,6 +539,7 @@ class ChapterDB(database.db.DBBase):
         add_chapter -> adds chapter into db
         add_chapter_raw -> links chapter to the given seires id, and adds into db
         get_chapters_for_gallery -> returns a dict with chapters linked to the given series_id
+        get_chapters_for_galleries -> assign chapters to galleries according to their id as series_id
         get_chapter-> returns a dict with chapter matching the given chapter_number
         get_chapter_id -> returns id of the chapter number
         chapter_size -> returns amount of manga (can be used for indexing)
