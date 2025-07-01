@@ -1025,6 +1025,7 @@ class HashDB(database.db.DBBase):
 
     find_gallery -> returns galleries which matches the given list of hashes
     get_gallery_hashes -> returns all hashes with the given gallery id in a list
+    get_multiple_gallery_hashes -> retrieves all hashes and assigns them to multiple galleries based on their id
     get_gallery_hash -> returns hash of chapter specified. If page is specified, returns hash of chapter page
     gen_gallery_hashes <- generates hashes for gallery's chapters and inserts them to db
     rebuild_gallery_hashes <- inserts hashes into DB only if it doesnt already exist
@@ -1072,8 +1073,7 @@ class HashDB(database.db.DBBase):
     @classmethod
     def get_gallery_hashes(cls, gallery_id):
         "Returns all hashes with the given gallery id in a list"
-        cursor = cls.execute(cls, 'SELECT hash FROM hashes WHERE series_id=?',
-                (gallery_id,))
+        cursor = cls.execute(cls, 'SELECT hash FROM hashes WHERE series_id=?', (gallery_id,))
         hashes = []
         try:
             for row in cursor.fetchall():
@@ -1081,6 +1081,31 @@ class HashDB(database.db.DBBase):
         except IndexError:
             return []
         return hashes
+
+    @classmethod
+    def get_multiple_gallery_hashes(cls, galleries: list['Gallery']):
+        """Assign lists of hashes to galleries based on their id ("series_id")"""
+        # hashes(
+        #     hash_id INTEGER PRIMARY KEY,
+        #     hash BLOB,
+        #     series_id INTEGER,
+        #     chapter_id INTEGER,
+        #     page INTEGER,
+        #     FOREIGN KEY(series_id) REFERENCES series(series_id) ON DELETE CASCADE,
+        #     FOREIGN KEY(chapter_id) REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+        #     UNIQUE(hash, series_id, chapter_id, page)
+        # )
+        hashes = defaultdict(list)
+        
+        cursor = cls.execute(cls, 'SELECT series_id, hash FROM hashes')
+        rows = cursor.fetchall()
+        for row in rows:
+            hashes[row['series_id']].append(row['hash'])
+
+        for gallery in galleries:
+            gallery.hashes = hashes[gallery.id]
+
+        return True
 
     @classmethod
     def get_gallery_hash(cls, gallery_id, chapter, page=None):
@@ -2240,8 +2265,7 @@ class DatabaseStartup(QObject):
             g.tags = execute(TagDB.get_gallery_tags, False, g.id)
 
     def fetch_hashes(self):
-        for g in self._loaded_galleries:
-            g.hashes = execute(HashDB.get_gallery_hashes, False, g.id)
+        _ = execute(HashDB.get_multiple_gallery_hashes, False, self._loaded_galleries)
 
 
 if __name__ == '__main__':
