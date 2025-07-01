@@ -615,6 +615,27 @@ class ChapterDB(database.db.DBBase):
 
 
     @classmethod
+    def get_chapters_for_galleries(cls, galleries: list['Gallery']):
+        """
+        Loads all chapters from the database and sets the chapters attribute
+        of all given galleries according to their id ("series_id").
+        """
+        chapters : dict[int, ChaptersContainer] = defaultdict(ChaptersContainer)
+
+        cursor = cls.execute(cls, 'SELECT * FROM chapters')
+        rows = cursor.fetchall()
+
+        for row in rows:
+            chapter = chapters[row['series_id']].create_chapter(row['chapter_number'])
+            chapter_map(row, chapter)
+
+        for gallery in galleries:
+            gallery.chapters = chapters[gallery.id]
+
+        return True
+
+
+    @classmethod
     def get_chapter(cls, series_id, chap_numb):
         """Returns a ChaptersContainer of chapters matching the recieved chapter_number
         return None for no match
@@ -2212,8 +2233,8 @@ class DatabaseStartup(QObject):
                     view.gallery_model.insertRows(view.gallery_model.rowCount(), len(view_galleries))
 
     def fetch_chapters(self):
-        for g in self._loaded_galleries:
-            g.chapters = execute(ChapterDB.get_chapters_for_gallery, False, g.id)
+        # block by waiting for a return value
+        _ = execute(ChapterDB.get_chapters_for_galleries, False, self._loaded_galleries)
 
     def fetch_tags(self):
         for g in self._loaded_galleries:
