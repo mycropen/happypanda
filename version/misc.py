@@ -999,7 +999,7 @@ class Spinner(TransparentWidget):
         self.current_state = self.about_to_hide
         if self._position == "topright":
             self._OFFSET_X_TOPRIGHT[0] -= self.width() + self.margin
-        self.state_timer.start(5000)
+        self.state_timer.start(500)
 
     def closeEvent(self, event):
         self._timer.stop()
