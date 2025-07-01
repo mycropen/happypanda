@@ -529,7 +529,7 @@ class AppWindow(QMainWindow):
         self.tab_manager.library_btn.clicked.connect(lambda: switch_view(False))
         self.tab_manager.library_btn.clicked.connect(lambda: restore_search_term(self.tab_manager.library_btn.view))
 
-        self.addition_tab = self.tab_manager.addTab("Inbox", app_constants.ViewType.Addition, icon=app_constants.INBOX_ICON)
+        self.addition_tab = self.tab_manager.addTab("Inbox", app_constants.ViewType.Addition, icon=app_constants.INBOX_ICON, allow_close=False)
         self.addition_tab.clicked.connect(lambda: restore_search_term(self.addition_tab.view))
         self.addition_tab.view.get_current_view().sort_model.for_inbox = True
 

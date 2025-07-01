@@ -51,8 +51,8 @@ class ToolbarTabManager(QObject):
         self.agroup.setExclusive(True)
 
         self.library_btn = None
-        self.favorite_btn = self.addTab("Favorites", delegate_paint=False, icon=app_constants.STAR_ICON)
-        self.library_btn = self.addTab("Library", delegate_paint=False, icon=app_constants.GRIDL_ICON)
+        self.favorite_btn = self.addTab("Favorites", delegate_paint=False, icon=app_constants.STAR_ICON, allow_close=False)
+        self.library_btn = self.addTab("Library", delegate_paint=False, icon=app_constants.GRIDL_ICON, allow_close=False)
         self.idx_widget = self.toolbar.addWidget(QWidget(self.toolbar))
         self.idx_widget.setVisible(False)
         self.toolbar.addSeparator()
@@ -72,7 +72,7 @@ class ToolbarTabManager(QObject):
         b.view.list_view.sort_model.rowsRemoved.connect(self.parent_widget.stat_row_info)
         b.view.show()
 
-    def addTab(self, name, view_type=app_constants.ViewType.Default, delegate_paint=True, allow_sidebarwidget=False, icon=None):
+    def addTab(self, name, view_type=app_constants.ViewType.Default, delegate_paint=True, allow_sidebarwidget=False, icon=None, allow_close=True):
         if self.toolbar:
             t = misc.ToolbarButton(self.toolbar, name)
             if icon:
@@ -86,11 +86,13 @@ class ToolbarTabManager(QObject):
             if self.library_btn:
                 t.view = gallery.MangaViews(view_type, self.parent_widget, allow_sidebarwidget)
                 t.view.hide()
-                t.close_tab.connect(lambda:self.library_btn.click())
+                t.close_tab.connect(lambda: self.library_btn.click())
                 if not allow_sidebarwidget:
                     t.clicked.connect(self.parent_widget.sidebar_list.arrow_handle.click)
             else:
                 t.view = self.parent_widget.default_manga_view
+            if not allow_close:
+                t.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
             if delegate_paint:
                 t.view.list_view.manga_delegate._paint_level = 9000 # over nine thousand!!!
             self._actions.append(self.toolbar.insertWidget(self.idx_widget, t))
