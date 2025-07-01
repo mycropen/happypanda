@@ -1094,13 +1094,11 @@ class HashDB(database.db.DBBase):
         if not chap_id:
             return None
         if page:
-            exceuting = ["SELECT hash FROM hashes WHERE series_id=? AND chapter_id=? AND page=?",
-                     (gallery_id, chap_id, page)]
+            executing = ["SELECT hash FROM hashes WHERE series_id=? AND chapter_id=? AND page=?", (gallery_id, chap_id, page)]
         else:
-            exceuting = ["SELECT hash FROM hashes WHERE series_id=? AND chapter_id=?",
-                     (gallery_id, chap_id)]
+            executing = ["SELECT hash FROM hashes WHERE series_id=? AND chapter_id=?", (gallery_id, chap_id)]
         hashes = []
-        c = cls.execute(cls, *exceuting)
+        c = cls.execute(cls, *executing)
         for h in c.fetchall():
             try:
                 hashes.append(h['hash'])
