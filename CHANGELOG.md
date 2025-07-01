@@ -1,3 +1,17 @@
+## Happypanda v1.6.2
+
+- Fixes
+    - Removing tags from galleries with the edit dialog is possible again.
+
+- Changes
+    - Galleries can only have one edit dialog open at a time. That includes multi-gallery edit dialogs. Hitting F2 on a gallery with an already open edit dialog will not create a new one but re-raise the existing one to the top and re-center it on the main window.
+    - Pretty large speedup for loading all the data from the database when the app starts. With my test database of 18700 galleries the startup loading time went from 38s down to about 7.
+    - New option: `Advanced / Database / Startup gallery fetch limit`
+        - If you have galleries in the 4-digit range or more, you may have noticed that the number of loaded galleries upon startup changes in steps of 500. This setting can increase that number and speed up the process. You can even set it to 0 to have the app fetch all galleries in one batch, but be aware that this will probably make the GUI appear stuck until it's done.
+        - If you don't touch this setting, the default value is 1000.
+    - The toolbar at the top as well as the default tabs "Favorites", "Library" and "Inbox" no longer have context menus. The only contents in them were a "Show" action that hid the entire toolbar or a "Close" action that closed a tab with no way to get them back outside of an app restart.
+
+
 ## Happypanda v1.6.1
 
 - Fixes

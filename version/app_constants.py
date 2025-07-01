@@ -20,7 +20,7 @@ import database
 import gallerydb
 
 # Version number
-vs  = '1.6.2-a'
+vs  = '1.6.2'
 DEBUG = False
 
 OS_NAME = ''
