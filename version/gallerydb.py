@@ -748,7 +748,7 @@ class TagDB(database.db.DBBase):
                                     INNER JOIN tags ON tags_mappings.tag_id=tags.tag_id \
                                     WHERE series_tags_map.series_id=?',
                                   (series_id,))
-        result : list[dict[str: Any]] = cursor.fetchall()
+        result : list[dict[str, Any]] = cursor.fetchall()
 
         tags = defaultdict(list)
         for row in result: tags[row['namespace']].append(row['tag'])
