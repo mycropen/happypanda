@@ -1059,7 +1059,7 @@ class HashDB(database.db.DBBase):
             h_match_count = 0
             for g in gallery_ids:
                 if gallery_ids[g] > h_match_count:
-                    h_match_count = gallery_ids[h]
+                    h_match_count = gallery_ids[g]
                     g_id = g
             if g_id:
                 weak_gallery = Gallery()
