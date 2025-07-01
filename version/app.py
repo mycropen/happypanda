@@ -502,9 +502,8 @@ class AppWindow(QMainWindow):
         self.toolbar = QToolBar()
         self.toolbar.adjustSize()
         #self.toolbar.setFixedHeight()
-        self.toolbar.setWindowTitle("Show") # text for the contextmenu
-        #self.toolbar.setStyleSheet("QToolBar {border:0px}") # make it user
-                                                   #defined?
+        self.toolbar.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
+        #self.toolbar.setStyleSheet("QToolBar {border:0px}") # make it user defined?
         self.toolbar.setMovable(False)
         self.toolbar.setFloatable(False)
         #self.toolbar.setIconSize(QSize(20,20))
