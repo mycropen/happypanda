@@ -734,8 +734,6 @@ class GalleryDialog(QWidget):
 
     def accept_edit(self):
         gallerydb.execute(database.db.DBBase.begin, True)
-        app_constants.APPEND_TAGS_GALLERIES = self.tags_append.isChecked()
-        settings.set(app_constants.APPEND_TAGS_GALLERIES, 'Application', 'append tags to gallery')
         for g in self._edit_galleries:
             self.make_gallery(g)
         self.delayed_close()
