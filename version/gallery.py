@@ -219,7 +219,7 @@ class SortFilterModel(QSortFilterProxyModel):
     def refresh(self):
         self._DO_SEARCH.emit(self.current_term, self.current_args)
 
-    def init_search(self, term, args=None, **kwargs):
+    def init_search(self, term, args=None, history=True):
         """
         Receives a search term and initiates a search
         args should be a list of Search enums
@@ -227,7 +227,6 @@ class SortFilterModel(QSortFilterProxyModel):
         if self.for_inbox and not app_constants.SEARCHABLE_INBOX: return
         if not args: args = self.current_args
 
-        history = kwargs.pop('history', True)
         if history:
             if self._prev_term != term:
                 self._prev_term = term
