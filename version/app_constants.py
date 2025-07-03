@@ -12,6 +12,7 @@
 
 """Contains constants to be used by several modules"""
 
+import json
 import os, sys, enum
 import qtawesome as qta
 
@@ -317,6 +318,42 @@ GRID_VIEW_T_COSPLAY_COLOR = get('#9b59b6', 'Visual', 'grid view t cosplay color'
 GRID_VIEW_T_OTHER_COLOR = get('#34495e', 'Visual', 'grid view t other color', str)
 
 # Search
+@enum.unique
+class Search(enum.Enum):
+    Strict = 1
+    Case = 2
+    Regex = 3
+
+# from EHWiki:
+#   +-----------+--------+------------+
+#   | Namespace | Simple | Alternates |
+#   +===========+========+============+
+#   | artist    | a      |            |
+#   | character | c      | char       |
+#   | cosplayer | cos    |            |
+#   | female    | f      |            |
+#   | group     | g      | circle     |
+#   | language  | l      | lang       |
+#   | male      | m      |            |
+#   | mixed     | x      |            |
+#   | other     | o      |            |
+#   | parody    | p      | series     |
+#   | reclass   | r      |            |
+#   +-----------+--------+------------+
+DEFAULT_NAMESPACE_MAP = {
+    'a': 'artist',
+    'c': 'character', 'char': 'character',
+    'cos': 'cosplayer',
+    'f': 'female',
+    'g': 'group', 'circle': 'group',
+    'l': 'language', 'lang': 'language',
+    'm': 'male',
+    'x': 'mixed',
+    'o': 'other',
+    'p': 'parody', 'series': 'parody',
+    'r': 'reclass',
+}
+
 SEARCH_AUTOCOMPLETE = get(True, 'Application', 'search autocomplete', bool)
 GALLERY_SEARCH_REGEX = get(False, 'Application', 'allow search regex', bool)
 SEARCH_ON_ENTER = get(False, 'Application', 'search on enter', bool)
@@ -324,12 +361,9 @@ GALLERY_SEARCH_STRICT = get(False, 'Application', 'gallery search strict', bool)
 GALLERY_SEARCH_CASE = get(False, 'Application', 'gallery search case', bool)
 DUAL_SEARCH = get(False, 'Application', 'dual gallery search', bool)
 SEARCHABLE_INBOX = get(True, 'Application', 'searchable inbox', bool)
+ENABLE_NAMESPACE_MAP = get(True, 'Application', 'enable namespace map', bool)
+NAMESPACE_MAP = get(DEFAULT_NAMESPACE_MAP, 'Application', 'namespace map', json.loads)
 
-@enum.unique
-class Search(enum.Enum):
-    Strict = 1
-    Case = 2
-    Regex = 3
 
 # Grid Tooltip
 GRID_TOOLTIP = get(True, 'Visual', 'grid tooltip', bool)
