@@ -1020,8 +1020,22 @@ KEYBOARD_SHORTCUTS_INFO =\
 <td>same</td>
 <td>same</td>
 </tr>
+<tr>
+<td>Gallery edit (single)</td>
+<td><code>F2</code></td>
+<td>same</td>
+<td>same</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Gallery edit (multi)</td>
+<td><code>Shift+F2</code></td>
+<td>same</td>
+<td>same</td>
+<td>same</td>
+</tr>
 </tbody>
 </table>
-
-</body></html>
+</body>
+</html>
 """
