@@ -91,41 +91,41 @@ log_c = log.critical
 
 class GallerySearch(QObject):
     FINISHED = pyqtSignal()
-    def __init__(self, data):
+
+    def __init__(self, data: list[gallerydb.Gallery]):
         super().__init__()
-        self._data = data
-        self.result = {}
+
+        self._data : list[gallerydb.Gallery] = data
 
         # filtering
-        self.fav = False
-        self._gallery_list = None
+        self.result        : dict[int, bool]         = {}
+        self.fav           : bool                    = False
+        self._gallery_list : list[gallerydb.Gallery] = None
 
-    def set_gallery_list(self, g_list):
-        self._gallery_list = g_list
+    def set_gallery_list(self, galleries: list[gallerydb.Gallery]):
+        self._gallery_list = galleries
 
-    def set_data(self, new_data):
-        self._data = new_data
+    def set_data(self, data: list[gallerydb.Gallery]):
+        self._data = data
         self.result = {g.id: True for g in self._data}
 
-    def set_fav(self, new_fav):
+    def set_fav(self, new_fav: bool):
         self.fav = new_fav
 
-    def search(self, term, args):
+    def search(self, term: str, args: list[app_constants.Search]):
         term = ' '.join(term.split())
         search_pieces = utils.get_terms(term)
 
         self._filter(search_pieces, args)
         self.FINISHED.emit()
 
-    def _filter(self, terms, args):
+    def _filter(self, terms: list[str], args: list[app_constants.Search]):
         self.result.clear()
+
         for gallery in self._data:
-            if self.fav:
-                if not gallery.fav:
-                    continue
-            if self._gallery_list:
-                if not gallery in self._gallery_list:
-                    continue
+            if self.fav and not gallery.fav: continue
+            if self._gallery_list and gallery not in self._gallery_list: continue
+
             all_terms = {t: False for t in terms}
             allow = False
             if utils.all_opposite(terms):
@@ -160,10 +160,10 @@ class SortFilterModel(QSortFilterProxyModel):
         self._data = app_constants.GALLERY_DATA
         self._search_ready = False
         self.current_term = ''
-        self._history_count = 50
+        self._history_size = 50
         self._prev_term = ''
         self.terms_history = []
-        self.current_term_history = -1
+        self.terms_history_index = -1
         self.current_gallery_list = None
         self.current_args = []
         self.current_view = self.CAT_VIEW
@@ -178,12 +178,12 @@ class SortFilterModel(QSortFilterProxyModel):
         new_term = ''
         if self.terms_history:
             if direction == self.NEXT:
-                if self.current_term_history < len(self.terms_history) - 1:
-                    self.current_term_history += 1
+                if self.terms_history_index < len(self.terms_history) - 1:
+                    self.terms_history_index += 1
             elif direction == self.PREV:
-                if self.current_term_history > 0:
-                    self.current_term_history -= 1
-            new_term = self.terms_history[self.current_term_history]
+                if self.terms_history_index > 0:
+                    self.terms_history_index -= 1
+            new_term = self.terms_history[self.terms_history_index]
             if new_term != self.current_term:
                 self.init_search(new_term, history=False)
         return new_term
@@ -219,55 +219,56 @@ class SortFilterModel(QSortFilterProxyModel):
     def refresh(self):
         self._DO_SEARCH.emit(self.current_term, self.current_args)
 
-    def init_search(self, term, args=None, history=True):
+    def init_search(self, term: str, args: list[app_constants.Search] = None, history: bool = True):
         """
-        Receives a search term and initiates a search
-        args should be a list of Search enums
+        Initiate a search and filter the model accordingly.
+
+        Parameters
+        ----------
+        term: str
+            The search term as entered in the search box.
+        args: str
+            A list of app_constant.Search enum values.
+            Can be ``None`` or empty to reuse the last search args.
+        history: bool
+            Whether to make a new search history entry.
         """
         if self.for_inbox and not app_constants.SEARCHABLE_INBOX: return
+
         if not args: args = self.current_args
 
-        if history:
-            if self._prev_term != term:
-                self._prev_term = term
+        if history and self._prev_term != term:
+            # completely new search term while navigating history -> wipe search history after the current index
+            self._prev_term = term
 
-                # ny path
-                if self.current_term_history != len(self.terms_history) - 1:
-                    self.terms_history = self.terms_history[:self.current_term_history+1]
+            if self.terms_history_index != len(self.terms_history) - 1:
+                self.terms_history = self.terms_history[:self.terms_history_index+1]
 
-                if len(self.terms_history) > self._history_count:
-                    self.terms_history = self.terms_history[-self._history_count:]
-                self.terms_history.append(term)
+            if len(self.terms_history) > self._history_size:
+                self.terms_history = self.terms_history[-self._history_size:]
 
-
-                self.current_term_history = len(self.terms_history) - 1
-                if self.current_term_history < 0:
-                    self.current_term_history = 0
+            self.terms_history.append(term)
+            self.terms_history_index = max(len(self.terms_history) - 1, 0)
 
         self.current_term = term
-        if not history:
-            self.HISTORY_SEARCH_TERM.emit(term)
+        if not history: self.HISTORY_SEARCH_TERM.emit(term)
         self.current_args = args
         self._DO_SEARCH.emit(term, args)
 
     def filterAcceptsRow(self, source_row, parent_index):
-        if self.for_inbox and not app_constants.SEARCHABLE_INBOX:
-            return True
+        if self.for_inbox and not app_constants.SEARCHABLE_INBOX: return True
 
-        if self.sourceModel():
-            index = self.sourceModel().index(source_row, 0, parent_index)
-            if index.isValid():
-                if self._search_ready:
-                    gallery = index.data(Qt.UserRole + 1)
-                    try:
-                        return self.gallery_search.result[gallery.id]
-                    except KeyError:
-                        # pass
-                        # this might fix the missing gallery in inbox issue after dropping multiple items
-                        return (self.current_view == self.CAT_VIEW)
-                else:
-                    return True
-        return False
+        if not self.sourceModel(): return None
+
+        index = self.sourceModel().index(source_row, 0, parent_index)
+        if not index.isValid(): return False
+
+        if not self._search_ready: return False
+
+        gallery = index.data(Qt.UserRole + 1)
+        
+        # this default might fix the missing gallery in inbox issue after dropping multiple items
+        return self.gallery_search.result.get(gallery.id, (self.current_view == self.CAT_VIEW))
     
     def change_model(self, model):
         self.setSourceModel(model)
