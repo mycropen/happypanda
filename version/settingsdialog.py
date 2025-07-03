@@ -1,6 +1,7 @@
 ﻿import logging, os, sys
+from typing import TypeVar
 
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QListWidget, QWidget,
+from PyQt5.QtWidgets import (QLayout, QVBoxLayout, QHBoxLayout, QListWidget, QWidget,
                              QListWidgetItem, QStackedLayout, QPushButton,
                              QLabel, QTabWidget, QLineEdit, QGroupBox, QFormLayout,
                              QCheckBox, QRadioButton, QSpinBox, QSizePolicy,
@@ -26,6 +27,35 @@ log_d = log.debug
 log_w = log.warning
 log_e = log.error
 log_c = log.critical
+
+
+TLayout = TypeVar('TLayout', bound = QLayout)
+
+def groupbox(name: str, layout: type[TLayout], parent: QWidget, add_groupbox_in_layout: bool = False) -> tuple[QGroupBox, TLayout]:
+    """Make a groupbox with a layout"""
+    _groupbox = QGroupBox(name, parent)
+    _layout = layout(_groupbox)
+    if add_groupbox_in_layout:
+        if isinstance(add_groupbox_in_layout, QFormLayout):
+            add_groupbox_in_layout.addRow(_groupbox)
+        else:
+            add_groupbox_in_layout.addWidget(_groupbox)
+    return _groupbox, _layout
+
+def new_tab(name: str, parent: QWidget, scroll: bool = False) -> tuple[QWidget, QFormLayout]:
+    """Create a new QWidget with a QFormLayout and add it as a tab to the parent."""
+    new_t = QWidget(parent)
+    new_l = QFormLayout(new_t)
+    if scroll:
+        scr = QScrollArea(parent)
+        scr.setBackgroundRole(QPalette.Base)
+        scr.setWidget(new_t)
+        scr.setWidgetResizable(True)
+        parent.addTab(scr, name)
+        return new_t, new_l
+    else:
+        parent.addTab(new_t, name)
+    return new_t, new_l
 
 class SettingsDialog(QWidget):
     "A settings dialog"
@@ -590,51 +620,123 @@ class SettingsDialog(QWidget):
         self.close()
 
     def init_right_panel(self):
+        # Application
+        tab_application = QTabWidget(self)
+        self.application_index = self.right_panel.addWidget(tab_application)
 
-        def groupbox(name, layout, parent, add_groupbox_in_layout=None):
-            """
-            Makes a groupbox and a layout for you
-            Returns groupbox and layout
-            """
-            g = QGroupBox(name, parent)
-            l = layout(g)
-            if add_groupbox_in_layout:
-                if isinstance(add_groupbox_in_layout, QFormLayout):
-                    add_groupbox_in_layout.addRow(g)
-                else:
-                    add_groupbox_in_layout.addWidget(g)
-            return g, l
-
-        def option_lbl_checkbox(text, optiontext, parent=None):
-            l = QLabel(text)
-            c = QCheckBox(text, parent)
-            return l, c
-
-        def new_tab(name, parent, scroll=False):
-            """
-            Creates a new tab.
-            Returns new tab page widget and it's layout
-            """
-            new_t = QWidget(parent)
-            new_l = QFormLayout(new_t)
-            if scroll:
-                scr = QScrollArea(parent)
-                scr.setBackgroundRole(QPalette.Base)
-                scr.setWidget(new_t)
-                scr.setWidgetResizable(True)
-                parent.addTab(scr, name)
-                return new_t, new_l
-            else:
-                parent.addTab(new_t, name)
-            return new_t, new_l
-
-        # App
-        application = QTabWidget(self)
-        self.application_index = self.right_panel.addWidget(application)
+        self._make_app_general(tab_application)
+        self._make_app_gallery(tab_application)
+        self._make_app_monitoring(tab_application)
+        self._make_app_ignore(tab_application)
 
 
+        # Web
+        tab_web = QTabWidget(self)
+        self.web_index = self.right_panel.addWidget(tab_web)
+
+        self._make_web_logins(tab_web)
+        self._make_web_downloader(tab_web)
+        self._make_web_metadata(tab_web)
+
+
+        # Visual
+        tab_visual = QTabWidget(self)
+        self.visual_index = self.right_panel.addWidget(tab_visual)
+
+        self._make_visual_general(tab_visual)
+        self._make_visual_gridview(tab_visual)
+        self._make_visual_style(tab_visual)
+
+        # start at "Grid View"
+        tab_visual.setCurrentIndex(1)
+
+
+        # Advanced
+        tab_advanced = QTabWidget(self)
+        self.advanced_index = self.right_panel.addWidget(tab_advanced)
+
+        self._make_advanced_misc(tab_advanced)
+        self._make_advanced_gallery(tab_advanced)
+        self._make_advanced_database(tab_advanced)
+
+
+        # About
+        tab_about = QTabWidget(self)
+        self.about_index = self.right_panel.addWidget(tab_about)
+
+        self._make_about_happypanda(tab_about)
+        # self._make_about_dboverview(tab_about)
+        self._make_about_bugreports(tab_about)
+        self._make_about_searchguide(tab_about)
+        self._make_about_regex(tab_about)
+        self._make_about_shortcuts(tab_about)
+
+    @staticmethod
+    def _get_color_line_edit_and_hbox_layout(hex_color=None):
+        """get ColorLineEdit and hbox layout."""
+        color_line_edit = ColorLineEdit(hex_color=hex_color)
+        hbox_layout = QHBoxLayout()
+        hbox_layout.addWidget(color_line_edit)
+        hbox_layout.addWidget(color_line_edit.button)
+        return color_line_edit, hbox_layout
+
+    def add_folder_monitor(self, path=''):
+        if not isinstance(path, str):
+            path = ''
+        l_edit = PathLineEdit()
+        l_edit.setText(path)
+        n = self.folders_layout.rowCount() + 1
+        self.folders_layout.addRow('{}'.format(n), l_edit)
+
+    def add_ignore_path(self, path='', dir=True):
+        if not isinstance(path, str):
+            path = ''
+        l_edit = PathLineEdit(dir=dir)
+        l_edit.setText(path)
+        n = self.ignore_path_l.rowCount() + 1
+        self.ignore_path_l.addRow('{}'.format(n), l_edit)
+
+    def color_checker(self, txt):
+        allow = False
+        if len(txt) == 7:
+            if txt[0] == '#':
+                allow = True
+        return allow
+
+    def take_all_layout_widgets(self, l):
+        n = l.rowCount()
+        items = []
+        for x in range(n):
+            item = l.takeAt(x+1)
+            items.append(item.widget())
+        return items
+
+    def choose_font(self):
+        tup = QFontDialog.getFont(self)
+        font = tup[0]
+        if tup[1]:
+            self.font_lbl.setText(font.family())
+            self.font_size_lbl.setValue(font.pointSize())
+
+    def open_hp_folder(self):
+        if os.name == 'posix':
+            utils.open_path(app_constants.posix_program_dir)
+        else:
+            utils.open_path(os.getcwd())
+
+    def reject(self):
+        self.close()
+
+    def _find_combobox_match(self, combobox, key, default):
+        f_index = combobox.findText(key, Qt.MatchFixedString)
+        if f_index != -1:
+            combobox.setCurrentIndex(f_index)
+        else:
+            combobox.setCurrentIndex(default)
+
+    def _make_app_general(self, tab_widget: QTabWidget):
         # App / General
-        application_general, app_general_m_l = new_tab('General', application, True)
+        application_general, app_general_m_l = new_tab('General', tab_widget, True)
         self.sidebar_widget_hidden = QCheckBox("Show sidebar widget on startup")
 
         self.send_2_trash = QCheckBox("Send deleted files to recycle bin", self)
@@ -701,9 +803,9 @@ class SettingsDialog(QWidget):
         self.path_to_unrar = PathLineEdit(self, False, filters='')
         app_rar_layout.addRow('UnRAR tool path:', self.path_to_unrar)
 
-
+    def _make_app_gallery(self, tab_widget: QTabWidget):
         # App / Gallery
-        app_gallery_page, app_gallery_l = new_tab('Gallery', application, True)
+        app_gallery_page, app_gallery_l = new_tab('Gallery', tab_widget, True)
 
 
         # App / Gallery / Default values
@@ -783,15 +885,16 @@ class SettingsDialog(QWidget):
         self.open_random_g_chapters = QCheckBox("Open random gallery chapters")
         random_g_opener_l.addRow(self.open_random_g_chapters)
 
-
+    def _make_app_monitoring(self, tab_widget: QTabWidget):
         # App / Monitoring
         app_monitor_page = QScrollArea()
+        tab_widget.addTab(app_monitor_page, 'Monitoring')
+
+        app_monitor = QWidget()
         app_monitor_page.setBackgroundRole(QPalette.Base)
-        app_monitor_dummy = QWidget()
         app_monitor_page.setWidgetResizable(True)
-        app_monitor_page.setWidget(app_monitor_dummy)
-        application.addTab(app_monitor_page, 'Monitoring')
-        app_monitor_m_l = QVBoxLayout(app_monitor_dummy)
+        app_monitor_page.setWidget(app_monitor)
+        app_monitor_m_l = QVBoxLayout(app_monitor)
 
 
         # App / Monitoring / General
@@ -822,13 +925,13 @@ class SettingsDialog(QWidget):
         self.folders_layout = QFormLayout()
         app_monitor_folders_m_l.addLayout(self.folders_layout)
 
-
+    def _make_app_ignore(self, tab_widget: QTabWidget):
         # App / Ignore
-        app_ignore, app_ignore_m_l = new_tab('Ignore', application, True)
+        app_ignore, app_ignore_m_l = new_tab('Ignore', tab_widget, True)
 
 
         # App / Ignore / Folder & File extensions
-        ignore_ext_group, ignore_ext_l = groupbox('Folder && File extensions (Check to ignore)', QVBoxLayout, app_monitor_dummy)
+        ignore_ext_group, ignore_ext_l = groupbox('Folder && File extensions (Check to ignore)', QVBoxLayout, app_ignore)
         app_ignore_m_l.addRow(ignore_ext_group)
         ignore_ext_list_l = FlowLayout()
         ignore_ext_l.addLayout(ignore_ext_list_l)
@@ -845,7 +948,7 @@ class SettingsDialog(QWidget):
 
 
         # App / Ignore / List
-        app_ignore_group, app_ignore_list_l = groupbox('List', QVBoxLayout, app_monitor_dummy)
+        app_ignore_group, app_ignore_list_l = groupbox('List', QVBoxLayout, app_ignore)
         app_ignore_m_l.addRow(app_ignore_group)
         add_buttons_l = QHBoxLayout()
         app_ignore_add_a = QPushButton('Add archive')
@@ -858,14 +961,13 @@ class SettingsDialog(QWidget):
         self.ignore_path_l = QFormLayout()
         app_ignore_list_l.addLayout(self.ignore_path_l)
 
+    def _make_app_tagging(self, tab_widget: QTabWidget):
+        # App / Tagging
+        app_tagging, app_tagging_m_l = new_tab('Tagging', tab_widget, True)
 
-        # Web
-        web = QTabWidget(self)
-        self.web_index = self.right_panel.addWidget(web)
-
-
+    def _make_web_logins(self, tab_widget: QTabWidget):
         # Web / Logins
-        logins_page, logins_layout = new_tab("Logins", web, True)
+        logins_page, logins_layout = new_tab("Logins", tab_widget, True)
 
         def login(userlineedit, passlineedit, statuslbl, baseHen_class, partial_txt, relogin=False):
             statuslbl.setText("Logging in...")
@@ -931,9 +1033,9 @@ class SettingsDialog(QWidget):
         #logins_layout.addRow(nhentai_group)
         #nhentai_user, nhentai_pass, nhentai_status = make_login_forms(nhentai_l, exprops(exprops.NHENTAI), pewnet.NHen)
 
-
+    def _make_web_downloader(self, tab_widget: QTabWidget):
         # Web / Downloader
-        web_downloader, web_downloader_l = new_tab('Downloader', web)
+        web_downloader, web_downloader_l = new_tab('Downloader', tab_widget)
         hen_download_group, hen_download_group_l = groupbox('E-Hentai', QFormLayout, web_downloader)
 
         web_downloader_l.addRow(hen_download_group)
@@ -952,12 +1054,12 @@ class SettingsDialog(QWidget):
         self.download_gallery_lib = QCheckBox("Send downloaded galleries directly to library")
         web_downloader_l.addRow(self.download_gallery_lib)
 
-
+    def _make_web_metadata(self, tab_widget: QTabWidget):
         # Web / Metadata
         web_metadata_page = QScrollArea()
         web_metadata_page.setBackgroundRole(QPalette.Base)
         web_metadata_page.setWidgetResizable(True)
-        web.addTab(web_metadata_page, 'Metadata')
+        tab_widget.addTab(web_metadata_page, 'Metadata')
         web_metadata_dummy = QWidget()
         web_metadata_page.setWidget(web_metadata_dummy)
         web_metadata_m_l = QFormLayout(web_metadata_dummy)
@@ -1042,13 +1144,9 @@ class SettingsDialog(QWidget):
         self.fallback_chaika = QCheckBox("panda.chaika.moe")
         fallback_source_l.addWidget(self.fallback_chaika)
 
-
-        # Visual
-        visual = QTabWidget(self)
-        self.visual_index = self.right_panel.addWidget(visual)
-
+    def _make_visual_general(self, tab_widget: QTabWidget):
         # Visual / General
-        visual_general_page, visual_general_layout = new_tab('General', visual, True)
+        visual_general_page, visual_general_layout = new_tab('General', tab_widget, True)
 
         galleryedit_box, galleryedit_box_layout = groupbox('Gallery Edit Dialog', QFormLayout, visual_general_page)
         visual_general_layout.addRow(galleryedit_box)
@@ -1058,9 +1156,9 @@ class SettingsDialog(QWidget):
         self.galleryedit_width.setFixedWidth(120)
         galleryedit_box_layout.addRow('Dialog Width:', self.galleryedit_width)
 
-
+    def _make_visual_gridview(self, tab_widget: QTabWidget):
         # Visual / Grid View
-        grid_view_general_page, grid_view_layout = new_tab("Grid View", visual, True)
+        grid_view_general_page, grid_view_layout = new_tab("Grid View", tab_widget, True)
 
 
         # Visual / Grid View / Popup
@@ -1219,28 +1317,22 @@ class SettingsDialog(QWidget):
         self.ribbon_other_color, hbox_layout = self._get_color_line_edit_and_hbox_layout(app_constants.GRID_VIEW_T_OTHER_COLOR)
         colors_ribbon_l.addRow('Other', hbox_layout)
 
+    def _make_visual_style(self, tab_widget: QTabWidget):
         # Visual / Style
         style_page = QWidget(self)
-        visual.addTab(style_page, 'Style')
+        style_tab_index = tab_widget.addTab(style_page, 'Style')
 
         # disable tab "Style"
-        visual.setTabEnabled(2, False)
-        # start at "Grid View"
-        visual.setCurrentIndex(1)
+        tab_widget.setTabEnabled(style_tab_index, False)
 
-
-        # Advanced
-        advanced = QTabWidget(self)
-        self.advanced_index = self.right_panel.addWidget(advanced)
-
-
+    def _make_advanced_misc(self, tab_widget: QTabWidget):
         # Advanced / Misc
         advanced_misc_scroll = QScrollArea(self)
         advanced_misc_scroll.setBackgroundRole(QPalette.Base)
         advanced_misc_scroll.setWidgetResizable(True)
         advanced_misc = QWidget()
         advanced_misc_scroll.setWidget(advanced_misc)
-        advanced.addTab(advanced_misc_scroll, 'Misc')
+        tab_widget.addTab(advanced_misc_scroll, 'Misc')
         advanced_misc_main_layout = QVBoxLayout()
         advanced_misc.setLayout(advanced_misc_main_layout)
         misc_controls_layout = QFormLayout()
@@ -1253,11 +1345,11 @@ class SettingsDialog(QWidget):
 
 
         # Advanced / Misc / External Viewer Arguments
-        external_view_group, external_view_l = groupbox("External Viewer Arguments", QFormLayout, advanced)
+        external_view_group, external_view_l = groupbox("External Viewer Arguments", QFormLayout, tab_widget)
         misc_controls_layout.addRow(external_view_group)
         external_viewer_info = QLabel(app_constants.EXTERNAL_VIEWER_INFO)
         external_viewer_info.setWordWrap(True)
-        self.external_viewer_args = QLineEdit(advanced)
+        self.external_viewer_args = QLineEdit(tab_widget)
         external_view_l.addRow("Available tokens:", external_viewer_info)
         external_view_l.addRow("Arguments:", self.external_viewer_args)
 
@@ -1291,9 +1383,9 @@ class SettingsDialog(QWidget):
         cache_size_spin_box.valueChanged[int].connect(cache_size)
         misc_gridview_layout.addRow('Cache Size (MiB):', cache_size_spin_box)
 
-
+    def _make_advanced_gallery(self, tab_widget: QTabWidget):
         # Advanced / Gallery
-        advanced_gallery, advanced_gallery_m_l = new_tab('Gallery', advanced)
+        advanced_gallery, advanced_gallery_m_l = new_tab('Gallery', tab_widget)
         def rebuild_thumbs():
             confirm_msg = QMessageBox(QMessageBox.Question, '', 'Are you sure you want to regenerate your thumbnails.',
                              QMessageBox.Yes | QMessageBox.No, self)
@@ -1344,9 +1436,9 @@ class SettingsDialog(QWidget):
         g_data_fixer_options.addWidget(self.g_data_fixer_title)
         g_data_fixer_options.addWidget(self.g_data_fixer_artist)
 
-
+    def _make_advanced_database(self, tab_widget: QTabWidget):
         # Advanced / Database
-        advanced_db_page, advanced_db_page_l = new_tab('Database', advanced)
+        advanced_db_page, advanced_db_page_l = new_tab('Database', tab_widget)
 
 
         # Advanced / Database / Import/Export
@@ -1418,15 +1510,13 @@ class SettingsDialog(QWidget):
         self.advanced_dbstartup_fetch_limit_spinbox.setMaximum(1_000_000)
         self.advanced_dbstartup_fetch_limit_spinbox.setValue(app_constants.DATABASE_STARTUP_FETCH_LIMIT)
         self.advanced_dbstartup_fetch_limit_spinbox.setToolTip('Batch size of galleries that is fetched from the database upon startup.\n' \
-                                                          'Higher number means faster loading. 0 means no limit, but the app may appear stuck for a few seconds.\n' \
-                                                          'DEFAULT: 1000')
+                                                               'Higher number means faster loading. 0 means no limit, but the app may appear stuck for a few seconds.\n' \
+                                                               'DEFAULT: 1000')
         advanced_dbstartup_l.addRow('Startup gallery fetch limit:', self.advanced_dbstartup_fetch_limit_spinbox)
 
-
-        # About
-        about = QTabWidget(self)
-        self.about_index = self.right_panel.addWidget(about)
-        about_happypanda_page, about_layout = new_tab("About Happypanda", about, False)
+    def _make_about_happypanda(self, tab_widget: QTabWidget):
+        # About / Happypanda
+        about_happypanda_page, about_layout = new_tab("About Happypanda", tab_widget, False)
         info_lbl = QLabel(app_constants.ABOUT)
         info_lbl.setWordWrap(True)
         info_lbl.setOpenExternalLinks(True)
@@ -1438,17 +1528,17 @@ class SettingsDialog(QWidget):
         open_hp_folder.setFixedWidth(open_hp_folder.width())
         about_layout.addWidget(open_hp_folder)
 
+    def _make_about_dboverview(self, tab_widget: QTabWidget):
+        # About / DB Overview
+        about_db_overview, about_db_overview_m_l = new_tab('DB Overview', tab_widget)
+        about_stats_tab_widget = misc_db.DBOverview(self.parent_widget)
+        about_db_overview_m_l.addRow(about_stats_tab_widget)
+        about_db_overview.setEnabled(False)
 
-        ## About / DB Overview
-        #about_db_overview, about_db_overview_m_l = new_tab('DB Overview', about)
-        #about_stats_tab_widget = misc_db.DBOverview(self.parent_widget)
-        #about_db_overview_m_l.addRow(about_stats_tab_widget)
-        #about_db_overview.setEnabled(False)
-
-
-        # About / Troubleshooting
+    def _make_about_bugreports(self, tab_widget: QTabWidget):
+        # About / Bug Reporting
         about_troubleshoot_page = QWidget()
-        about.addTab(about_troubleshoot_page, 'Bug Reporting')
+        tab_widget.addTab(about_troubleshoot_page, 'Bug Reporting')
         troubleshoot_layout = QVBoxLayout()
         about_troubleshoot_page.setLayout(troubleshoot_layout)
         guide_lbl = QLabel(app_constants.TROUBLE_GUIDE)
@@ -1458,88 +1548,23 @@ class SettingsDialog(QWidget):
         troubleshoot_layout.addWidget(guide_lbl, 0, Qt.AlignTop)
         troubleshoot_layout.addWidget(Spacer('v'))
 
-
+    def _make_about_searchguide(self, tab_widget: QTabWidget):
         # About / Search Guide
-        about_search_tut, about_search_tut_l = new_tab("Search Guide", about, True)
+        about_search_tut, about_search_tut_l = new_tab("Search Guide", tab_widget, True)
         g_search_lbl = QLabel(app_constants.SEARCH_TUTORIAL_TAGS)
         g_search_lbl.setWordWrap(True)
         about_search_tut_l.addRow(g_search_lbl)
 
-
+    def _make_about_regex(self, tab_widget: QTabWidget):
         # About / Regex Cheatsheet
-        about_s_regex, about_s_regex_l = new_tab("Regex Cheatsheet", about, True)
+        about_s_regex, about_s_regex_l = new_tab("Regex Cheatsheet", tab_widget, True)
         reg_info = QLabel(app_constants.REGEXCHEAT)
         reg_info.setWordWrap(True)
         about_s_regex_l.addRow(reg_info)
 
-
+    def _make_about_shortcuts(self, tab_widget: QTabWidget):
         # About / Keyboard Shortcuts
-        about_k_shortcuts, about_k_shortcuts_l = new_tab("Keyboard Shortcuts", about, True)
+        about_k_shortcuts, about_k_shortcuts_l = new_tab("Keyboard Shortcuts", tab_widget, True)
         k_short_info = QLabel(app_constants.KEYBOARD_SHORTCUTS_INFO)
         k_short_info.setWordWrap(True)
         about_k_shortcuts_l.addRow(k_short_info)
-
-    @staticmethod
-    def _get_color_line_edit_and_hbox_layout(hex_color=None):
-        """get ColorLineEdit and hbox layout."""
-        color_line_edit = ColorLineEdit(hex_color=hex_color)
-        hbox_layout = QHBoxLayout()
-        hbox_layout.addWidget(color_line_edit)
-        hbox_layout.addWidget(color_line_edit.button)
-        return color_line_edit, hbox_layout
-
-    def add_folder_monitor(self, path=''):
-        if not isinstance(path, str):
-            path = ''
-        l_edit = PathLineEdit()
-        l_edit.setText(path)
-        n = self.folders_layout.rowCount() + 1
-        self.folders_layout.addRow('{}'.format(n), l_edit)
-
-    def add_ignore_path(self, path='', dir=True):
-        if not isinstance(path, str):
-            path = ''
-        l_edit = PathLineEdit(dir=dir)
-        l_edit.setText(path)
-        n = self.ignore_path_l.rowCount() + 1
-        self.ignore_path_l.addRow('{}'.format(n), l_edit)
-
-    def color_checker(self, txt):
-        allow = False
-        if len(txt) == 7:
-            if txt[0] == '#':
-                allow = True
-        return allow
-
-    def take_all_layout_widgets(self, l):
-        n = l.rowCount()
-        items = []
-        for x in range(n):
-            item = l.takeAt(x+1)
-            items.append(item.widget())
-        return items
-
-    def choose_font(self):
-        tup = QFontDialog.getFont(self)
-        font = tup[0]
-        if tup[1]:
-            self.font_lbl.setText(font.family())
-            self.font_size_lbl.setValue(font.pointSize())
-
-    def open_hp_folder(self):
-        if os.name == 'posix':
-            utils.open_path(app_constants.posix_program_dir)
-        else:
-            utils.open_path(os.getcwd())
-
-    def reject(self):
-        self.close()
-
-    def _find_combobox_match(self, combobox, key, default):
-        f_index = combobox.findText(key, Qt.MatchFixedString)
-        if f_index != -1:
-            combobox.setCurrentIndex(f_index)
-        else:
-            combobox.setCurrentIndex(default)
-
-
