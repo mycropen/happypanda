@@ -1260,46 +1260,59 @@ def search_term(a, b, override_case=False, args=[]):
                 return True
     return False
 
-def get_terms(term):
-    "Dividies term into pieces. Returns a list with the pieces"
+def namespace_alias(ns: str) -> str:
+    """
+    Get the actual namespace that a namespace shorthand maps to if one is set. Return the input if none is found.
+
+    E.g. if "f" is set as a shorthand for "female", namespace_alias("f") returns "female".
+    """
+    return app_constants.NAMESPACE_MAP.get(ns.lower(), ns) if app_constants.ENABLE_NAMESPACE_MAP else ns
+
+def get_terms(term: str) -> list[str]:
+    """
+    Divide a search term into pieces. Return a list with the pieces.
+
+    ``female:["females only", yuri, -hairy], english, parody:"love live"`` -> ``["female:females only", "female:yuri", "-female:hairy", "english", "parody:love live"]``
+    """
+    log_d(f'{term = }')
 
     # some variables we will use
-    pieces = []
-    piece = ''
-    qoute_level = 0
-    bracket_level = 0
-    brackets_tags = {}
-    current_bracket_ns = ''
-    end_of_bracket = False
-    blacklist = ['[', ']', '"', ',']
+    pieces             : list[str]      = []
+    piece              : str            = ''
+    in_quotes          : bool           = False
+    bracket_level      : int            = 0
+    brackets_tags      : dict[str, str] = {}
+    current_bracket_ns : str            = ''
+    end_of_bracket     : bool           = False
 
-    for n, x in enumerate(term):
-        # if we meet brackets
-        if x == '[':
+    blacklist                = ('[', ']', '"', ',')
+    blacklist_outside_quotes = ('[', ']', '"', ',', ' ')
+
+    for char_i, char in enumerate(term):
+        if char == ':':
+            # a namespace just ended -> map it right here
+            neg = piece.startswith('-')
+            piece = neg*'-' + namespace_alias(piece.lstrip('-'))
+        elif char == '[':
             bracket_level += 1
-            brackets_tags[piece] = set() # we want unique tags!
-            current_bracket_ns = piece
-        elif x == ']':
+            brackets_tags[piece] = set()    # we want unique tags!
+            current_bracket_ns = piece      # includes the ':' character
+        elif char == ']':
             bracket_level -= 1
             end_of_bracket = True
+        elif char == '"':
+            in_quotes = not in_quotes
 
-        # if we meet a double qoute
-        if x == '"':
-            if qoute_level > 0:
-                qoute_level -= 1
-            else:
-                qoute_level += 1
+        # if we meet a whitespace, comma or the end of the term and are not in a double qoute
+        if not in_quotes and (char == ' ' or char == ',' or char_i == len(term) - 1):
+            # append the last character if it's valid
+            if (char_i == len(term) - 1) and char not in blacklist_outside_quotes: piece += char
 
-        # if we meet a whitespace, comma or end of term and are not in a double qoute
-        if (x == ' ' or x == ',' or n == len(term) - 1) and qoute_level == 0:
-            # if end of term and x is allowed
-            if (n == len(term) - 1) and not x in blacklist and x != ' ':
-                piece += x
             if piece:
                 if bracket_level > 0 or end_of_bracket: # if we are inside a bracket we put piece in the set
                     end_of_bracket = False
-                    if piece.startswith(current_bracket_ns):
-                        piece = piece[len(current_bracket_ns):]
+                    if piece.startswith(current_bracket_ns): piece = piece[len(current_bracket_ns):]
+
                     if piece:
                         try:
                             brackets_tags[current_bracket_ns].add(piece)
@@ -1307,32 +1320,32 @@ def get_terms(term):
                             pass
                 else:
                     pieces.append(piece) # else put it in the normal list
+
             piece = ''
             continue
 
-        # else append to the buffers
-        if not x in blacklist:
-            if qoute_level > 0: # we want to include everything if in double qoute
-                piece += x
-            elif x != ' ':
-                piece += x
+        # append character to buffer
+        if in_quotes:
+            if char not in blacklist:
+                piece += char
+        elif char not in blacklist_outside_quotes:
+            piece += char
 
     # now for the bracket tags
     for ns in brackets_tags:
         for tag in brackets_tags[ns]:
             ns_tag = ns
-            # if they want to exlucde this tag
+
+            # if they want to exclude this tag
             if tag[0] == '-':
-                if ns_tag[0] != '-':
-                    ns_tag = '-' + ns
-                tag = tag[1:] # remove the '-'
+                if ns_tag[0] != '-': ns_tag = '-' + ns
+                tag = tag[1:]
 
             # put them together
             ns_tag += tag
-
-            # done
             pieces.append(ns_tag)
 
+    log_d(f'{pieces = }')
     return pieces
 
 def image_greyscale(filepath):
