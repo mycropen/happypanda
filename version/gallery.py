@@ -235,7 +235,7 @@ class SortFilterModel(QSortFilterProxyModel):
         """
         if self.for_inbox and not app_constants.SEARCHABLE_INBOX: return
 
-        if not args: args = self.current_args
+        if args is None: args = self.current_args
 
         if history and self._prev_term != term:
             # completely new search term while navigating history -> wipe search history after the current index
