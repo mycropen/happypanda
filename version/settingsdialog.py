@@ -1,5 +1,6 @@
-﻿import logging, os, sys
-from typing import TypeVar
+﻿import json
+import logging, os, sys
+from typing import Optional, TypeVar
 
 from PyQt5.QtWidgets import (QLayout, QVBoxLayout, QHBoxLayout, QListWidget, QWidget,
                              QListWidgetItem, QStackedLayout, QPushButton,
@@ -11,7 +12,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QPalette, QPixmapCache
 
 from color_line_edit import ColorLineEdit
-from misc import FlowLayout, Spacer, PathLineEdit, AppDialog, Line
+from misc import FlowLayout, Spacer, PathLineEdit, AppDialog, DictStrStrEdit
 import misc
 import settings
 import app_constants
@@ -31,11 +32,11 @@ log_c = log.critical
 
 TLayout = TypeVar('TLayout', bound = QLayout)
 
-def groupbox(name: str, layout: type[TLayout], parent: QWidget, add_groupbox_in_layout: bool = False) -> tuple[QGroupBox, TLayout]:
+def groupbox(name: str, layout: type[TLayout], parent: QWidget, add_groupbox_in_layout: Optional[QLayout] = None) -> tuple[QGroupBox, TLayout]:
     """Make a groupbox with a layout"""
     _groupbox = QGroupBox(name, parent)
     _layout = layout(_groupbox)
-    if add_groupbox_in_layout:
+    if isinstance(add_groupbox_in_layout, QLayout):
         if isinstance(add_groupbox_in_layout, QFormLayout):
             add_groupbox_in_layout.addRow(_groupbox)
         else:
@@ -57,11 +58,13 @@ def new_tab(name: str, parent: QWidget, scroll: bool = False) -> tuple[QWidget, 
         parent.addTab(new_t, name)
     return new_t, new_l
 
+
 class SettingsDialog(QWidget):
     "A settings dialog"
     scroll_speed_changed = pyqtSignal()
     init_gallery_rebuild = pyqtSignal(bool)
     init_gallery_eximport = pyqtSignal(object)
+
     def __init__(self, parent=None):
         super().__init__(parent, flags=Qt.Window)
 
@@ -160,7 +163,6 @@ class SettingsDialog(QWidget):
         self.prefetch_item_amnt = app_constants.PREFETCH_ITEM_AMOUNT
 
     def restore_options(self):
-
         # App / General
         self.g_languages.addItems(app_constants.G_LANGUAGES)
         self.g_languages.addItems(app_constants.G_CUSTOM_LANGUAGES)
@@ -216,6 +218,10 @@ class SettingsDialog(QWidget):
 
         for path in app_constants.IGNORE_PATHS:
             self.add_ignore_path(path)
+
+        # App / Tagging
+        self.use_ns_map_checkbox.setChecked(app_constants.ENABLE_NAMESPACE_MAP)
+        self.ns_map_edit.load_dict(app_constants.NAMESPACE_MAP)
 
         # Web / metadata
         if 'e-hentai' in app_constants.DEFAULT_EHEN_URL:
@@ -417,6 +423,12 @@ class SettingsDialog(QWidget):
                 paths.append(p)
         set(paths, 'Application', 'ignore paths')
         app_constants.IGNORE_PATHS = paths
+
+        # App / Tagging
+        app_constants.ENABLE_NAMESPACE_MAP = self.use_ns_map_checkbox.isChecked()
+        set(app_constants.ENABLE_NAMESPACE_MAP, 'Application', 'enable namespace map')
+        app_constants.NAMESPACE_MAP = self.ns_map_edit.dict()
+        set(json.dumps(app_constants.NAMESPACE_MAP), 'Application', 'namespace map')
 
         # Web / Downloader
 
@@ -628,6 +640,7 @@ class SettingsDialog(QWidget):
         self._make_app_gallery(tab_application)
         self._make_app_monitoring(tab_application)
         self._make_app_ignore(tab_application)
+        self._make_app_tagging(tab_application)
 
 
         # Web
@@ -723,6 +736,10 @@ class SettingsDialog(QWidget):
             utils.open_path(app_constants.posix_program_dir)
         else:
             utils.open_path(os.getcwd())
+
+    def restore_default_ns_map(self):
+        self.ns_map_edit.clear()
+        self.ns_map_edit.load_dict(app_constants.default_namespace_map())
 
     def reject(self):
         self.close()
@@ -964,6 +981,30 @@ class SettingsDialog(QWidget):
     def _make_app_tagging(self, tab_widget: QTabWidget):
         # App / Tagging
         app_tagging, app_tagging_m_l = new_tab('Tagging', tab_widget, True)
+        # tab_widget.layout().addWidget(app_tagging)
+
+        ns_map_groupbox, ns_map_groupbox_l = groupbox('Namespace aliases', QVBoxLayout, app_tagging)
+        app_tagging_m_l.addRow(ns_map_groupbox)
+
+        ns_map_explanation = QLabel('Namespace aliases are shorthands for actual tag namespaces when searching and adding tags. ' \
+                                    'For example, if "f" is an alias for "female", then searching "f:..." is the same as searching "female:...".')
+        ns_map_explanation.setWordWrap(True)
+        ns_map_groupbox_l.addWidget(ns_map_explanation)
+
+        self.use_ns_map_checkbox = QCheckBox('Use namespace aliases', app_tagging)
+        self.restore_default_ns_map_button = QPushButton('Restore defaults', app_tagging)
+
+        layout1 = QHBoxLayout()
+        layout1.addWidget(self.use_ns_map_checkbox, 1, Qt.AlignmentFlag.AlignLeft)
+        layout1.addWidget(self.restore_default_ns_map_button, 0, Qt.AlignmentFlag.AlignRight)
+        ns_map_groupbox_l.addLayout(layout1)
+
+        self.ns_map_edit = DictStrStrEdit(app_tagging, 'alias', 'namespace')
+        ns_map_groupbox_l.addWidget(self.ns_map_edit)
+        
+        self.use_ns_map_checkbox.stateChanged.connect(lambda state: self.ns_map_edit.setEnabled(state == Qt.CheckState.Checked))
+        self.restore_default_ns_map_button.clicked.connect(self.restore_default_ns_map)
+        self.ns_map_edit.setEnabled(self.use_ns_map_checkbox.isChecked())
 
     def _make_web_logins(self, tab_widget: QTabWidget):
         # Web / Logins

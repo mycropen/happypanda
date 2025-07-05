@@ -2686,3 +2686,126 @@ class ChapterListItem(QFrame):
             self.chapter_lbl.setText(chapter.title)
         else:
             self.chapter_lbl.setText("Chapter " + str(chapter.number + 1))
+
+
+
+class DictStrStrEdit(QScrollArea):
+    """docstring for Expander"""
+    def __init__(self, parent, key_placeholder: str = 'key', value_placeholder: str = 'value', _dict: dict[str, str] = None):
+        super(DictStrStrEdit, self).__init__(parent)
+
+        self._key_placeholder   = key_placeholder
+        self._value_placeholder = value_placeholder
+
+        self.clear()
+
+        if _dict: self.load_dict(_dict)
+
+    def _new_line(self):
+        self._add_line()
+
+    def _set_key(self, ind: int, text: str):
+        self._keys[ind] = text
+
+    def _set_value(self, ind: int, text: str):
+        self._values[ind] = text
+
+    def _hide_line(self, ind: int):
+        # self.widget().layout().removeItem(self._lines[ind])
+        # self._keys = self._keys[:ind] + self._keys[ind + 1:]
+        # self._values = self._values[:ind] + self._values[ind + 1:]
+        self._lines[ind].hide()
+
+    def clear(self):
+        widget = QWidget(self.parent())
+        self.setWidget(widget)
+
+        self._lines  : list[QWidget] = list()
+        self._keys   : list[str]     = list()
+        self._values : list[str]     = list()
+
+        self.initUi()
+
+    def load_dict(self, _dict: dict[str, str]):
+        for key, value in _dict.items():
+            self._add_line(key, value)
+
+    def _add_line(self, key: str = '', value: str = ''):
+        line_i = len(self._lines)
+
+        key_edit = QLineEdit(self)
+        self._keys.append('')
+        key_edit.setPlaceholderText(self._key_placeholder)
+        key_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        key_edit.setFixedHeight(20)
+        key_edit.textChanged.connect(functools.partial(self._set_key, line_i))
+        key_edit.setText(key)
+
+        equals = QLabel('=', self)
+        equals.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        equals.setFixedHeight(20)
+
+        value_edit = QLineEdit(self)
+        self._values.append('')
+        value_edit.setPlaceholderText(self._value_placeholder)
+        value_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        value_edit.setFixedHeight(20)
+        value_edit.textChanged.connect(functools.partial(self._set_value, line_i))
+        value_edit.setText(value)
+
+        remove_button = QPushButton('-', self)
+        remove_button.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        remove_button.setMaximumWidth(20)
+        remove_button.setFixedHeight(20)
+        remove_button.clicked.connect(lambda: self._hide_line(line_i))
+
+        line_widget = QWidget(self)
+        self._lines.append(line_widget)
+
+        line_layout = QHBoxLayout(line_widget)
+        line_layout.setContentsMargins(0, 0, 0, 0)
+        line_layout.addWidget(key_edit, 1)
+        line_layout.addWidget(equals, 0)
+        line_layout.addWidget(value_edit, 3)
+        line_layout.addWidget(remove_button, 0)
+
+        self.widget().layout().addWidget(line_widget)
+        # self.resize(self.widget().sizeHint())
+
+    def initUi(self):
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setSpacing(3)
+
+        self.widget().setLayout(layout)
+        self.widget().setBackgroundRole(QPalette.Base)
+        self.setMinimumHeight(50)
+        # self.widget().setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setWidgetResizable(True)
+        self.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
+        add_button = QPushButton('+', self)
+        add_button.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        add_button.setMaximumWidth(20)
+        add_button.setMaximumHeight(20)
+        add_button.clicked.connect(self._new_line)
+
+        top_line_layout = QHBoxLayout()
+        top_line_layout.addWidget(add_button, 0)
+        top_line_layout.addStretch(1)
+
+        layout.addLayout(top_line_layout)
+
+    def dict(self) -> dict[str, str]:
+        _dict : dict[str, str] = dict()
+
+        for i, line_widget in enumerate(self._lines):
+            if line_widget.isHidden(): continue
+            if not self._keys[i]: continue
+            if not self._values[i]: continue
+
+            _dict[self._keys[i].lower()] = self._values[i].lower()
+
+        return _dict
