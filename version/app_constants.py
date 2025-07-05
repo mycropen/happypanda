@@ -324,6 +324,16 @@ class Search(enum.Enum):
     Case = 2
     Regex = 3
 
+
+SEARCH_AUTOCOMPLETE = get(True, 'Application', 'search autocomplete', bool)
+GALLERY_SEARCH_REGEX = get(False, 'Application', 'allow search regex', bool)
+SEARCH_ON_ENTER = get(False, 'Application', 'search on enter', bool)
+GALLERY_SEARCH_STRICT = get(False, 'Application', 'gallery search strict', bool)
+GALLERY_SEARCH_CASE = get(False, 'Application', 'gallery search case', bool)
+DUAL_SEARCH = get(False, 'Application', 'dual gallery search', bool)
+SEARCHABLE_INBOX = get(True, 'Application', 'searchable inbox', bool)
+
+
 # from EHWiki:
 #   +-----------+--------+------------+
 #   | Namespace | Simple | Alternates |
@@ -340,29 +350,23 @@ class Search(enum.Enum):
 #   | parody    | p      | series     |
 #   | reclass   | r      |            |
 #   +-----------+--------+------------+
-DEFAULT_NAMESPACE_MAP = {
-    'a': 'artist',
-    'c': 'character', 'char': 'character',
-    'cos': 'cosplayer',
-    'f': 'female',
-    'g': 'group', 'circle': 'group',
-    'l': 'language', 'lang': 'language',
-    'm': 'male',
-    'x': 'mixed',
-    'o': 'other',
-    'p': 'parody', 'series': 'parody',
-    'r': 'reclass',
-}
+def default_namespace_map() -> dict[str, str]:
+    return {
+        'a': 'artist',
+        'c': 'character', 'char': 'character',
+        'cos': 'cosplayer',
+        'f': 'female',
+        'g': 'group', 'circle': 'group',
+        'l': 'language', 'lang': 'language',
+        'm': GALLERY_SEARCH_REGEX*'^' + 'male',
+        'x': 'mixed',
+        'o': 'other',
+        'p': 'parody', 'series': 'parody',
+        'r': 'reclass',
+    }
 
-SEARCH_AUTOCOMPLETE = get(True, 'Application', 'search autocomplete', bool)
-GALLERY_SEARCH_REGEX = get(False, 'Application', 'allow search regex', bool)
-SEARCH_ON_ENTER = get(False, 'Application', 'search on enter', bool)
-GALLERY_SEARCH_STRICT = get(False, 'Application', 'gallery search strict', bool)
-GALLERY_SEARCH_CASE = get(False, 'Application', 'gallery search case', bool)
-DUAL_SEARCH = get(False, 'Application', 'dual gallery search', bool)
-SEARCHABLE_INBOX = get(True, 'Application', 'searchable inbox', bool)
 ENABLE_NAMESPACE_MAP = get(True, 'Application', 'enable namespace map', bool)
-NAMESPACE_MAP = get(DEFAULT_NAMESPACE_MAP, 'Application', 'namespace map', json.loads)
+NAMESPACE_MAP = get(default_namespace_map(), 'Application', 'namespace map', json.loads)
 
 
 # Grid Tooltip
