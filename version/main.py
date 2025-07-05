@@ -126,8 +126,7 @@ def start(test=False):
         log_i("Enabling high DPI display support")
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
 
-    effects = [Qt.UI_AnimateCombo, Qt.UI_FadeMenu, Qt.UI_AnimateMenu,
-            Qt.UI_AnimateTooltip, Qt.UI_FadeTooltip]
+    effects = [Qt.UI_AnimateCombo, Qt.UI_FadeMenu, Qt.UI_AnimateMenu, Qt.UI_AnimateTooltip, Qt.UI_FadeTooltip]
     for effect in effects:
         QApplication.setEffectEnabled(effect)
 
