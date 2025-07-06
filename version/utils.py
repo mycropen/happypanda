@@ -1505,14 +1505,6 @@ def timeit(func):
     return newfunc
 
 
-def makedirs_if_not_exists(folder):
-    """Create directory if not exists.
-    Args:
-        folder: Target folder.
-    """
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
-
 def lookup_tag(tag):
     "Issues a tag lookup on preferred site"
     assert isinstance(tag, str), "str not " + str(type(tag))

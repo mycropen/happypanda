@@ -454,7 +454,8 @@ class Downloader(QObject):
         total_known_filesize = []
         download_url_len = len(download_url)
 
-        utils.makedirs_if_not_exists(folder)
+        if not os.path.isdir(folder): os.makedirs(folder, exist_ok=True)
+
         for single_url in download_url:
             # response
             r = self._get_response(url=single_url)
