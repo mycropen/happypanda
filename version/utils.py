@@ -30,6 +30,7 @@ import functools
 import time
 import traceback
 import enum
+import webbrowser
 
 import py7zr
 from PIL import Image, ImageChops
@@ -1168,7 +1169,6 @@ def title_parser(title):
 
     return parsed_title
 
-import webbrowser
 def open_web_link(url):
     if not url:
         return
