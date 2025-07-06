@@ -1007,27 +1007,21 @@ def tag_to_dict(string, ns_capitalize=True):
     level = 0 # so we know if we are in a list
     buffer = ""
     stripped_set = set() # we only need unique values
-    for n, x in enumerate(string, 1):
 
+    # remove the spaces between tag lists and tags outside of lists
+    # "ns:[a, b, c], d, e" -> {"ns:[a, b, c]", "d", "e"}
+    for n, x in enumerate(string, 1):
         if x == '[':
             level += 1 # we are now entering a list
         if x == ']':
             level -= 1 # we are now exiting a list
 
-
-        if x == ',': # if we meet a comma
-            # we trim our buffer if we are at top level
-            if level == 0:
-                # add to list
-                stripped_set.add(buffer.strip())
-                buffer = ""
-            else:
-                buffer += x
-        elif n == len(string): # or at end of string
-            buffer += x
-            # add to list
-            stripped_set.add(buffer.strip())
+        if x == ',' and level == 0:
+            stripped_set.add(buffer.strip().lower())
             buffer = ""
+        elif n == len(string):
+            buffer += x
+            stripped_set.add(buffer.strip().lower())
         else:
             buffer += x
 
