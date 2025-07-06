@@ -132,7 +132,10 @@ class GMetafile:
             for ns in ezedata['tags']: self.metadata['tags'][ns.capitalize()] = ezedata['tags'][ns]
             self.metadata['tags']['default'] = self.metadata['tags'].pop('Misc', [])
 
-            if 'Artist' in self.metadata['tags']:
+            # "Anthology" will stay as artist if it comes from the title parser
+            if t_parser['artist'].lower() in ('anthology', 'アンソロジー'):
+                self.metadata['artist'] = t_parser['artist']
+            elif 'Artist' in self.metadata['tags']:
                 self.metadata['artist'] = self.metadata['tags']['Artist'][0].capitalize()
             else:
                 self.metadata['artist'] = t_parser['artist']
@@ -223,22 +226,18 @@ class GMetafile:
 
     def apply_gallery(self, gallery):
         log_i('Applying metafile to gallery')
-        if self.metadata['title']:
-            gallery.title = self.metadata['title']
+        if self.metadata['title']: gallery.title = self.metadata['title']
+        if self.metadata['type']: gallery.type = self.metadata['type']
+        if self.metadata['tags']: gallery.tags = self.metadata['tags']
+        if self.metadata['language']: gallery.language = self.metadata['language']
+        if self.metadata['pub_date']: gallery.pub_date = self.metadata['pub_date']
+        if self.metadata['link']: gallery.link = self.metadata['link']
+        if self.metadata['info']: gallery.info = self.metadata['info']
+
+        # apply the artist from the metafile only if both it and the existing title or neither are 'Anthology' or 'アンソロジー'
         if self.metadata['artist']:
-            gallery.artist = self.metadata['artist']
-        if self.metadata['type']:
-            gallery.type = self.metadata['type']
-        if self.metadata['tags']:
-            gallery.tags = self.metadata['tags']
-        if self.metadata['language']:
-            gallery.language = self.metadata['language']
-        if self.metadata['pub_date']:
-            gallery.pub_date = self.metadata['pub_date']
-        if self.metadata['link']:
-            gallery.link = self.metadata['link']
-        if self.metadata['info']:
-            gallery.info = self.metadata['info']
+            if not ((gallery.artist.lower() in ('anthology', 'アンソロジー')) ^ (self.metadata['artist'].lower() in ('anthology', 'アンソロジー'))):
+                gallery.artist = self.metadata['artist']
         return gallery
 
 def backup_database(db_path: str = None):

@@ -1163,10 +1163,10 @@ class EHen(CommonHen):
         title_artist_dict = utils.title_parser(title)
         if not append:
             g.title = title_artist_dict['title']
-            if title_artist_dict['artist']:
+            if title_artist_dict['artist'] and g.artist.lower() not in ('anthology', 'アンソロジー'):
                 g.artist = title_artist_dict['artist']
             g.language = title_artist_dict['language'].capitalize()
-            if 'Artist' in data['tags']:
+            if 'Artist' in data['tags'] and g.artist.lower() not in ('anthology', 'アンソロジー'):
                 g.artist = data['tags']['Artist'][0].capitalize()
             if lang:
                 g.language = lang
@@ -1196,7 +1196,7 @@ class EHen(CommonHen):
                     and (g.view == app_constants.ViewType.Addition or getattr(g, 'new_gallery', False))) \
                 or not g.artist:
                 g.artist = title_artist_dict['artist']
-                if 'Artist' in data['tags']:
+                if 'Artist' in data['tags'] and g.artist.lower() not in ('anthology', 'アンソロジー'):
                     g.artist = data['tags']['Artist'][0].capitalize()
 
             if (app_constants.ALWAYS_APPLY_LANGUAGE == app_constants.REPLACE_TYPE_ALWAYS) \
