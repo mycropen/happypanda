@@ -640,7 +640,7 @@ class SettingsDialog(QWidget):
         self._make_app_gallery(tab_application)
         self._make_app_monitoring(tab_application)
         self._make_app_ignore(tab_application)
-        self._make_app_tagging(tab_application)
+        self._make_app_search(tab_application)
 
 
         # Web
@@ -978,28 +978,28 @@ class SettingsDialog(QWidget):
         self.ignore_path_l = QFormLayout()
         app_ignore_list_l.addLayout(self.ignore_path_l)
 
-    def _make_app_tagging(self, tab_widget: QTabWidget):
+    def _make_app_search(self, tab_widget: QTabWidget):
         # App / Tagging
-        app_tagging, app_tagging_m_l = new_tab('Tagging', tab_widget, True)
-        # tab_widget.layout().addWidget(app_tagging)
+        app_search, app_search_m_l = new_tab('Search', tab_widget, True)
+        # tab_widget.layout().addWidget(app_search)
 
-        ns_map_groupbox, ns_map_groupbox_l = groupbox('Namespace aliases', QVBoxLayout, app_tagging)
-        app_tagging_m_l.addRow(ns_map_groupbox)
+        ns_map_groupbox, ns_map_groupbox_l = groupbox('Namespace aliases', QVBoxLayout, app_search)
+        app_search_m_l.addRow(ns_map_groupbox)
 
         ns_map_explanation = QLabel('Namespace aliases are shorthands for actual tag namespaces when searching. ' \
                                     'For example, if "f" is an alias for "female", then searching "f:..." is the same as searching "female:...".')
         ns_map_explanation.setWordWrap(True)
         ns_map_groupbox_l.addWidget(ns_map_explanation)
 
-        self.use_ns_map_checkbox = QCheckBox('Use namespace aliases', app_tagging)
-        self.restore_default_ns_map_button = QPushButton('Restore defaults', app_tagging)
+        self.use_ns_map_checkbox = QCheckBox('Use namespace aliases', app_search)
+        self.restore_default_ns_map_button = QPushButton('Restore defaults', app_search)
 
         layout1 = QHBoxLayout()
         layout1.addWidget(self.use_ns_map_checkbox, 1, Qt.AlignmentFlag.AlignLeft)
         layout1.addWidget(self.restore_default_ns_map_button, 0, Qt.AlignmentFlag.AlignRight)
         ns_map_groupbox_l.addLayout(layout1)
 
-        self.ns_map_edit = DictStrStrEdit(app_tagging, 'alias', 'namespace')
+        self.ns_map_edit = DictStrStrEdit(app_search, 'alias', 'namespace')
         ns_map_groupbox_l.addWidget(self.ns_map_edit)
         
         self.use_ns_map_checkbox.stateChanged.connect(lambda state: self.ns_map_edit.setEnabled(state == Qt.CheckState.Checked))
