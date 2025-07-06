@@ -986,7 +986,7 @@ class SettingsDialog(QWidget):
         ns_map_groupbox, ns_map_groupbox_l = groupbox('Namespace aliases', QVBoxLayout, app_tagging)
         app_tagging_m_l.addRow(ns_map_groupbox)
 
-        ns_map_explanation = QLabel('Namespace aliases are shorthands for actual tag namespaces when searching and adding tags. ' \
+        ns_map_explanation = QLabel('Namespace aliases are shorthands for actual tag namespaces when searching. ' \
                                     'For example, if "f" is an alias for "female", then searching "f:..." is the same as searching "female:...".')
         ns_map_explanation.setWordWrap(True)
         ns_map_groupbox_l.addWidget(ns_map_explanation)
