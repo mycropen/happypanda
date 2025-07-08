@@ -132,6 +132,9 @@ class GMetafile:
             for ns in ezedata['tags']: self.metadata['tags'][ns.capitalize()] = ezedata['tags'][ns]
             self.metadata['tags']['default'] = self.metadata['tags'].pop('Misc', [])
 
+            # filter unwanted tags
+            self.metadata['tags'] = remove_ignored_tags(self.metadata['tags'])
+
             # "Anthology" will stay as artist if it comes from the title parser
             if t_parser['artist'].lower() in ('anthology', 'アンソロジー'):
                 self.metadata['artist'] = t_parser['artist']
@@ -178,6 +181,10 @@ class GMetafile:
                                 self.metadata['tags']['group'].append(other.strip().lower())
                         if "url" == l:
                             self.metadata['link'] = other
+
+                # filter unwanted tags
+                self.metadata['tags'] = remove_ignored_tags(self.metadata['tags'])
+
                 return True
 
         ## Doesnt work for some reason.. too lazy to debug
@@ -239,6 +246,7 @@ class GMetafile:
             if not ((gallery.artist.lower() in ('anthology', 'アンソロジー')) ^ (self.metadata['artist'].lower() in ('anthology', 'アンソロジー'))):
                 gallery.artist = self.metadata['artist']
         return gallery
+
 
 def backup_database(db_path: str = None):
     if db_path is None: db_path = database.db_constants.DB_PATH
@@ -680,6 +688,7 @@ class ArchiveFile():
             self.archive = py7zr.SevenZipFile(self.filepath)
 
         return self.archive
+
 
 def check_archive(archive_path):
     """
@@ -1497,7 +1506,6 @@ def timeit(func):
         print(f'function [{func.__name__}] finished in {int(elapsedTime * 1000)} ms')
     return newfunc
 
-
 def lookup_tag(tag):
     "Issues a tag lookup on preferred site"
     assert isinstance(tag, str), "str not " + str(type(tag))
@@ -1530,3 +1538,31 @@ class Stopwatch(object):
     def __exit__(self, *args, **kwargs):
         end = time.perf_counter_ns() if self._ns else time.perf_counter()
         self._out_func(f'{self.name}: {round(end - self._start, 6)}{self._unit}')
+
+
+def remove_ignored_tags(tags: dict[str, list[str]]) -> dict[str, list[str]]:
+    """
+    Remove entries in given ``tags`` dictionary that match
+    ``app_constants.IGNORED_TAGS``.
+
+    Both namespaces and tags are matched using the ``IGNORED_TAGS`` keys and
+    values (i.e. namespaces and tags) as regex to search in ``tags``.
+    The "default" namespace in ``IGNORED_TAGS`` matches every namespace in
+    ``tags``.
+
+    Modifies the given dictionary in-place but also returns it.
+    """
+    for tags_ns, tags_tags in tags.items():
+        for ignored_ns, ignored_tags in app_constants.IGNORED_TAGS.items():
+            if ignored_ns != 'default' and not re.search(ignored_ns, tags_ns, flags = re.I): continue
+
+            for tags_tag in tags_tags.copy():
+                for ignored_tag in ignored_tags:
+                    if re.search(ignored_tag, tags_tag, flags = re.I):
+                        tags[tags_ns].remove(tags_tag)
+
+    for tags_ns in list(tags.keys()).copy():
+        if len(tags[tags_ns]) == 0:
+            tags.pop(tags_ns)
+
+    return tags
