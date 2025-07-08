@@ -19,6 +19,7 @@ import qtawesome as qta
 import settings
 import database
 import gallerydb
+import utils
 
 # Version number
 vs  = '1.6.2'
@@ -254,6 +255,8 @@ ALWAYS_APPLY_ARTIST = get(REPLACE_TYPE_NEVER, 'Web', 'always apply artist', int)
 ALWAYS_APPLY_LANGUAGE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply language', int)
 ALWAYS_APPLY_G_TYPE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply gallery type', int)
 ALWAYS_APPLY_TAGS = get(REPLACE_TYPE_NEVER, 'Web', 'always apply tags', int)
+IGNORED_TAGS = get(dict(), 'Web', 'ignored tags', utils.tag_to_dict)
+print(f'{IGNORED_TAGS = }')
 
 # External Viewer
 EXTERNAL_VIEWER_SUPPORT = {'honeyview':['Honeyview.exe']}
