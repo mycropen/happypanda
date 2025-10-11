@@ -56,7 +56,7 @@ def start(test=False):
     parser.add_argument('-d', '--debug',        action='store_true', help='Output more detailed logs to happypanda_debug.log')
     parser.add_argument('-e', '--exceptions',   action='store_true', help='Disable custom excepthook')
     parser.add_argument('-x', '--dev',          action='store_true', help='Output all log messages to stdout as well')
-    parser.add_argument('-f', '--faulthandler', action='store_true', help='Enable a faulthandler log file in case of unexplanable crashes')
+    parser.add_argument('-f', '--faulthandler', action='store_true', help='Enable a faulthandler log file in case of unexplainable crashes')
 
     args = parser.parse_args()
     log_handlers = []

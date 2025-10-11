@@ -233,10 +233,10 @@ class Fetch(QObject):
                     if os.path.isdir(path):
                         gallery_folders, gallery_archives = utils.recursive_gallery_check(path)
                         for gs in gallery_folders:
-                                self.create_gallery(gs, os.path.split(gs)[1], False)
+                            self.create_gallery(gs, os.path.split(gs)[1], False)
                         p_saving = {}
                         for gs in gallery_archives:
-                                self.create_gallery(gs[0], os.path.split(gs[0])[1], False, archive=gs[1])
+                            self.create_gallery(gs[0], os.path.split(gs[0])[1], False, archive=gs[1])
                     elif path.endswith(utils.ARCHIVE_FILES):
                         for g in utils.check_archive(path):
                             self.create_gallery(g, os.path.split(g)[1], False, archive=path)
