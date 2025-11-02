@@ -203,6 +203,11 @@ IGNORE_EXTS = get([], 'Application', 'ignore exts', list)
 SCANNING_FOR_GALLERIES = False # if a scan for new galleries is being done
 TEMP_PATH_IGNORE = []
 
+# Ignored tags
+IGNORED_TAGS = get(dict(), 'Application', 'ignored tags', utils.tag_to_dict)
+IGNORED_TAGS_APPLY_TO_METADATA_FILES = get(True, 'Application', 'apply ignored tags to metadata files', bool)
+IGNORED_TAGS_APPLY_TO_WEB_FETCH = get(True, 'Application', 'apply ignored tags to web fetches', bool)
+
 # GENERAL
 OVERRIDE_MOVE_IMPORTED_IN_FETCH = False # set to true to make a fetch instance ignore moving files (will be set to false)
 MOVE_IMPORTED_GALLERIES = get(False, 'Application', 'move imported galleries', bool)
@@ -255,8 +260,6 @@ ALWAYS_APPLY_ARTIST = get(REPLACE_TYPE_NEVER, 'Web', 'always apply artist', int)
 ALWAYS_APPLY_LANGUAGE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply language', int)
 ALWAYS_APPLY_G_TYPE = get(REPLACE_TYPE_NEVER, 'Web', 'always apply gallery type', int)
 ALWAYS_APPLY_TAGS = get(REPLACE_TYPE_NEVER, 'Web', 'always apply tags', int)
-IGNORED_TAGS = get(dict(), 'Web', 'ignored tags', utils.tag_to_dict)
-print(f'{IGNORED_TAGS = }')
 
 # External Viewer
 EXTERNAL_VIEWER_SUPPORT = {'honeyview':['Honeyview.exe']}
