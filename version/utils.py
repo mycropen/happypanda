@@ -133,7 +133,8 @@ class GMetafile:
             self.metadata['tags']['default'] = self.metadata['tags'].pop('Misc', [])
 
             # filter unwanted tags
-            self.metadata['tags'] = remove_ignored_tags(self.metadata['tags'])
+            if app_constants.IGNORED_TAGS_APPLY_TO_METADATA_FILES:
+                self.metadata['tags'] = remove_ignored_tags(self.metadata['tags'])
 
             # "Anthology" will stay as artist if it comes from the title parser
             if t_parser['artist'].lower() in ('anthology', 'アンソロジー'):
@@ -183,7 +184,8 @@ class GMetafile:
                             self.metadata['link'] = other
 
                 # filter unwanted tags
-                self.metadata['tags'] = remove_ignored_tags(self.metadata['tags'])
+                if app_constants.IGNORED_TAGS_APPLY_TO_METADATA_FILES:
+                    self.metadata['tags'] = remove_ignored_tags(self.metadata['tags'])
 
                 return True
 
@@ -1011,7 +1013,10 @@ def tag_to_string(gallery_tag, simple=False):
     return string
 
 def tag_to_dict(string, ns_capitalize=True):
-    "Receives a string of tags and converts it to a dict of tags"
+    """
+    Receives a string of tags and converts it to a dict of tags.
+    The inverse of `tag_to_string(..., simple=False)`.
+    """
     namespace_tags = {'default':[]}
     level = 0 # so we know if we are in a list
     buffer = ""

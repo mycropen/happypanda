@@ -1152,6 +1152,9 @@ class EHen(CommonHen):
         else:
             title = data['title']['def']
 
+        if app_constants.IGNORED_TAGS_APPLY_TO_WEB_FETCH:
+            data['tags'] = utils.remove_ignored_tags(data['tags'])
+
         if 'Language' in data['tags']:
             try:
                 lang = [x for x in data['tags']['Language'] if not x == 'translated'][0].capitalize()
