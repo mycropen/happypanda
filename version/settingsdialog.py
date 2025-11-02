@@ -2,7 +2,7 @@
 import logging, os, sys
 from typing import Optional, TypeVar
 
-from PyQt5.QtWidgets import (QLayout, QVBoxLayout, QHBoxLayout, QListWidget, QWidget,
+from PyQt5.QtWidgets import (QLayout, QTextEdit, QVBoxLayout, QHBoxLayout, QListWidget, QWidget,
                              QListWidgetItem, QStackedLayout, QPushButton,
                              QLabel, QTabWidget, QLineEdit, QGroupBox, QFormLayout,
                              QCheckBox, QRadioButton, QSpinBox, QSizePolicy,
@@ -423,6 +423,13 @@ class SettingsDialog(QWidget):
                 paths.append(p)
         set(paths, 'Application', 'ignore paths')
         app_constants.IGNORE_PATHS = paths
+
+        app_constants.IGNORED_TAGS = utils.tag_to_dict(self.ignored_tags_edit.toPlainText())
+        set(self.ignored_tags_edit.toPlainText(), 'Application', 'ignored tags')
+        app_constants.IGNORED_TAGS_APPLY_TO_WEB_FETCH = self.ignored_tags_apply_to_web_fetches.isChecked()
+        set(app_constants.IGNORED_TAGS_APPLY_TO_WEB_FETCH, 'Application', 'apply ignored tags to web fetches')
+        app_constants.IGNORED_TAGS_APPLY_TO_METADATA_FILES = self.ignored_tags_apply_to_metadata_file.isChecked()
+        set(app_constants.IGNORED_TAGS_APPLY_TO_METADATA_FILES, 'Application', 'apply ignored tags to metadata files')
 
         # App / Tagging
         app_constants.ENABLE_NAMESPACE_MAP = self.use_ns_map_checkbox.isChecked()
@@ -977,6 +984,31 @@ class SettingsDialog(QWidget):
         app_ignore_list_l.addLayout(add_buttons_l)
         self.ignore_path_l = QFormLayout()
         app_ignore_list_l.addLayout(self.ignore_path_l)
+
+
+        # App / Ignore / Tags
+        ignored_tags_group, ignored_tags_l = groupbox('Tags', QVBoxLayout, app_ignore)
+        app_ignore_m_l.addRow(ignored_tags_group)
+        ignored_tags_help_text = QLabel('Ignore some tags when automatically fetching them from certain sources. \n' \
+                                        'A tag without a namespace like "already uploaded" is ignored in every namespace. ' \
+                                        'A tag with a namespace like "male:glasses" is ignored in all namespaces that include its namespace, '\
+                                        'i.e. both "male:glasses" and "female:glasses". \n' \
+                                        'Both namespaces and tags are matched using regex. ' \
+                                        'Namespace aliases do NOT apply here. ',
+                                        ignored_tags_group)
+        ignored_tags_help_text.setWordWrap(True)
+        ignored_tags_l.addWidget(ignored_tags_help_text)
+        self.ignored_tags_apply_to_metadata_file = QCheckBox('From metdata files (info.json, info.txt, ...)', ignored_tags_group)
+        self.ignored_tags_apply_to_metadata_file.setChecked(app_constants.IGNORED_TAGS_APPLY_TO_METADATA_FILES)
+        ignored_tags_l.addWidget(self.ignored_tags_apply_to_metadata_file)
+        self.ignored_tags_apply_to_web_fetches = QCheckBox('From web fetches', ignored_tags_group)
+        self.ignored_tags_apply_to_web_fetches.setChecked(app_constants.IGNORED_TAGS_APPLY_TO_WEB_FETCH)
+        ignored_tags_l.addWidget(self.ignored_tags_apply_to_web_fetches)
+        self.ignored_tags_edit = QTextEdit(parent=ignored_tags_group)
+        self.ignored_tags_edit.setPlainText(utils.tag_to_string(app_constants.IGNORED_TAGS))
+        self.ignored_tags_edit.setPlaceholderText('add tags with or without namespaces, e.g.: "forbidden content, already uploaded, reclass:."')
+        ignored_tags_l.addWidget(self.ignored_tags_edit)
+
 
     def _make_app_search(self, tab_widget: QTabWidget):
         # App / Tagging
