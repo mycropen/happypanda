@@ -454,7 +454,7 @@ class SettingsDialog(QWidget):
         app_constants.DOWNLOAD_GALLERY_TO_LIB = self.download_gallery_lib.isChecked()
         set(app_constants.DOWNLOAD_GALLERY_TO_LIB, 'Web', 'download galleries to library')
 
-        # Web / Metdata
+        # Web / Metadata
         if self.default_ehen_url.isChecked():
             app_constants.DEFAULT_EHEN_URL = 'https://e-hentai.org/'
         else:
@@ -998,7 +998,7 @@ class SettingsDialog(QWidget):
                                         ignored_tags_group)
         ignored_tags_help_text.setWordWrap(True)
         ignored_tags_l.addWidget(ignored_tags_help_text)
-        self.ignored_tags_apply_to_metadata_file = QCheckBox('From metdata files (info.json, info.txt, ...)', ignored_tags_group)
+        self.ignored_tags_apply_to_metadata_file = QCheckBox('From metadata files (info.json, info.txt, ...)', ignored_tags_group)
         self.ignored_tags_apply_to_metadata_file.setChecked(app_constants.IGNORED_TAGS_APPLY_TO_METADATA_FILES)
         ignored_tags_l.addWidget(self.ignored_tags_apply_to_metadata_file)
         self.ignored_tags_apply_to_web_fetches = QCheckBox('From web fetches', ignored_tags_group)

@@ -265,7 +265,7 @@
     + Fixed regex not working when in namespace
     + Fixed thumbnail generation causing an unhandled exception
     + Moved directories kept their old path
-    + Fixed auto metdata fetcher failing when mixing galleries with colored covers and galleries with greyscale covers
+    + Fixed auto metadata fetcher failing when mixing galleries with colored covers and galleries with greyscale covers
     + Gallery Metadata window wouldn't stay open
     + Fixed a DB bug causing all kinds of errors, including:
         + Editing a gallery while fetching its metadata would cause an exception
@@ -300,7 +300,7 @@
 - Custom languages will now be parsed from filenames along with the default languages
 - Tags are now sorted alphabetically everywhere
 - Gallerylists in contextmenu are also now sorted
-- Reason for why metdata fecthing failed is now shown in the failed-to-get-metadata-gallery popup
+- Reason for why metadata fecthing failed is now shown in the failed-to-get-metadata-gallery popup
 - The current search term will now be upkeeped (upkept?) when switching between views
 - Disabled some tray messages on linux to prevent crash
 - The current gallerylist context will now be shown on the statusbar
@@ -485,7 +485,7 @@
 - Fixed bugs:
     + Temporarily fixed a critical bug where galleries wouldn't load
     + Fixed a bug where the tray icon would stay even after closing the application
-    + Fixed a bug where clicking on a tag with no namespace in the Gallery Metdata Popup would search the tag with a blank namespace
+    + Fixed a bug where clicking on a tag with no namespace in the Gallery Metadata Popup would search the tag with a blank namespace
     + Fixed a minor bug where when opening the settings dialog a small window would appear first in a split second
 
 

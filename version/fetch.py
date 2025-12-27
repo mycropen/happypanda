@@ -41,7 +41,7 @@ class Fetch(QObject):
     Should be executed in a new thread.
     Contains following methods:
     local -> runs a local search in the given series_path
-    auto_web_metadata -> does a search online for the given galleries and returns their metdata
+    auto_web_metadata -> does a search online for the given galleries and returns their metadata
     """
 
     # local signals
