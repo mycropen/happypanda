@@ -1,3 +1,16 @@
+## Happypanda v1.7.0
+
+- New Features
+    - Namespace Aliases in Search: The settings menu under "Application" has a new "Search" tab where you can define namespace aliases to make searching a bit more comfortable. The default set of aliases is taken from the [EHWiki](https://ehwiki.org/wiki/Namespace): 
+
+- Ignored Tags
+    - The settings menu under "Application" / "Ignore" has a new section where you can set up a list of tags that can be ignored when Happypanda fetches tags from certain automated sources, in case you were ever annoyed that tags like "forbidden content" just took up unused space in your database.
+
+- Changes
+    - If a gallery's author is "Anthology" or "アンソロジー", then Happypanda should no longer replace it with the first artist found in the tags, be it from an online tag fetch or an embedded metadata file.
+
+
+
 ## Happypanda v1.6.2
 
 - Fixes
